@@ -1,0 +1,16 @@
+[ 'cat', 'dog', 'tiger' ]
+[ [ 'apple', 'orange' ], [ 'pear' ] ]
+cat
+apple
+[ 'fox', 'dog', 'tiger' ]
+fox
+dog
+tiger
+[ 'fox', 'dog', 'tiger', 'mouse' ]
+[ 'fox', 'dog', 'tiger', 'mouse', 'horse', 'ox' ]
+[ 'fox', 'dog', 'tiger', 'mouse', 'horse' ]
+[ 'fox', 'dog', 'tiger', 'mouse', 'horse', 'ox' ]
+[ 'dog', 'tiger', 'mouse', 'horse', 'ox' ]
+[ 'fox', 'dog', 'tiger', 'mouse', 'horse', 'ox' ]
+1-2-3
+[ '1', '2', '3' ]

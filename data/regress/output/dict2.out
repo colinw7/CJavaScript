@@ -1,0 +1,8 @@
+{ color: 'brown', size: 'large' }
+brown
+brown
+[ { color: 'brown', size: 'large' }, { color: 'black', size: 'small' } ]
+large
+{ rover: { color: 'brown', size: 'large' }, spot: { color: 'black', size: 'small' } }
+small
+brown

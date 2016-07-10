@@ -10,6 +10,7 @@ main(int argc, char **argv)
 
   bool pdebug = false;
   bool edebug = false;
+  bool idebug = false;
   bool parse  = false; // just parse
   bool prompt = false;
 
@@ -17,8 +18,15 @@ main(int argc, char **argv)
     if (argv[i][0] == '-') {
       if      (strcmp(&argv[i][1], "pdebug") == 0)
         pdebug = true;
+      else if (strcmp(&argv[i][1], "idebug") == 0)
+        idebug = true;
       else if (strcmp(&argv[i][1], "edebug") == 0)
         edebug = true;
+      else if (strcmp(&argv[i][1], "debug") == 0) {
+        pdebug = true;
+        idebug = true;
+        edebug = true;
+      }
       else if (strcmp(&argv[i][1], "parse") == 0)
         parse = true;
       else if (strcmp(&argv[i][1], "i") == 0)
@@ -32,8 +40,9 @@ main(int argc, char **argv)
 
   CJavaScript js;
 
-  js.setParseDebug(pdebug);
-  js.setExecDebug (edebug);
+  js.setParseDebug (pdebug);
+  js.setInterpDebug(idebug);
+  js.setExecDebug  (edebug);
 
   if (! filename.empty()) {
     js.loadFile(filename);
