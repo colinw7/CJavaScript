@@ -7,9 +7,11 @@
 #include <set>
 #include <map>
 #include <memory>
+#include <limits>
 #include <ostream>
 #include <sstream>
 #include <cassert>
+#include <cmath>
 
 class CStrParse;
 class CJavaScript;
@@ -99,7 +101,7 @@ class CJIdentifier : public CJToken {
 
   const std::string &name() const { return id_; }
 
-  void print(std::ostream &os) const { os << id_; }
+  void print(std::ostream &os) const override { os << id_; }
 
  private:
   std::string id_;
@@ -147,7 +149,7 @@ class CJKeyword : public CJToken {
 
   std::string name() const;
 
-  void print(std::ostream &os) const { os << name(); }
+  void print(std::ostream &os) const override { os << name(); }
 
  private:
   Type type_;
@@ -327,16 +329,6 @@ class CJFunctionType : public CJObjectType {
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 };
 
-// Variable Type
-class CJVariableType : public CJObjectType {
- public:
-  CJVariableType() :
-   CJObjectType(CJToken::Type::Variable, "variable") {
-  }
-
-  CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
-};
-
 //------
 
 class CJUndefined : public CJValue {
@@ -351,7 +343,7 @@ class CJUndefined : public CJValue {
 
   bool toBoolean() const override { return false; }
 
-  void print(std::ostream &os) const { os << "undefined"; }
+  void print(std::ostream &os) const override { os << "undefined"; }
 };
 
 //------
@@ -368,7 +360,7 @@ class CJNull : public CJValue {
 
   bool toBoolean() const override { return false; }
 
-  void print(std::ostream &os) const { os << "null"; }
+  void print(std::ostream &os) const override { os << "null"; }
 };
 
 //------
@@ -385,7 +377,7 @@ class CJTrue : public CJValue {
 
   bool toBoolean() const override { return true; }
 
-  void print(std::ostream &os) const { os << "true"; }
+  void print(std::ostream &os) const override { os << "true"; }
 };
 
 //------
@@ -402,7 +394,7 @@ class CJFalse : public CJValue {
 
   bool toBoolean() const override { return false; }
 
-  void print(std::ostream &os) const { os << "false"; }
+  void print(std::ostream &os) const override { os << "false"; }
 };
 
 //------
@@ -414,7 +406,9 @@ class CJNumber : public CJValue {
   CJNumber *dup(CJavaScript *js) const override { return new CJNumber(js, real_); }
 
   std::string toString() const override {
-    std::stringstream ss;
+    std::ostringstream ss;
+
+    ss.precision(std::numeric_limits<double>::max_digits10);
 
     ss << real_;
 
@@ -437,7 +431,9 @@ class CJNumber : public CJValue {
     return 0;
   }
 
-  void print(std::ostream &os) const { os << real_; }
+  void print(std::ostream &os) const override {
+    os << toString();
+  }
 
  private:
   double real_;
@@ -464,7 +460,7 @@ class CJString : public CJValue {
 
   int length() const override { return text_.size(); }
 
-  void print(std::ostream &os) const {
+  void print(std::ostream &os) const override {
     os << "\'" << text_ << "\'";
   }
 
@@ -542,7 +538,7 @@ class CJArray : public CJValue {
 
   int length() const override { return values_.size(); }
 
-  void print(std::ostream &os) const {
+  void print(std::ostream &os) const override {
     os << "[";
 
     int i = 0;
@@ -575,8 +571,10 @@ class CJOperator : public CJToken {
  public:
   enum class Type {
     None,
+    UnaryPlus,
     Plus,
     PlusAssign,
+    UnaryMinus,
     Minus,
     MinusAssign,
     Times,
@@ -670,7 +668,7 @@ class CJOperator : public CJToken {
             type_ == Type::BitwiseXorAssign);
   }
 
-  void print(std::ostream &os) const { os << name(); }
+  void print(std::ostream &os) const override { os << name(); }
 
   std::string name() const;
 
@@ -789,6 +787,8 @@ class CJExecExpressionList : public CJToken {
     Values values;
 
     for (auto &e : expressions_) {
+      assert(e);
+
       CJValueP value = e->exec(js);
 
       values.push_back(value);
@@ -827,50 +827,6 @@ typedef std::shared_ptr<CJExecExpressionList> CJExecExpressionListP;
 
 //------
 
-class CJExecKeyValue {
- public:
-  CJExecKeyValue(CJValueP key, CJValueP value) :
-   key_(key), value_(value) {
-  }
-
-  CJValueP key() const { return key_; }
-
-  CJValueP value() const { return value_; }
-  void setValue(CJValueP value) { value_ = value; }
-
-  void print(std::ostream &os) const {
-    printKey(os);
-
-    os << ": ";
-
-    if (value_)
-      os << *value_;
-    else
-      os << "<null>";
-  }
-
-  void printKey(std::ostream &os) const {
-    if      (! key_)
-      os << "<null>";
-    else if (key_->type() == CJValue::Type::String)
-      os << key_->cast<CJString>()->text();
-    else
-      os << *key_;
-  }
-
-  friend std::ostream &operator<<(std::ostream &os, const CJExecKeyValue &rhs) {
-    rhs.print(os);
-
-    return os;
-  }
-
- private:
-  CJValueP key_;
-  CJValueP value_;
-};
-
-//------
-
 // builtin function
 class CJFunction : public CJValue {
  public:
@@ -886,6 +842,8 @@ class CJFunction : public CJValue {
 
  public:
   CJFunction(CJavaScript *js, const std::string &name, Type type=Type::Normal);
+
+  CJValue *dup(CJavaScript *) const override { assert(false); return 0; }
 
   const std::string &name() const { return name_; }
 
@@ -910,10 +868,36 @@ typedef std::shared_ptr<CJFunction> CJFunctionP;
 
 //------
 
+class CJNameSpace {
+ public:
+  CJNameSpace(const std::string &name) :
+   name_(name) {
+  }
+
+  void setProperty(const std::string &name, CJValueP value) {
+    properties_[name] = value;
+  }
+
+  CJValueP getProperty(const std::string &name) {
+    auto p = properties_.find(name);
+    if (p == properties_.end()) return CJValueP();
+
+    return (*p).second;
+  }
+
+ private:
+  typedef std::map<std::string,CJValueP> Properties;
+
+  std::string name_;
+  Properties  properties_;
+};
+
+//------
+
 // { <expression_pair> [, <expression_pair>]* }
 class CJDictionary : public CJValue {
  public:
-  typedef std::vector<CJExecKeyValue> KeyValues;
+  typedef std::map<std::string,CJValueP> KeyValues;
 
  public:
   CJDictionary(CJavaScript *js, const KeyValues &keyValues=KeyValues());
@@ -922,32 +906,42 @@ class CJDictionary : public CJValue {
     return new CJDictionary(js, keyValues_);
   }
 
-  void addProperty(CJavaScript *js, const std::string &key, double value) {
-    CJExecKeyValue keyValue(CJValueP(new CJString(js, key)), CJValueP(new CJNumber(js, value)));
+  void setProperty(CJavaScript *js, const std::string &key, double r) {
+    CJValueP value(new CJNumber(js, r));
 
-    addKeyValue(keyValue);
+    setProperty(key, value);
   }
 
-  void addProperty(CJavaScript *js, const std::string &key, int value) {
-    CJExecKeyValue keyValue(CJValueP(new CJString(js, key)), CJValueP(new CJNumber(js, value)));
+  void setProperty(CJavaScript *js, const std::string &key, long i) {
+    CJValueP value(new CJNumber(js, i));
 
-    addKeyValue(keyValue);
+    setProperty(key, value);
   }
 
-  void addProperty(CJavaScript *js, const std::string &key, CJFunction *function) {
-    CJExecKeyValue keyValue(CJValueP(new CJString(js, key)), CJValueP(function));
+  void setProperty(CJavaScript *, const std::string &key, CJFunction *function) {
+    CJValueP value(function);
 
-    addKeyValue(keyValue);
+    setProperty(key, value);
   }
 
-  void addProperty(CJavaScript *js, const std::string &key, CJValueP value) {
-    CJExecKeyValue keyValue(CJValueP(new CJString(js, key)), value);
-
-    addKeyValue(keyValue);
+  void setProperty(CJavaScript *, const std::string &key, CJValueP value) {
+    setProperty(key, value);
   }
 
-  void addKeyValue(const CJExecKeyValue &keyValue) {
-    keyValues_.push_back(keyValue);
+  void setProperty(const std::string &key, CJValueP value) {
+    keyValues_[key] = value;
+  }
+
+  bool hasProperty(const std::string &key) const {
+    return (keyValues_.find(key) != keyValues_.end());
+  }
+
+  CJValueP lookupProperty(const std::string &key) const {
+    return indexValue(key);
+  }
+
+  void deleteProperty(const std::string &key) {
+    keyValues_.erase(key);
   }
 
   std::string toString() const override {
@@ -962,15 +956,11 @@ class CJDictionary : public CJValue {
 
   double toReal() const override { return toBoolean(); }
 
-  CJValueP indexValue(CJavaScript *js, const std::string &key) const {
-    return indexValue(CJValueP(new CJString(js, key)));
-  }
+  CJValueP indexValue(const std::string &key) const {
+    auto p = keyValues_.find(key);
 
-  CJValueP indexValue(CJValueP ivalue) const {
-    for (auto &kv : keyValues_) {
-      if (kv.key()->cmp(ivalue.get()) == 0)
-        return kv.value();
-    }
+    if (p != keyValues_.end())
+      return (*p).second;
 
     return CJValueP();
   }
@@ -980,9 +970,13 @@ class CJDictionary : public CJValue {
   }
 
   void setIndexValue(CJValueP ivalue, CJValueP value) {
+    std::string key = ivalue->toString();
+
     for (auto &kv : keyValues_) {
-      if (kv.key()->cmp(ivalue.get()) == 0)
-        return kv.setValue(value);
+      if (kv.first == key) {
+        kv.second = value;
+        return;
+      }
     }
   }
 
@@ -995,7 +989,12 @@ class CJDictionary : public CJValue {
       if (i > 0)
         os << ",";
 
-      os << " " << kv;
+      os << " " << kv.first << ": ";
+
+      if (kv.second)
+        os << *kv.second;
+      else
+        os << "<null>";
 
       ++i;
     }
@@ -1006,7 +1005,7 @@ class CJDictionary : public CJValue {
     os << "}";
   }
 
- private:
+ protected:
   KeyValues keyValues_;
 };
 
@@ -1163,6 +1162,10 @@ class CJExecBlock : public CJToken {
     tokens_.push_back(token);
   }
 
+  bool anyTokens() const {
+    return ! tokens_.empty();
+  }
+
   ETokens &etokens() { return etokens_; }
 
   CJValueP getRetVal() const { return retVal_; }
@@ -1187,8 +1190,14 @@ class CJExecBlock : public CJToken {
   void print(std::ostream &os) const override {
     os << "{" << std::endl;
 
-    for (auto &t : etokens_)
-      os << " " << *t;
+    if (! etokens_.empty()) {
+      for (auto &t : etokens_)
+        os << " " << *t;
+    }
+    else {
+      for (auto &t : tokens_)
+        os << " " << *t;
+    }
 
     os << std::endl << "}";
   }
@@ -1259,23 +1268,46 @@ class CJExecVar : public CJToken {
    CJToken(CJToken::Type::Var) {
   }
 
-  void addVar(CJExecIdentifiersP identifiers, CJValueP value) {
-    identifiers_ = identifiers;
-    value_       = value;
+  CJExecIdentifiersP identifiers() const { return identifiers_; }
+  void setIdentifiers(CJExecIdentifiersP identifiers) { identifiers_ = identifiers; }
+
+  void setExprList(CJExecExpressionListP exprList) {
+    exprList_ = exprList;
+  }
+
+  void setBlock(CJExecBlockP block) {
+    block_ = block;
+  }
+
+  void setValue(CJValueP value) {
+    value_ = value;
   }
 
   CJValueP exec(CJavaScript *js) override;
 
   void print(std::ostream &os) const override {
-    os << "var " << *identifiers_;
+    os << "var";
 
-    if (value_)
-      os << " = " << *value_;
+    if (identifiers_)
+      os << " " << *identifiers_;
+
+    if (exprList_ || block_ || value_) {
+      os << " = ";
+
+      if      (exprList_)
+        os << *exprList_;
+      else if (block_)
+        os << *block_;
+      else if (value_)
+        os << *value_;
+    }
   }
 
  private:
-  CJExecIdentifiersP identifiers_;
-  CJValueP           value_;
+  CJExecIdentifiersP    identifiers_;
+  CJExecExpressionListP exprList_;
+  CJExecBlockP          block_;
+  CJValueP              value_;
 };
 
 typedef std::shared_ptr<CJExecVar> CJExecVarP;
@@ -1380,6 +1412,15 @@ class CJExecFor : public CJToken {
     exprList3_ = exprList;
   }
 
+  void setIdentifiers(CJExecIdentifiersP identifiers, bool var) {
+    identifiers_ = identifiers;
+    ivar_        = var;
+  }
+
+  void setInExpr(CJExecExpressionP expr) {
+    inExpr_ = expr;
+  }
+
   void setBlock(CJExecBlockP block) {
     block_ = block;
   }
@@ -1389,21 +1430,44 @@ class CJExecFor : public CJToken {
   CJValueP exec(CJavaScript *js) override;
 
   void print(std::ostream &os) const override {
-    if      (var_ && exprList2_ && exprList3_ && block_) {
-      os << "for (" << *var_ << "; " << *exprList2_ << "; " <<
-                       *exprList3_ << ") " << *block_;
+    os << "for (";
+
+    if (var_) {
+      os << *var_;
     }
-    else if (exprList1_ && exprList2_ && exprList3_ && block_) {
-      os << "for (" << *exprList1_ << "; " << *exprList2_ << "; " <<
-                       *exprList3_ << ") " << *block_;
+    else {
+      if (exprList1_)
+        os << *exprList1_;
     }
+
+    if (inExpr_)
+      os << " in " << *inExpr_;
+    else {
+      os << ";";
+
+      if (exprList2_)
+        os << " " << *exprList2_;
+
+      os << ";";
+
+      if (exprList3_)
+        os << " " << *exprList3_;
+    }
+
+    os << ")";
+
+    if (block_)
+      os << " " << *block_;
   }
 
  private:
-  CJExecExpressionListP exprList1_;
   CJExecVarP            var_;
+  CJExecExpressionListP exprList1_;
   CJExecExpressionListP exprList2_;
   CJExecExpressionListP exprList3_;
+  CJExecExpressionP     inExpr_;
+  CJExecIdentifiersP    identifiers_;
+  bool                  ivar_ { false };
   CJExecBlockP          block_;
 };
 
@@ -1504,6 +1568,71 @@ class CJExecWhile : public CJToken {
  private:
   CJExecExpressionListP exprList_;
   CJExecBlockP          block_;
+};
+
+//------
+
+// switch ( <expression> ) { [case <expr> : <exprList> ; break; ]* }
+class CJExecSwitch : public CJToken {
+ public:
+  struct CaseBlock {
+    CaseBlock(CJExecExpressionP expr1, CJExecBlockP block1) :
+     expr(expr1), block(block1) {
+    }
+
+    CJExecExpressionP expr;
+    CJExecBlockP      block;
+  };
+
+  struct DefaultBlock {
+    CJExecBlockP block;
+  };
+
+ public:
+  CJExecSwitch() :
+   CJToken(CJToken::Type::Switch) {
+  }
+
+  void setExprList(CJExecExpressionListP exprList) {
+    exprList_ = exprList;
+  }
+
+  void addCase(CJExecExpressionP expr, CJExecBlockP block) {
+    caseBlocks_.push_back(CaseBlock(expr, block));
+  }
+
+  void setDefault(CJExecBlockP block) {
+    defaultBlock_.block = block;
+  }
+
+  CJValueP exec(CJavaScript *js) override;
+
+  void print(std::ostream &os) const override {
+    os << "switch (";
+
+    if (exprList_)
+      os << *exprList_;
+
+    os << ") {" << std::endl;
+
+    for (const auto &c : caseBlocks_) {
+      if (c.expr && c.block)
+        os << "case " << *c.expr << " : " << *c.block << std::endl;
+    }
+
+    if (defaultBlock_.block) {
+      os << "default : " << *defaultBlock_.block << std::endl;
+    }
+
+    os << "}";
+  }
+
+ private:
+  typedef std::vector<CaseBlock> CaseBlocks;
+
+  CJExecExpressionListP exprList_;
+  CaseBlocks            caseBlocks_;
+  DefaultBlock          defaultBlock_;
 };
 
 //------
@@ -1659,84 +1788,11 @@ class CJLValue : public CJValue {
 
   virtual ~CJLValue() { }
 
-  virtual CJValueP value() = 0;
+  virtual CJValueP value() const = 0;
   virtual void setValue(CJValueP value) = 0;
 };
 
 typedef std::shared_ptr<CJLValue> CJLValueP;
-
-//------
-
-class CJVariable : public CJLValue {
- public:
-  CJVariable(CJavaScript *js, const std::string &name, CJValueP value=CJValueP());
-
-  CJVariable(CJavaScript *js, const std::string &name, double r);
-
-  CJValue *dup(CJavaScript *js) const override { return new CJVariable(js, name_, value_); }
-
-  const std::string &name() const { return name_; }
-
-  CJValueP value() { return value_; }
-  void setValue(CJValueP value) { value_ = value; }
-
-  CJObjectTypeP valueType() const {
-    if (value_)
-      return value_->valueType();
-    else
-      return CJObjectTypeP();
-  }
-
-  std::string toString() const override {
-    if (value_)
-      return value_->toString();
-    else
-      return "";
-  }
-
-  double toReal() const override {
-    if (value_)
-      return value_->toReal();
-    else
-      return 0;
-  }
-
-  bool toBoolean() const override {
-    if (value_)
-      return value_->toBoolean();
-    else
-      return false;
-  }
-
-  bool hasIndex() const override {
-    if (value_)
-      return value_->hasIndex();
-    else
-      return false;
-  }
-
-  CJValueP indexValue(int ind) const override {
-    assert(value_ && value_->hasIndex());
-
-    return value_->indexValue(ind);
-  }
-
-  void setIndexValue(int ind, CJValueP value) override {
-    assert(value_ && value_->hasIndex());
-
-    value_->setIndexValue(ind, value);
-  }
-
-  void print(std::ostream &os) const override {
-    os << name_ << " = " << *value_;
-  }
-
- private:
-  std::string name_;
-  CJValueP    value_;
-};
-
-typedef std::shared_ptr<CJVariable> CJVariableP;
 
 //------
 
@@ -1746,7 +1802,7 @@ class CJDictionaryRef : public CJLValue {
 
   CJValue *dup(CJavaScript *js) const override { return new CJDictionaryRef(js, dict_, name_); }
 
-  CJValueP value();
+  CJValueP value() const;
 
   void setValue(CJValueP value);
 
@@ -1790,6 +1846,13 @@ class CJObject : public CJValue {
 
   virtual int length() const { return 0; }
 
+  virtual CJValueP getNameValue(CJavaScript *, const std::string &) {
+    return CJValueP();
+  }
+
+  virtual void setNameValue(CJavaScript *, const std::string &, CJValueP) {
+  }
+
   virtual CJValueP execNameFn(CJavaScript *, const std::string &, const Values &) {
     return CJValueP();
   }
@@ -1799,6 +1862,37 @@ class CJObject : public CJValue {
 };
 
 typedef std::shared_ptr<CJObject> CJObjectP;
+
+//------
+
+class CJObjectValue : public CJLValue {
+ public:
+  typedef std::vector<CJValueP> Values;
+
+ public:
+  CJObjectValue(CJavaScript *js, CJObjectP obj, const std::string &name);
+
+  CJValue *dup(CJavaScript *js) const override { return new CJObjectValue(js, obj_, name_); }
+
+  CJValueP value() const;
+
+  void setValue(CJValueP value);
+
+  std::string toString() const override { return value()->toString(); }
+
+  double toReal() const override { return value()->toReal(); }
+
+  bool toBoolean() const override { return value()->toBoolean(); }
+
+  void print(std::ostream &os) const override {
+    os << *obj_ << " :" << name_;
+  }
+
+ private:
+  CJavaScript* js_ { 0 };
+  CJObjectP    obj_;
+  std::string  name_;
+};
 
 //------
 
@@ -1825,7 +1919,7 @@ class CJDocumentObject : public CJObject {
 
   CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values);
 
-  void print(std::ostream &os) const { os << "document"; }
+  void print(std::ostream &os) const override { os << "document"; }
 
  private:
   CJavaScript *js_;
@@ -1856,7 +1950,7 @@ class CJConsoleObject : public CJObject {
 
   CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values);
 
-  void print(std::ostream &os) const { os << "console"; }
+  void print(std::ostream &os) const override { os << "console"; }
 
  private:
   CJavaScript *js_;
@@ -1868,13 +1962,12 @@ class CJScope;
 
 typedef std::shared_ptr<CJScope> CJScopeP;
 
-class CJScope {
+class CJScope : public CJDictionary {
  public:
-  typedef std::vector<CJIdentifier *> Identifiers;
+  CJScope(CJavaScript *js, const std::string &name);
 
- public:
-  CJScope(CJavaScript *js, const std::string &name) :
-   js_(js), name_(name) {
+  CJValue *dup(CJavaScript *js) const override {
+    return new CJScope(js, name_);
   }
 
   const std::string &name() const { return name_; }
@@ -1882,34 +1975,107 @@ class CJScope {
   CJScope *getParent() const { return parent_; }
   void setParent(CJScope *s) { parent_ = s; }
 
-  void addScope   (CJScopeP scope);
-  void removeScope(const std::string &name);
+  void     addScope   (CJScopeP scope);
+  void     removeScope(const std::string &name);
+  CJScopeP lookupScope(const std::string &name);
 
-  void addFunction(CJFunctionP fn);
-  void addVariable(CJVariableP var);
-  void addObject  (CJObjectP   obj);
-
-  CJScopeP    lookupScope   (const std::string &name);
-  CJFunctionP lookupFunction(const std::string &name);
-  CJVariableP lookupVariable(const std::string &name);
-  bool        deleteVariable(const std::string &name);
+  std::vector<std::string> getFunctionNames() const;
+  std::vector<std::string> getVariableNames() const;
 
  private:
-  typedef std::map<std::string, CJScopeP>    Scopes;
-  typedef std::map<std::string, CJFunctionP> Functions;
-  typedef std::map<std::string, CJVariableP> Variables;
-  typedef std::map<std::string, CJObjectP>   Objects;
+  typedef std::map<std::string, CJScopeP> Scopes;
+  typedef std::map<std::string, CJValueP> Properties;
 
   CJavaScript* js_ { 0 };
   std::string  name_;
   CJScope*     parent_ { 0 };
   Scopes       scopes_;
-  Functions    functions_;
-  Variables    variables_;
-  Objects      objects_;
 };
 
-typedef std::shared_ptr<CJScope> CJScopeP;
+//------
+
+class CJDictValue : public CJLValue {
+ public:
+  CJDictValue(CJavaScript *js, CJDictionary *dict, const std::string &name);
+
+  CJValue *dup(CJavaScript *js) const override { return new CJDictValue(js, dict_, name_); }
+
+  std::string toString() const override {
+    CJValueP v = value();
+
+    return (v ? v->toString() : "");
+  }
+
+  double toReal() const override {
+    CJValueP v = value();
+
+    return (v ? v->toReal() : 0.0);
+  }
+
+  bool toBoolean() const override {
+    CJValueP v = value();
+
+    return (v ? v->toBoolean() : false);
+  }
+
+  CJValueP value() const { return dict_->indexValue(name_); }
+
+  void setValue(CJValueP value) { return dict_->setProperty(js_, name_, value); }
+
+  void print(std::ostream &os) const {
+    CJValueP v = value();
+
+    if (v)
+      v->print(os);
+  }
+
+ private:
+  CJavaScript*  js_;
+  CJDictionary* dict_;
+  std::string   name_;
+};
+
+//------
+
+class CJScopeValue : public CJLValue {
+ public:
+  CJScopeValue(CJavaScript *js, CJScope *scope, const std::string &name);
+
+  CJValue *dup(CJavaScript *js) const override { return new CJScopeValue(js, scope_, name_); }
+
+  std::string toString() const override {
+    CJValueP v = value();
+
+    return (v ? v->toString() : "");
+  }
+
+  double toReal() const override {
+    CJValueP v = value();
+
+    return (v ? v->toReal() : 0.0);
+  }
+
+  bool toBoolean() const override {
+    CJValueP v = value();
+
+    return (v ? v->toBoolean() : false);
+  }
+
+  CJValueP value() const { return scope_->lookupProperty(name_); }
+
+  void setValue(CJValueP value) { return scope_->setProperty(name_, value); }
+
+  void print(std::ostream &os) const {
+    CJValueP v = value();
+
+    if (v)
+      v->print(os);
+  }
+
+ private:
+  CJScope*    scope_;
+  std::string name_;
+};
 
 //------
 
@@ -2054,7 +2220,6 @@ class CJavaScript {
   CJObjectTypeP arrayType    () const { return arrayType_    ; }
   CJObjectTypeP dictType     () const { return dictType_     ; }
   CJObjectTypeP funcType     () const { return funcType_     ; }
-  CJObjectTypeP varType      () const { return varType_      ; }
   CJObjectTypeP documentType () const { return documentType_ ; }
   CJObjectTypeP consoleType  () const { return consoleType_  ; }
 
@@ -2063,12 +2228,9 @@ class CJavaScript {
 
   CJScopeP currentScope() const { return scope_; }
 
-  CJVariableP createVariable(const Identifiers &identifiers);
-  CJVariableP createVariable(const std::string &name);
-  CJVariableP createVariable(const std::string &name, CJValueP value);
+  void addFunction(const std::string &name, CJValueP fn);
 
-  void addFunction(CJFunctionP fn);
-  void addVariable(CJVariableP var);
+  void setProperty(const std::string &name, CJValueP value);
 
   CJValueP lookupValue(const Identifiers &identifiers);
   CJValueP lookupValue(CJScope *scope, const Identifiers &identifiers);
@@ -2078,23 +2240,19 @@ class CJavaScript {
   CJLValueP lookupLValue(CJScope *scope, const Identifiers &identifiers);
   CJLValueP lookupLValue(CJValueP value, const Identifiers &identifiers);
 
-  CJFunctionP lookupFunction(const Identifiers &identifiers);
-  CJFunctionP lookupFunction(CJScope *scope, const Identifiers &identifiers);
+  CJValueP lookupFunction(const Identifiers &identifiers);
+  CJValueP lookupFunction(CJScope *scope, const Identifiers &identifiers);
 
-  CJVariableP lookupVariable(const Identifiers &identifiers);
-  CJVariableP lookupVariable(CJScope *scope, const Identifiers &identifiers);
+  CJLValueP lookupProperty(const Identifiers &identifiers, bool create=false);
+  CJLValueP lookupProperty(CJScope *scope, const Identifiers &identifiers, bool create=false);
 
-  bool deleteVariable(const Identifiers &identifiers);
-  bool deleteVariable(CJScope *scope, const Identifiers &identifiers);
-
-  CJValueP variableProperty(const Identifiers &identifiers);
+  bool deleteProperty(const Identifiers &identifiers);
+  bool deleteProperty(CJScope *scope, const Identifiers &identifiers);
 
   FunctionValuePair variableFunction(const Identifiers &identifiers);
   FunctionValuePair variableFunction(CJScope *scope, const Identifiers &identifiers);
 
-  CJValueP valueProperty(CJValueP value, const std::string &name);
-
-  CJVariableP setVariable(const Identifiers &identifiers, CJValueP value);
+  CJValueP setVariable(const Identifiers &identifiers, CJValueP value);
 
   void addTypeObject(CJToken::Type type, CJObjectTypeP obj);
 
@@ -2103,6 +2261,11 @@ class CJavaScript {
   CJFunctionP getTypeFunction(CJObjectTypeP type, const std::string &name) const;
 
   CJExecBlockP getCurrentBlock() const { return block_; }
+
+  std::vector<std::string> getFunctionNames() const;
+  std::vector<std::string> getVariableNames() const;
+
+  //---
 
   void startBlock(CJExecBlockP block);
   CJExecBlockP endBlock();
@@ -2161,7 +2324,7 @@ class CJavaScript {
 
   void readIdentifier(CStrParse &parse);
   void readNumber(CStrParse &parse);
-  void readOperator(CStrParse &parse);
+  void readOperator(CStrParse &parse, bool allowUnary);
   void readDoubleString(CStrParse &parse);
   void readSingleString(CStrParse &parse);
 
@@ -2174,9 +2337,11 @@ class CJavaScript {
   CJExecIdentifiers*    interpIdentfiers();
   CJExecBlock*          interpBlock(CJExecBlock::Type type);
   CJExecFor*            interpFor();
+  bool                  isInterpForIn();
   CJExecQuestion*       interpQuestion(CJExecExpression *bexpr);
   CJExecIf*             interpIf();
   CJExecWhile*          interpWhile();
+  CJExecSwitch*         interpSwitch();
   CJExecTry*            interpTry();
   CJExecVar*            interpVar();
   CJArray *             interpArray();
@@ -2185,7 +2350,7 @@ class CJavaScript {
   CJValue*              interpNew();
   CJExecDelete*         interpDelete();
   CJExecReturn*         interpReturn();
-  CJFunctionP           interpUserFunction(bool named);
+  CJUserFunction*       interpUserFunction(bool named);
   CJExecFunction*       interpFunction();
 
   bool isOperator(CJTokenP token, CJOperator::Type opType) const;
@@ -2213,7 +2378,6 @@ class CJavaScript {
   CJObjectTypeP arrayType_;
   CJObjectTypeP dictType_;
   CJObjectTypeP funcType_;
-  CJObjectTypeP varType_;
   CJObjectTypeP documentType_;
   CJObjectTypeP consoleType_;
   CJScopeP      scope_;

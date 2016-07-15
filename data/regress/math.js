@@ -9,6 +9,8 @@ console.log(Math.SQRT2);
 console.log(Math.cos(pi));
 console.log(Math.sin(pi));
 console.log(Math.tan(pi));
+console.log(-Math.sin(pi));
+console.log(Math.sin(-pi));
 
 console.log(Math.abs(-5.4));
 
