@@ -1,3 +1,1 @@
-{ name: { first: 'Mel', last: 'Smith' },
-  age: 33,
-  hobbies: [ 'chess', 'jogging' ] }
+{ age: 33, hobbies: [ 'chess', 'jogging' ], name: { first: 'Mel', last: 'Smith' } }
