@@ -16,7 +16,61 @@ dirs:
 	@if [ ! -e ../lib ]; then mkdir ../lib; fi
 
 SRC = \
+CJArray.cpp \
+CJArrayFunction.cpp \
 CJavaScript.cpp \
+CJBooleanFunction.cpp \
+CJConsole.cpp \
+CJDebug.cpp \
+CJDictionary.cpp \
+CJDictionaryRef.cpp \
+CJDictionaryValue.cpp \
+CJDocument.cpp \
+CJExecArray.cpp \
+CJExecAssignExpression.cpp \
+CJExecBlock.cpp \
+CJExecBreak.cpp \
+CJExecContinue.cpp \
+CJExecDelete.cpp \
+CJExecDictionary.cpp \
+CJExecExpression.cpp \
+CJExecFor.cpp \
+CJExecFunction.cpp \
+CJExecIdentifiers.cpp \
+CJExecIf.cpp \
+CJExecIncrDecrExpression.cpp \
+CJExecIndexExpression.cpp \
+CJExecNew.cpp \
+CJExecQuestion.cpp \
+CJExecReturn.cpp \
+CJExecSwitch.cpp \
+CJExecThrow.cpp \
+CJExecTry.cpp \
+CJExecVar.cpp \
+CJExecWhile.cpp \
+CJExecWith.cpp \
+CJFalse.cpp \
+CJFunction.cpp \
+CJKeyword.cpp \
+CJNameSpace.cpp \
+CJNull.cpp \
+CJNumber.cpp \
+CJNumberFunction.cpp \
+CJObject.cpp \
+CJObjectFunction.cpp \
+CJObjectType.cpp \
+CJObjectValue.cpp \
+CJOperator.cpp \
+CJRealFunction.cpp \
+CJString.cpp \
+CJStringFunction.cpp \
+CJTrue.cpp \
+CJTypeFunction.cpp \
+CJTypeValue.cpp \
+CJUndefined.cpp \
+CJUserFunction.cpp \
+CJUserObject.cpp \
+CJValue.cpp \
 
 OBJS = $(patsubst %.cpp,$(OBJ_DIR)/%.o,$(SRC))
 

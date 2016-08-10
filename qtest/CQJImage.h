@@ -40,6 +40,7 @@ class CQJImage : public CQJObject {
   const Repeat &repeat() const { return repeat_; }
   void setRepeat(const Repeat &v) { repeat_ = v; }
 
+  CJValueP getProperty(const std::string &name) const;
   void setProperty(const std::string &name, CJValueP value);
 
   CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values);

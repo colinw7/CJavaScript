@@ -27,6 +27,22 @@ CQJImage(CQJavaScript *qjs) :
   setStringProperty(js, "onLoad", "");
 }
 
+CJValueP
+CQJImage::
+getProperty(const std::string &name) const
+{
+  CJavaScript *js = js_->js();
+
+  if      (name == "width") {
+    return js->createNumberValue(long(qimage_.width()));
+  }
+  else if (name == "height") {
+    return js->createNumberValue(long(qimage_.height()));
+  }
+  else
+    return CQJObject::getProperty(name);
+}
+
 void
 CQJImage::
 setProperty(const std::string &name, CJValueP value)

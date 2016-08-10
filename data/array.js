@@ -1,6 +1,15 @@
-var scaleChoice = 1; 
-var scaleFactor = new Array( 1.25, 1.5, 1.75 );
+function setArray() {
+  a=1;
+  b=2;
+  c=3;
 
-console.log(scaleFactor[0]);
-console.log(scaleFactor[1]);
-console.log(scaleFactor[2]);
+  d = [ a, b, c ];
+}
+
+d = [];
+
+setArray();
+
+console.log(d);
+console.log(d.length);
+console.log(d[0]);

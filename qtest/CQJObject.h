@@ -6,12 +6,19 @@
 
 class CQJavaScript;
 
-class CQJObject : public QObject, public CJObject, public std::enable_shared_from_this<CQJObject> {
+class CQJObject : public QObject, public CJObject {
   Q_OBJECT
+
+ public:
+  typedef std::vector<CJValueP>           EventArgs;
+  typedef std::pair<std::string,CJValueP> NameValue;
+  typedef std::vector<NameValue>          NameValues;
 
  public:
   CQJObject(CQJavaScript *js, const CJObjectTypeP &type);
  ~CQJObject();
+
+  CQJavaScript *js() const { return js_; }
 
   CJValue *dup(CJavaScript *) const override { return new CQJObject(js_, type()); }
 
@@ -26,7 +33,8 @@ class CQJObject : public QObject, public CJObject, public std::enable_shared_fro
 
   CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values);
 
-  void callEventListener(const std::string &name);
+  void callEventListener(const std::string &name, const EventArgs &args=EventArgs(),
+                         const NameValues &nameValues=NameValues());
 
   void print(std::ostream &os) const override { os << "object"; }
 

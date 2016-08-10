@@ -1,10 +1,9 @@
-a = 3;
-b = 4;
+a = 2;
 
-if (a == 4)
-  b = b + 1;
-else
-  a = a + 1;
-
-console.log(a);
-console.log(b);
+if (a == 1) {
+  console.log(a);
+} else if (a == 2) {
+  console.log(a);
+} else if (a == 3) {
+  console.log(a);
+}

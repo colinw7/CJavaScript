@@ -20,16 +20,25 @@ CQJCanvas.cpp \
 CQJDocument.cpp \
 CQJImage.cpp \
 CQJObject.cpp \
+CQJSCanvas.cpp \
 CQJWindow.cpp \
 \
 CQHistoryLineEdit.cpp \
 
 HEADERS += \
 CQJavaScript.h \
+CQJCanvasContext2D.h \
+CQJCanvasFontMetrics.h \
 CQJCanvas.h \
+CQJCanvasImageDataArray.h \
+CQJCanvasImageData.h \
+CQJCanvasLinearGradient.h \
+CQJCanvasPattern.h \
+CQJCanvasRadialGradient.h \
 CQJDocument.h \
 CQJImage.h \
 CQJObject.h \
+CQJSCanvas.h \
 CQJWindow.h \
 \
 CQHistoryLineEdit.h \
@@ -54,6 +63,8 @@ INCLUDEPATH += \
 ../../CMath/include \
 ../../CStrUtil/include \
 ../../CRGBName/include \
+../../CCSS/include \
+../../CXML/include \
 
 unix:LIBS += \
 -L$$LIB_DIR \
@@ -70,7 +81,6 @@ unix:LIBS += \
 -L../../CStrUtil/lib \
 -L../../CRegExp/lib \
 -L../../CRGBName/lib \
--lCJavaScript -lCQUtil \
--lCReadLine -lCConfig -lCUtil -lCFont -lCImageLib \
+-lCJavaScript -lCQUtil -lCReadLine -lCConfig -lCUtil -lCFont -lCImageLib \
 -lCRGBName -lCFileUtil -lCFile -lCOS -lCStrUtil -lCRegExp \
 -lpng -ljpeg -ltre -lreadline

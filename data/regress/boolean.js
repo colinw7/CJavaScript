@@ -15,4 +15,4 @@ console.log(t.valueOf());
 console.log(f.valueOf());
 
 console.log(Boolean);
-console.log(Boolean.prototype);
+//console.log(Boolean.prototype);

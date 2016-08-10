@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'CQJObject.h'
 **
-** Created by: The Qt Meta Object Compiler version 67 (Qt 5.2.1)
+** Created by: The Qt Meta Object Compiler version 67 (Qt 5.5.1)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
@@ -12,7 +12,7 @@
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'CQJObject.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 67
-#error "This file was generated using the moc from 5.2.1. It"
+#error "This file was generated using the moc from 5.5.1. It"
 #error "cannot be used with the include files from this version of Qt."
 #error "(The moc has changed too much.)"
 #endif
@@ -20,18 +20,19 @@
 QT_BEGIN_MOC_NAMESPACE
 struct qt_meta_stringdata_CQJObject_t {
     QByteArrayData data[1];
-    char stringdata[11];
+    char stringdata0[10];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
-    offsetof(qt_meta_stringdata_CQJObject_t, stringdata) + ofs \
-        - idx * sizeof(QByteArrayData) \
+    qptrdiff(offsetof(qt_meta_stringdata_CQJObject_t, stringdata0) + ofs \
+        - idx * sizeof(QByteArrayData)) \
     )
 static const qt_meta_stringdata_CQJObject_t qt_meta_stringdata_CQJObject = {
     {
-QT_MOC_LITERAL(0, 0, 9)
+QT_MOC_LITERAL(0, 0, 9) // "CQJObject"
+
     },
-    "CQJObject\0"
+    "CQJObject"
 };
 #undef QT_MOC_LITERAL
 
@@ -61,7 +62,7 @@ void CQJObject::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, v
 
 const QMetaObject CQJObject::staticMetaObject = {
     { &QObject::staticMetaObject, qt_meta_stringdata_CQJObject.data,
-      qt_meta_data_CQJObject,  qt_static_metacall, 0, 0}
+      qt_meta_data_CQJObject,  qt_static_metacall, Q_NULLPTR, Q_NULLPTR}
 };
 
 
@@ -72,13 +73,11 @@ const QMetaObject *CQJObject::metaObject() const
 
 void *CQJObject::qt_metacast(const char *_clname)
 {
-    if (!_clname) return 0;
-    if (!strcmp(_clname, qt_meta_stringdata_CQJObject.stringdata))
+    if (!_clname) return Q_NULLPTR;
+    if (!strcmp(_clname, qt_meta_stringdata_CQJObject.stringdata0))
         return static_cast<void*>(const_cast< CQJObject*>(this));
     if (!strcmp(_clname, "CJObject"))
         return static_cast< CJObject*>(const_cast< CQJObject*>(this));
-    if (!strcmp(_clname, "std::enable_shared_from_this<CQJObject>"))
-        return static_cast< std::enable_shared_from_this<CQJObject>*>(const_cast< CQJObject*>(this));
     return QObject::qt_metacast(_clname);
 }
 

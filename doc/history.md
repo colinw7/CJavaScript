@@ -6,3 +6,8 @@
  . Improve scope lookup
  . Add width, throw, while, ...
  . Improve regression tests and coverage
+## 8/7/2016
+ . Improve chained scope lookup
+ . Improve regression tests and coverage
+ . Code cleanup, separate files per class
+ . More canvas function support

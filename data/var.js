@@ -1,12 +1,2 @@
-var i;
-var sum;
-console.log(i);
-console.log(sum);
-
-var i, sum;
-console.log(i);
-console.log(sum);
-
-var i = 2;
-console.log(i);
-console.log(sum);
+var a = 1, b = 2, c = 3, d = 4;
+console.log(a,b,c,d);

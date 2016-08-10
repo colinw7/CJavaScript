@@ -1,8 +1,10 @@
 #include <CQJCanvas.h>
+#include <CQJSCanvas.h>
 #include <CQJavaScript.h>
 #include <CJavaScript.h>
 #include <CQJImage.h>
 #include <CStrParse.h>
+#include <iostream>
 
 namespace {
   QColor nameToColor(const std::string &name) {
@@ -75,7 +77,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
 CQJCanvas::
 CQJCanvas(CQJavaScript *qjs) :
- CJObject(qjs->jsCanvasType()), js_(qjs)
+ CQJObject(qjs, qjs->jsCanvasType())
 {
   CJavaScript *js = qjs->js();
 
@@ -96,7 +98,7 @@ updateSize()
 
 CJValueP
 CQJCanvas::
-execNameFn(CJavaScript *, const std::string &name, const Values &values)
+execNameFn(CJavaScript *js, const std::string &name, const Values &values)
 {
   if (name == "getContext") {
     if (values.size() == 2) {
@@ -109,10 +111,27 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
     return CJValueP();
   }
   else
-    return CJValueP();
+    return CQJObject::execNameFn(js, name, values);
 }
 
 //------
+
+CJObjectTypeP CQJCanvasContext2DType::type_;
+
+CJObjectTypeP
+CQJCanvasContext2DType::
+instance(CQJavaScript *qjs)
+{
+  if (! type_) {
+    type_ = CJObjectTypeP(new CQJCanvasContext2DType());
+
+    CJavaScript *js = qjs->js();
+
+    js->addObjectType("CanvasContext2D", type_);
+  }
+
+  return type_;
+}
 
 CQJCanvasContext2DType::
 CQJCanvasContext2DType() :
@@ -122,7 +141,7 @@ CQJCanvasContext2DType() :
 
 CQJCanvasContext2D::
 CQJCanvasContext2D(CQJavaScript *qjs) :
- CJObject(qjs->jsCanvasContext2DType()), js_(qjs)
+ CJObject(CQJCanvasContext2DType::instance(qjs)), js_(qjs)
 {
   CJavaScript *js = qjs->js();
 
@@ -152,6 +171,10 @@ CQJCanvasContext2D(CQJavaScript *qjs) :
   type_->addFunction(js, "createLinearGradient");
   type_->addFunction(js, "createRadialGradient");
   type_->addFunction(js, "createPattern");
+
+  type_->addFunction(js, "createImageData");
+  type_->addFunction(js, "getImageData");
+  type_->addFunction(js, "putImageData");
 
   setStringProperty(js, "fillStyle"  , "black");
   setStringProperty(js, "strokeStyle", "black");
@@ -186,6 +209,10 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
       double h = (values[4] ? values[4]->toReal() : 0);
 
       js_->canvas()->fillRect(x, y, w, h);
+
+      js_->canvas()->update();
+
+      return CJValueP();
     }
   }
   else if (name == "strokeRect") {
@@ -205,6 +232,10 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
       js_->canvas()->closePath();
 
       js_->canvas()->stroke();
+
+      js_->canvas()->update();
+
+      return CJValueP();
     }
   }
   else if (name == "clearRect") {
@@ -215,6 +246,10 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
       double h = (values[4] ? values[4]->toReal() : 0.0);
 
       js_->canvas()->clearRect(x, y, w, h);
+
+      js_->canvas()->update();
+
+      return CJValueP();
     }
   }
   else if (name == "measureText") {
@@ -231,6 +266,10 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
       double      y    = (values[3] ? values[3]->toReal() : 0.0);
 
       js_->canvas()->fillText(x, y, text);
+
+      js_->canvas()->update();
+
+      return CJValueP();
     }
   }
   else if (name == "strokeText") {
@@ -240,27 +279,75 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
       double      y    = (values[3] ? values[3]->toReal() : 0.0);
 
       js_->canvas()->strokeText(x, y, text);
+
+      js_->canvas()->update();
+
+      return CJValueP();
     }
   }
   else if (name == "drawImage") {
-    if (values.size() == 4) {
+    // void ctx.drawImage(image, dx, dy);
+    // void ctx.drawImage(image, dx, dy, dWidth, dHeight);
+    // void ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
+    if (values.size() >= 4) {
       CJValueP imageVal = values[1];
-      double   x        = (values[2] ? values[2]->toReal() : 0.0);
-      double   y        = (values[3] ? values[3]->toReal() : 0.0);
+
+      double sx = 0.0, sy = 0.0, sWidth = 0.0, sHeight = 0.0;
+      double dx = 0.0, dy = 0.0, dWidth = 0.0, dHeight = 0.0;
+
+      if      (values.size() == 4 || values.size() == 6) {
+        dx = (values[2] ? values[2]->toReal() : 0.0);
+        dy = (values[3] ? values[3]->toReal() : 0.0);
+
+        if (values.size() == 6) {
+          dWidth  = (values[4] ? values[4]->toReal() : 0.0);
+          dHeight = (values[5] ? values[5]->toReal() : 0.0);
+        }
+      }
+      else if (values.size() == 10) {
+        sx      = (values[2] ? values[2]->toReal() : 0.0);
+        sy      = (values[3] ? values[3]->toReal() : 0.0);
+        sWidth  = (values[4] ? values[4]->toReal() : 0.0);
+        sHeight = (values[5] ? values[5]->toReal() : 0.0);
+        dx      = (values[6] ? values[6]->toReal() : 0.0);
+        dy      = (values[7] ? values[7]->toReal() : 0.0);
+        dWidth  = (values[8] ? values[8]->toReal() : 0.0);
+        dHeight = (values[9] ? values[9]->toReal() : 0.0);
+      }
+
+      CQJImage *image = 0;
 
       if (imageVal && imageVal->type() == CJValue::Type::Object) {
         CJObjectP imageObj = std::static_pointer_cast<CJObject>(imageVal);
 
-        if      (imageObj->type()->name() == "Image") {
-          CQJImage *image = imageObj->cast<CQJImage>();
-
-          js_->canvas()->drawImage(x, y, image->qimage());
+        if (imageObj->type()->name() == "Image") {
+          image = imageObj->cast<CQJImage>();
         }
       }
+
+      if (image) {
+        if      (values.size() == 4)
+          js_->canvas()->drawImage(image->qimage(), dx, dy);
+        else if (values.size() == 6)
+          js_->canvas()->drawImage(image->qimage(), dx, dy, dWidth, dHeight);
+        else if (values.size() == 10)
+          js_->canvas()->drawImage(image->qimage(), sx, sy, sWidth, sHeight,
+                                   dx, dy, dWidth, dHeight);
+        else
+          std::cerr << "Invalid number of args for '" << name << "'" << std::endl;
+      }
+      else
+        std::cerr << "Invalid image for '" << name << "'" << std::endl;
+
+      js_->canvas()->update();
+
+      return CJValueP();
     }
   }
   else if (name == "beginPath") {
     js_->canvas()->beginPath();
+
+    return CJValueP();
   }
   else if (name == "moveTo") {
     if (values.size() == 3) {
@@ -268,6 +355,8 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
       double y = values[2]->toReal();
 
       js_->canvas()->moveTo(x, y);
+
+      return CJValueP();
     }
   }
   else if (name == "lineTo") {
@@ -276,38 +365,56 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
       double y = values[2]->toReal();
 
       js_->canvas()->lineTo(x, y);
+
+      return CJValueP();
     }
   }
   else if (name == "arc") {
     if (values.size() == 7) {
-      double x       = values[1]->toReal();
-      double y       = values[2]->toReal();
-      double r       = values[3]->toReal();
-      double a1      = values[4]->toReal();
-      double a2      = values[5]->toReal();
-      double counter = values[6]->toBoolean();
+      double x       = (values[1] ? values[1]->toReal() : 0);
+      double y       = (values[2] ? values[2]->toReal() : 0);
+      double r       = (values[3] ? values[3]->toReal() : 0);
+      double a1      = (values[4] ? values[4]->toReal() : 0);
+      double a2      = (values[5] ? values[5]->toReal() : 0);
+      bool   counter = (values[6] ? values[6]->toBoolean() : false);
 
       js_->canvas()->arc(x, y, r, a1, a2, counter);
+
+      return CJValueP();
     }
   }
   else if (name == "closePath") {
     js_->canvas()->closePath();
+
+    return CJValueP();
   }
   else if (name == "stroke") {
     initStroke();
 
     js_->canvas()->stroke();
+
+    js_->canvas()->update();
+
+    return CJValueP();
   }
   else if (name == "fill") {
     initFill();
 
     js_->canvas()->fill();
+
+    js_->canvas()->update();
+
+    return CJValueP();
   }
   else if (name == "save") {
     js_->canvas()->save();
+
+    return CJValueP();
   }
   else if (name == "restore") {
     js_->canvas()->restore();
+
+    return CJValueP();
   }
   else if (name == "rect") {
     if (values.size() == 5) {
@@ -317,10 +424,18 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
       double h = values[4]->toReal();
 
       js_->canvas()->rect(x, y, w, h);
+
+      js_->canvas()->update();
+
+      return CJValueP();
     }
   }
   else if (name == "clip") {
     js_->canvas()->clip();
+
+    js_->canvas()->update();
+
+    return CJValueP();
   }
   else if (name == "setTransform") {
     if (values.size() == 7) {
@@ -332,6 +447,8 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
       double f = values[6]->toReal();
 
       js_->canvas()->setTransform(a, b, c, d, e, f);
+
+      return CJValueP();
     }
   }
   else if (name == "translate") {
@@ -340,6 +457,8 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
       double dy = values[2]->toReal();
 
       js_->canvas()->translate(dx, dy);
+
+      return CJValueP();
     }
   }
   else if (name == "scale") {
@@ -348,6 +467,8 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
       double ys = values[2]->toReal();
 
       js_->canvas()->scale(xs, ys);
+
+      return CJValueP();
     }
   }
   else if (name == "rotate") {
@@ -355,6 +476,8 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
       double a = values[1]->toReal();
 
       js_->canvas()->rotate(a);
+
+      return CJValueP();
     }
   }
   else if (name == "createLinearGradient") {
@@ -404,8 +527,47 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
       }
     }
   }
+  else if (name == "createImageData") {
+    if (values.size() == 3) {
+      double w = values[1]->toReal();
+      double h = values[2]->toReal();
 
-  js_->canvas()->update();
+      return CJValueP(new CQJCanvasImageData(js_, int(w), int(h)));
+    }
+  }
+  else if (name == "getImageData") {
+    if (values.size() == 5) {
+      double x = values[1]->toReal();
+      double y = values[2]->toReal();
+      double w = values[3]->toReal();
+      double h = values[4]->toReal();
+
+      QImage image = js_->canvas()->getImageData(x, y, w, h);
+
+      return CJValueP(new CQJCanvasImageData(js_, image));
+    }
+  }
+  else if (name == "putImageData") {
+    if (values.size() == 4) {
+      CJValueP imageVal = values[1];
+      double   x        = values[2]->toReal();
+      double   y        = values[3]->toReal();
+
+      if (imageVal->type() == CJValue::Type::Object) {
+        CJObjectP imageObj = std::static_pointer_cast<CJObject>(imageVal);
+
+        if      (imageObj->type()->name() == "Image") {
+          CQJImage *image = imageObj->cast<CQJImage>();
+
+          js_->canvas()->putImageData(image->qimage(), x, y);
+        }
+      }
+
+      return CJValueP();
+    }
+  }
+
+  std::cerr << "CQJCanvasContext2D function '" << name << "' failed" << std::endl;
 
   return CJValueP();
 }
@@ -502,6 +664,18 @@ initStroke()
 
 //------
 
+CJObjectTypeP CQJCanvasLinearGradientType::type_;
+
+CJObjectTypeP
+CQJCanvasLinearGradientType::
+instance()
+{
+  if (! type_)
+    type_ = CJObjectTypeP(new CQJCanvasLinearGradientType());
+
+  return type_;
+}
+
 CQJCanvasLinearGradientType::
 CQJCanvasLinearGradientType() :
  CJObjectType(CJToken::Type::Object, "CanvasLinearGradient")
@@ -510,7 +684,7 @@ CQJCanvasLinearGradientType() :
 
 CQJCanvasLinearGradient::
 CQJCanvasLinearGradient(CQJavaScript *qjs, double x1, double y1, double x2, double y2) :
- CJObject(qjs->jsCanvasLinearGradientType()), js_(qjs)
+ CJObject(CQJCanvasLinearGradientType::instance()), js_(qjs)
 {
   CJavaScript *js = qjs->js();
 
@@ -539,6 +713,18 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
 
 //------
 
+CJObjectTypeP CQJCanvasRadialGradientType::type_;
+
+CJObjectTypeP
+CQJCanvasRadialGradientType::
+instance()
+{
+  if (! type_)
+    type_ = CJObjectTypeP(new CQJCanvasRadialGradientType());
+
+  return type_;
+}
+
 CQJCanvasRadialGradientType::
 CQJCanvasRadialGradientType() :
  CJObjectType(CJToken::Type::Object, "CanvasRadialGradient")
@@ -548,7 +734,7 @@ CQJCanvasRadialGradientType() :
 CQJCanvasRadialGradient::
 CQJCanvasRadialGradient(CQJavaScript *qjs, double x1, double y1, double r1,
                         double x2, double y2, double r2) :
- CJObject(qjs->jsCanvasRadialGradientType()), js_(qjs)
+ CJObject(CQJCanvasRadialGradientType::instance()), js_(qjs)
 {
   CJavaScript *js = qjs->js();
 
@@ -577,6 +763,18 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
 
 //------
 
+CJObjectTypeP CQJCanvasPatternType::type_;
+
+CJObjectTypeP
+CQJCanvasPatternType::
+instance()
+{
+  if (! type_)
+    type_ = CJObjectTypeP(new CQJCanvasPatternType());
+
+  return type_;
+}
+
 CQJCanvasPatternType::
 CQJCanvasPatternType() :
  CJObjectType(CJToken::Type::Object, "CanvasPattern")
@@ -585,7 +783,7 @@ CQJCanvasPatternType() :
 
 CQJCanvasPattern::
 CQJCanvasPattern(CQJavaScript *qjs, const QImage &qimage, const Repeat &repeat) :
- CJObject(qjs->jsCanvasPatternType()), js_(qjs), qimage_(qimage), repeat_(repeat)
+ CJObject(CQJCanvasPatternType::instance()), js_(qjs), qimage_(qimage), repeat_(repeat)
 {
 }
 
@@ -598,6 +796,184 @@ execNameFn(CJavaScript *, const std::string &, const Values &)
 
 //------
 
+CJObjectTypeP CQJCanvasImageDataType::type_;
+
+CJObjectTypeP
+CQJCanvasImageDataType::
+instance()
+{
+  if (! type_)
+    type_ = CJObjectTypeP(new CQJCanvasImageDataType());
+
+  return type_;
+}
+
+CQJCanvasImageDataType::
+CQJCanvasImageDataType() :
+ CJObjectType(CJToken::Type::Object, "CanvasImageData")
+{
+}
+
+CQJCanvasImageData::
+CQJCanvasImageData(CQJavaScript *qjs, int w, int h) :
+ CQJObject(qjs, CQJCanvasImageDataType::instance())
+{
+  qimage_ = QImage(w, h, QImage::Format_ARGB32);
+
+  CJavaScript *js = js_->js();
+
+  setRealProperty(js, "width" , w);
+  setRealProperty(js, "height", h);
+}
+
+CQJCanvasImageData::
+CQJCanvasImageData(CQJavaScript *qjs, const QImage &image) :
+ CQJObject(qjs, CQJCanvasImageDataType::instance()), qimage_(image)
+{
+  CJavaScript *js = js_->js();
+
+  setRealProperty(js, "width" , image.width ());
+  setRealProperty(js, "height", image.height());
+}
+
+CJValueP
+CQJCanvasImageData::
+getProperty(const std::string &key) const
+{
+  if (key == "data") {
+    CQJCanvasImageData *th = const_cast<CQJCanvasImageData *>(this);
+
+    CQJCanvasImageDataP data =
+      std::static_pointer_cast<CQJCanvasImageData>(th->shared_from_this());
+
+    return CJValueP(new CQJCanvasImageDataArray(js(), data));
+  }
+  else
+    return CJObject::getProperty(key);
+}
+
+CJValueP
+CQJCanvasImageData::
+execNameFn(CJavaScript *, const std::string &, const Values &)
+{
+  return CJValueP();
+}
+
+//------
+
+CJObjectTypeP CQJCanvasImageDataArrayType::type_;
+
+CJObjectTypeP
+CQJCanvasImageDataArrayType::
+instance()
+{
+  if (! type_)
+    type_ = CJObjectTypeP(new CQJCanvasImageDataArrayType());
+
+  return type_;
+}
+
+CQJCanvasImageDataArrayType::
+CQJCanvasImageDataArrayType() :
+ CJObjectType(CJToken::Type::Object, "CanvasImageDataArray")
+{
+}
+
+CQJCanvasImageDataArray::
+CQJCanvasImageDataArray(CQJavaScript *qjs, CQJCanvasImageDataP data) :
+ CQJObject(qjs, CQJCanvasImageDataArrayType::instance()), data_(data)
+{
+  int w = data_->qimage().width ();
+  int h = data_->qimage().height();
+
+  CJavaScript *js = js_->js();
+
+  setRealProperty(js, "length", 4*w*h);
+}
+
+CJValueP
+CQJCanvasImageDataArray::
+indexValue(int i) const
+{
+  int i1 = i / 4;
+  int i0 = i % 4;
+
+  int w = data_->qimage().width ();
+  int h = data_->qimage().height();
+
+  CJavaScript *js = js_->js();
+
+  if (i1 < 0 || i1 >= w*h)
+    //return CJValueP();
+    return js->createNumberValue(0L);
+
+  int y = i1 / w;
+  int x = i1 % w;
+
+  QRgb rgb = data_->getPixel(x, y);
+
+  long c = 0;
+
+  if      (i0 == 0) c = qRed  (rgb);
+  else if (i0 == 1) c = qGreen(rgb);
+  else if (i0 == 2) c = qBlue (rgb);
+  else if (i0 == 3) c = qAlpha(rgb);
+
+  return js->createNumberValue(c);
+}
+
+void
+CQJCanvasImageDataArray::
+setIndexValue(int i, CJValueP value)
+{
+  int i1 = i / 4;
+  int i0 = i % 4;
+
+  int w = data_->qimage().width ();
+  int h = data_->qimage().height();
+
+  if (i1 < 0 || i1 >= w*h)
+    return;
+
+  int y = i1 / w;
+  int x = i1 % w;
+
+  long c = value->toInteger();
+
+  QRgb rgb = data_->getPixel(x, y);
+
+  QRgb rgb1;
+
+  if      (i0 == 0) rgb1 = qRgba(c        , qGreen(rgb), qBlue(rgb), qAlpha(rgb));
+  else if (i0 == 1) rgb1 = qRgba(qRed(rgb), c          , qBlue(rgb), qAlpha(rgb));
+  else if (i0 == 2) rgb1 = qRgba(qRed(rgb), qGreen(rgb), c         , qAlpha(rgb));
+  else if (i0 == 3) rgb1 = qRgba(qRed(rgb), qGreen(rgb), qBlue(rgb), c          );
+
+  data_->setPixel(x, y, rgb1);
+
+}
+
+CJValueP
+CQJCanvasImageDataArray::
+execNameFn(CJavaScript *, const std::string &, const Values &)
+{
+  return CJValueP();
+}
+
+//------
+
+CJObjectTypeP CQJCanvasFontMetricsType::type_;
+
+CJObjectTypeP
+CQJCanvasFontMetricsType::
+instance()
+{
+  if (! type_)
+    type_ = CJObjectTypeP(new CQJCanvasFontMetricsType());
+
+  return type_;
+}
+
 CQJCanvasFontMetricsType::
 CQJCanvasFontMetricsType() :
  CJObjectType(CJToken::Type::Object, "CanvasFontMetrics")
@@ -606,7 +982,7 @@ CQJCanvasFontMetricsType() :
 
 CQJCanvasFontMetrics::
 CQJCanvasFontMetrics(CQJavaScript *qjs, const QFont &font, const std::string &text) :
- CJObject(qjs->jsCanvasFontMetricsType()), js_(qjs), text_(text), font_(font), fm_(font)
+ CQJObject(qjs, CQJCanvasFontMetricsType::instance()), text_(text), font_(font), fm_(font)
 {
   CJavaScript *js = js_->js();
 

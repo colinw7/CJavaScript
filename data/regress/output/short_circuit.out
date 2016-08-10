@@ -1,12 +1,12 @@
 true
 false
 true
-true
+True () || Run() true
 false
 run
-true
+False() || Run() true
 true
 run
-true
+True () && Run() true
 false
-false
+False() && Run() false

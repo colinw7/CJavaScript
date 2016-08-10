@@ -34,5 +34,8 @@ function operate2(operation, operand1, operand2) {
 
 // Compute the value ("hello" + " " + "world") like this:
 var j = operate2("add", "hello", operate2("add", " ", "world"));
+console.log(j);
+
 // Using the predefined Math.pow() function:
 var k = operate2("pow", 10, 2);
+console.log(k);

@@ -38,7 +38,7 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
 
 void
 CQJObject::
-callEventListener(const std::string &name)
+callEventListener(const std::string &name, const EventArgs &args, const NameValues &nameValues)
 {
   auto p = eventListeners_.find(name);
 
@@ -50,11 +50,21 @@ callEventListener(const std::string &name)
   if (value->type() == CJToken::Type::Function) {
     CJFunctionP fn = std::static_pointer_cast<CJFunction>(value);
 
+    if (fn->type() == CJFunction::Type::User) {
+      CJUserFunctionP userFn = std::static_pointer_cast<CJUserFunction>(value);
+
+      for (auto &nv : nameValues)
+        userFn->setProperty(nv.first, nv.second);
+    }
+
     CJavaScript *js = js_->js();
 
     CJObjectType::Values fnValues;
 
     fnValues.push_back(shared_from_this());
+
+    for (auto &arg : args)
+      fnValues.push_back(arg);
 
     fn->exec(js, fnValues);
   }
