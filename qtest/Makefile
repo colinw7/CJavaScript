@@ -49,7 +49,14 @@ OBJECTS_DIR   = ../obj/
 ####### Files
 
 SOURCES       = CQJavaScript.cpp \
+		CQJCanvasContext2D.cpp \
 		CQJCanvas.cpp \
+		CQJCanvasFontMetrics.cpp \
+		CQJCanvasImageDataArray.cpp \
+		CQJCanvasImageData.cpp \
+		CQJCanvasLinearGradient.cpp \
+		CQJCanvasPattern.cpp \
+		CQJCanvasRadialGradient.cpp \
 		CQJDocument.cpp \
 		CQJImage.cpp \
 		CQJObject.cpp \
@@ -65,7 +72,14 @@ SOURCES       = CQJavaScript.cpp \
 		.moc/moc_CQJWindow.cpp \
 		.moc/moc_CQHistoryLineEdit.cpp
 OBJECTS       = ../obj/CQJavaScript.o \
+		../obj/CQJCanvasContext2D.o \
 		../obj/CQJCanvas.o \
+		../obj/CQJCanvasFontMetrics.o \
+		../obj/CQJCanvasImageDataArray.o \
+		../obj/CQJCanvasImageData.o \
+		../obj/CQJCanvasLinearGradient.o \
+		../obj/CQJCanvasPattern.o \
+		../obj/CQJCanvasRadialGradient.o \
 		../obj/CQJDocument.o \
 		../obj/CQJImage.o \
 		../obj/CQJObject.o \
@@ -153,9 +167,17 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		CQJImage.h \
 		CQJObject.h \
 		CQJSCanvas.h \
+		CQJUtil.h \
 		CQJWindow.h \
 		CQHistoryLineEdit.h CQJavaScript.cpp \
+		CQJCanvasContext2D.cpp \
 		CQJCanvas.cpp \
+		CQJCanvasFontMetrics.cpp \
+		CQJCanvasImageDataArray.cpp \
+		CQJCanvasImageData.cpp \
+		CQJCanvasLinearGradient.cpp \
+		CQJCanvasPattern.cpp \
+		CQJCanvasRadialGradient.cpp \
 		CQJDocument.cpp \
 		CQJImage.cpp \
 		CQJObject.cpp \
@@ -334,8 +356,8 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
-	$(COPY_FILE) --parents CQJavaScript.h CQJCanvasContext2D.h CQJCanvasFontMetrics.h CQJCanvas.h CQJCanvasImageDataArray.h CQJCanvasImageData.h CQJCanvasLinearGradient.h CQJCanvasPattern.h CQJCanvasRadialGradient.h CQJDocument.h CQJImage.h CQJObject.h CQJSCanvas.h CQJWindow.h CQHistoryLineEdit.h $(DISTDIR)/
-	$(COPY_FILE) --parents CQJavaScript.cpp CQJCanvas.cpp CQJDocument.cpp CQJImage.cpp CQJObject.cpp CQJSCanvas.cpp CQJWindow.cpp CQHistoryLineEdit.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents CQJavaScript.h CQJCanvasContext2D.h CQJCanvasFontMetrics.h CQJCanvas.h CQJCanvasImageDataArray.h CQJCanvasImageData.h CQJCanvasLinearGradient.h CQJCanvasPattern.h CQJCanvasRadialGradient.h CQJDocument.h CQJImage.h CQJObject.h CQJSCanvas.h CQJUtil.h CQJWindow.h CQHistoryLineEdit.h $(DISTDIR)/
+	$(COPY_FILE) --parents CQJavaScript.cpp CQJCanvasContext2D.cpp CQJCanvas.cpp CQJCanvasFontMetrics.cpp CQJCanvasImageDataArray.cpp CQJCanvasImageData.cpp CQJCanvasLinearGradient.cpp CQJCanvasPattern.cpp CQJCanvasRadialGradient.cpp CQJDocument.cpp CQJImage.cpp CQJObject.cpp CQJSCanvas.cpp CQJWindow.cpp CQHistoryLineEdit.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -367,7 +389,7 @@ compiler_moc_header_clean:
 		../include/CJKeyword.h \
 		../include/CJNameSpace.h \
 		../include/CJIdentifier.h \
-		../include/CJObjectType.h \
+		../include/CJObj.h \
 		../include/CJValue.h \
 		../include/CJUndefined.h \
 		../include/CJNull.h \
@@ -407,6 +429,7 @@ compiler_moc_header_clean:
 		../include/CJRandFunction.h \
 		../include/CJUserFunction.h \
 		../include/CJTypeFunction.h \
+		../include/CJObjectTypeFunction.h \
 		../include/CJNumberFunction.h \
 		../include/CJStringFunction.h \
 		../include/CJBooleanFunction.h \
@@ -423,15 +446,15 @@ compiler_moc_header_clean:
 		CQJavaScript.h
 	@echo moc CQJavaScript.h && /usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/colinw/git/CJavaScript/qtest -I/home/colinw/git/CJavaScript/qtest -I/home/colinw/git/CJavaScript/include -I/home/colinw/git/CJavaScript/include -I/home/colinw/git/CQApp/include -I/home/colinw/git/CQUtil/include -I/home/colinw/git/CFont/include -I/home/colinw/git/CImageLib/include -I/home/colinw/git/CReadLine/include -I/home/colinw/git/CFileUtil/include -I/home/colinw/git/CFile/include -I/home/colinw/git/COS/include -I/home/colinw/git/CUtil/include -I/home/colinw/git/CMath/include -I/home/colinw/git/CStrUtil/include -I/home/colinw/git/CRGBName/include -I/home/colinw/git/CCSS/include -I/home/colinw/git/CXML/include -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include CQJavaScript.h -o .moc/moc_CQJavaScript.cpp
 
-.moc/moc_CQJCanvasFontMetrics.cpp: ../include/CJObjectType.h \
-		../include/CJNameSpace.h \
-		../include/CJTypes.h \
+.moc/moc_CQJCanvasFontMetrics.cpp: ../include/CJObj.h \
+		../include/CJValue.h \
 		../include/CJToken.h \
+		../include/CJTypes.h \
+		../include/CJNameSpace.h \
 		CQJObject.h \
 		../include/CJavaScript.h \
 		../include/CJKeyword.h \
 		../include/CJIdentifier.h \
-		../include/CJValue.h \
 		../include/CJUndefined.h \
 		../include/CJNull.h \
 		../include/CJTrue.h \
@@ -470,6 +493,7 @@ compiler_moc_header_clean:
 		../include/CJRandFunction.h \
 		../include/CJUserFunction.h \
 		../include/CJTypeFunction.h \
+		../include/CJObjectTypeFunction.h \
 		../include/CJNumberFunction.h \
 		../include/CJStringFunction.h \
 		../include/CJBooleanFunction.h \
@@ -493,7 +517,7 @@ compiler_moc_header_clean:
 		../include/CJKeyword.h \
 		../include/CJNameSpace.h \
 		../include/CJIdentifier.h \
-		../include/CJObjectType.h \
+		../include/CJObj.h \
 		../include/CJValue.h \
 		../include/CJUndefined.h \
 		../include/CJNull.h \
@@ -533,6 +557,7 @@ compiler_moc_header_clean:
 		../include/CJRandFunction.h \
 		../include/CJUserFunction.h \
 		../include/CJTypeFunction.h \
+		../include/CJObjectTypeFunction.h \
 		../include/CJNumberFunction.h \
 		../include/CJStringFunction.h \
 		../include/CJBooleanFunction.h \
@@ -546,25 +571,18 @@ compiler_moc_header_clean:
 		../include/CJUserObject.h \
 		../include/CJDictionaryValue.h \
 		../include/CJTypeObjectFunction.h \
-		CQJCanvasContext2D.h \
-		CQJCanvasLinearGradient.h \
-		CQJCanvasRadialGradient.h \
-		CQJCanvasPattern.h \
-		CQJCanvasImageData.h \
-		CQJCanvasImageDataArray.h \
-		CQJCanvasFontMetrics.h \
 		CQJCanvas.h
 	@echo moc CQJCanvas.h && /usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/colinw/git/CJavaScript/qtest -I/home/colinw/git/CJavaScript/qtest -I/home/colinw/git/CJavaScript/include -I/home/colinw/git/CJavaScript/include -I/home/colinw/git/CQApp/include -I/home/colinw/git/CQUtil/include -I/home/colinw/git/CFont/include -I/home/colinw/git/CImageLib/include -I/home/colinw/git/CReadLine/include -I/home/colinw/git/CFileUtil/include -I/home/colinw/git/CFile/include -I/home/colinw/git/COS/include -I/home/colinw/git/CUtil/include -I/home/colinw/git/CMath/include -I/home/colinw/git/CStrUtil/include -I/home/colinw/git/CRGBName/include -I/home/colinw/git/CCSS/include -I/home/colinw/git/CXML/include -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include CQJCanvas.h -o .moc/moc_CQJCanvas.cpp
 
-.moc/moc_CQJCanvasImageDataArray.cpp: ../include/CJObjectType.h \
-		../include/CJNameSpace.h \
-		../include/CJTypes.h \
+.moc/moc_CQJCanvasImageDataArray.cpp: ../include/CJObj.h \
+		../include/CJValue.h \
 		../include/CJToken.h \
+		../include/CJTypes.h \
+		../include/CJNameSpace.h \
 		CQJObject.h \
 		../include/CJavaScript.h \
 		../include/CJKeyword.h \
 		../include/CJIdentifier.h \
-		../include/CJValue.h \
 		../include/CJUndefined.h \
 		../include/CJNull.h \
 		../include/CJTrue.h \
@@ -603,6 +621,7 @@ compiler_moc_header_clean:
 		../include/CJRandFunction.h \
 		../include/CJUserFunction.h \
 		../include/CJTypeFunction.h \
+		../include/CJObjectTypeFunction.h \
 		../include/CJNumberFunction.h \
 		../include/CJStringFunction.h \
 		../include/CJBooleanFunction.h \
@@ -620,15 +639,15 @@ compiler_moc_header_clean:
 		CQJCanvasImageDataArray.h
 	@echo moc CQJCanvasImageDataArray.h && /usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/colinw/git/CJavaScript/qtest -I/home/colinw/git/CJavaScript/qtest -I/home/colinw/git/CJavaScript/include -I/home/colinw/git/CJavaScript/include -I/home/colinw/git/CQApp/include -I/home/colinw/git/CQUtil/include -I/home/colinw/git/CFont/include -I/home/colinw/git/CImageLib/include -I/home/colinw/git/CReadLine/include -I/home/colinw/git/CFileUtil/include -I/home/colinw/git/CFile/include -I/home/colinw/git/COS/include -I/home/colinw/git/CUtil/include -I/home/colinw/git/CMath/include -I/home/colinw/git/CStrUtil/include -I/home/colinw/git/CRGBName/include -I/home/colinw/git/CCSS/include -I/home/colinw/git/CXML/include -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include CQJCanvasImageDataArray.h -o .moc/moc_CQJCanvasImageDataArray.cpp
 
-.moc/moc_CQJCanvasImageData.cpp: ../include/CJObjectType.h \
-		../include/CJNameSpace.h \
-		../include/CJTypes.h \
+.moc/moc_CQJCanvasImageData.cpp: ../include/CJObj.h \
+		../include/CJValue.h \
 		../include/CJToken.h \
+		../include/CJTypes.h \
+		../include/CJNameSpace.h \
 		CQJObject.h \
 		../include/CJavaScript.h \
 		../include/CJKeyword.h \
 		../include/CJIdentifier.h \
-		../include/CJValue.h \
 		../include/CJUndefined.h \
 		../include/CJNull.h \
 		../include/CJTrue.h \
@@ -667,6 +686,7 @@ compiler_moc_header_clean:
 		../include/CJRandFunction.h \
 		../include/CJUserFunction.h \
 		../include/CJTypeFunction.h \
+		../include/CJObjectTypeFunction.h \
 		../include/CJNumberFunction.h \
 		../include/CJStringFunction.h \
 		../include/CJBooleanFunction.h \
@@ -689,7 +709,7 @@ compiler_moc_header_clean:
 		../include/CJKeyword.h \
 		../include/CJNameSpace.h \
 		../include/CJIdentifier.h \
-		../include/CJObjectType.h \
+		../include/CJObj.h \
 		../include/CJValue.h \
 		../include/CJUndefined.h \
 		../include/CJNull.h \
@@ -729,6 +749,7 @@ compiler_moc_header_clean:
 		../include/CJRandFunction.h \
 		../include/CJUserFunction.h \
 		../include/CJTypeFunction.h \
+		../include/CJObjectTypeFunction.h \
 		../include/CJNumberFunction.h \
 		../include/CJStringFunction.h \
 		../include/CJBooleanFunction.h \
@@ -755,7 +776,7 @@ compiler_moc_header_clean:
 		../include/CJKeyword.h \
 		../include/CJNameSpace.h \
 		../include/CJIdentifier.h \
-		../include/CJObjectType.h \
+		../include/CJObj.h \
 		../include/CJValue.h \
 		../include/CJUndefined.h \
 		../include/CJNull.h \
@@ -795,6 +816,7 @@ compiler_moc_header_clean:
 		../include/CJRandFunction.h \
 		../include/CJUserFunction.h \
 		../include/CJTypeFunction.h \
+		../include/CJObjectTypeFunction.h \
 		../include/CJNumberFunction.h \
 		../include/CJStringFunction.h \
 		../include/CJBooleanFunction.h \
@@ -836,7 +858,7 @@ compiler_clean: compiler_moc_header_clean
 		../include/CJKeyword.h \
 		../include/CJNameSpace.h \
 		../include/CJIdentifier.h \
-		../include/CJObjectType.h \
+		../include/CJObj.h \
 		../include/CJValue.h \
 		../include/CJUndefined.h \
 		../include/CJNull.h \
@@ -876,6 +898,7 @@ compiler_clean: compiler_moc_header_clean
 		../include/CJRandFunction.h \
 		../include/CJUserFunction.h \
 		../include/CJTypeFunction.h \
+		../include/CJObjectTypeFunction.h \
 		../include/CJNumberFunction.h \
 		../include/CJStringFunction.h \
 		../include/CJBooleanFunction.h \
@@ -896,16 +919,84 @@ compiler_clean: compiler_moc_header_clean
 		CQJImage.h \
 		CQJCanvas.h \
 		CQJCanvasContext2D.h \
-		CQJCanvasLinearGradient.h \
-		CQJCanvasRadialGradient.h \
-		CQJCanvasPattern.h \
-		CQJCanvasImageData.h \
-		CQJCanvasImageDataArray.h \
-		CQJCanvasFontMetrics.h \
 		../../CQUtil/include/CQApp.h \
 		CQHistoryLineEdit.h \
 		../../CUtil/include/CAutoPtr.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ../obj/CQJavaScript.o CQJavaScript.cpp
+
+../obj/CQJCanvasContext2D.o: CQJCanvasContext2D.cpp CQJCanvasContext2D.h \
+		../include/CJObj.h \
+		../include/CJValue.h \
+		../include/CJToken.h \
+		../include/CJTypes.h \
+		../include/CJNameSpace.h \
+		CQJCanvasFontMetrics.h \
+		CQJObject.h \
+		../include/CJavaScript.h \
+		../include/CJKeyword.h \
+		../include/CJIdentifier.h \
+		../include/CJUndefined.h \
+		../include/CJNull.h \
+		../include/CJTrue.h \
+		../include/CJFalse.h \
+		../include/CJNumber.h \
+		../include/CJString.h \
+		../include/CJArray.h \
+		../include/CJOperator.h \
+		../include/CJExecIdentifiers.h \
+		../include/CJExecExpression.h \
+		../include/CJExecExpressionList.h \
+		../include/CJFunction.h \
+		../include/CJDictionary.h \
+		../include/CJExecAssignExpression.h \
+		../include/CJExecIndexExpression.h \
+		../include/CJExecIncrDecrExpression.h \
+		../include/CJExecBlock.h \
+		../include/CJExecFunction.h \
+		../include/CJExecVar.h \
+		../include/CJExecWith.h \
+		../include/CJExecNew.h \
+		../include/CJExecArray.h \
+		../include/CJExecDictionary.h \
+		../include/CJExecBreak.h \
+		../include/CJExecContinue.h \
+		../include/CJExecReturn.h \
+		../include/CJExecDelete.h \
+		../include/CJExecFor.h \
+		../include/CJExecQuestion.h \
+		../include/CJExecIf.h \
+		../include/CJExecWhile.h \
+		../include/CJExecSwitch.h \
+		../include/CJExecTry.h \
+		../include/CJExecThrow.h \
+		../include/CJRealFunction.h \
+		../include/CJRandFunction.h \
+		../include/CJUserFunction.h \
+		../include/CJTypeFunction.h \
+		../include/CJObjectTypeFunction.h \
+		../include/CJNumberFunction.h \
+		../include/CJStringFunction.h \
+		../include/CJBooleanFunction.h \
+		../include/CJArrayFunction.h \
+		../include/CJObjectFunction.h \
+		../include/CJLValue.h \
+		../include/CJDictionaryRef.h \
+		../include/CJObject.h \
+		../include/CJTypeValue.h \
+		../include/CJObjectValue.h \
+		../include/CJUserObject.h \
+		../include/CJDictionaryValue.h \
+		../include/CJTypeObjectFunction.h \
+		CQJCanvasLinearGradient.h \
+		CQJCanvasRadialGradient.h \
+		CQJCanvasPattern.h \
+		CQJCanvasImageData.h \
+		CQJSCanvas.h \
+		CQJImage.h \
+		CQJavaScript.h \
+		CQJUtil.h \
+		../../CStrUtil/include/CStrParse.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ../obj/CQJCanvasContext2D.o CQJCanvasContext2D.cpp
 
 ../obj/CQJCanvas.o: CQJCanvas.cpp CQJCanvas.h \
 		CQJObject.h \
@@ -915,7 +1006,7 @@ compiler_clean: compiler_moc_header_clean
 		../include/CJKeyword.h \
 		../include/CJNameSpace.h \
 		../include/CJIdentifier.h \
-		../include/CJObjectType.h \
+		../include/CJObj.h \
 		../include/CJValue.h \
 		../include/CJUndefined.h \
 		../include/CJNull.h \
@@ -955,6 +1046,7 @@ compiler_clean: compiler_moc_header_clean
 		../include/CJRandFunction.h \
 		../include/CJUserFunction.h \
 		../include/CJTypeFunction.h \
+		../include/CJObjectTypeFunction.h \
 		../include/CJNumberFunction.h \
 		../include/CJStringFunction.h \
 		../include/CJBooleanFunction.h \
@@ -969,17 +1061,404 @@ compiler_clean: compiler_moc_header_clean
 		../include/CJDictionaryValue.h \
 		../include/CJTypeObjectFunction.h \
 		CQJCanvasContext2D.h \
-		CQJCanvasLinearGradient.h \
-		CQJCanvasRadialGradient.h \
-		CQJCanvasPattern.h \
-		CQJCanvasImageData.h \
-		CQJCanvasImageDataArray.h \
-		CQJCanvasFontMetrics.h \
 		CQJSCanvas.h \
 		CQJavaScript.h \
 		CQJImage.h \
 		../../CStrUtil/include/CStrParse.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ../obj/CQJCanvas.o CQJCanvas.cpp
+
+../obj/CQJCanvasFontMetrics.o: CQJCanvasFontMetrics.cpp CQJCanvasFontMetrics.h \
+		../include/CJObj.h \
+		../include/CJValue.h \
+		../include/CJToken.h \
+		../include/CJTypes.h \
+		../include/CJNameSpace.h \
+		CQJObject.h \
+		../include/CJavaScript.h \
+		../include/CJKeyword.h \
+		../include/CJIdentifier.h \
+		../include/CJUndefined.h \
+		../include/CJNull.h \
+		../include/CJTrue.h \
+		../include/CJFalse.h \
+		../include/CJNumber.h \
+		../include/CJString.h \
+		../include/CJArray.h \
+		../include/CJOperator.h \
+		../include/CJExecIdentifiers.h \
+		../include/CJExecExpression.h \
+		../include/CJExecExpressionList.h \
+		../include/CJFunction.h \
+		../include/CJDictionary.h \
+		../include/CJExecAssignExpression.h \
+		../include/CJExecIndexExpression.h \
+		../include/CJExecIncrDecrExpression.h \
+		../include/CJExecBlock.h \
+		../include/CJExecFunction.h \
+		../include/CJExecVar.h \
+		../include/CJExecWith.h \
+		../include/CJExecNew.h \
+		../include/CJExecArray.h \
+		../include/CJExecDictionary.h \
+		../include/CJExecBreak.h \
+		../include/CJExecContinue.h \
+		../include/CJExecReturn.h \
+		../include/CJExecDelete.h \
+		../include/CJExecFor.h \
+		../include/CJExecQuestion.h \
+		../include/CJExecIf.h \
+		../include/CJExecWhile.h \
+		../include/CJExecSwitch.h \
+		../include/CJExecTry.h \
+		../include/CJExecThrow.h \
+		../include/CJRealFunction.h \
+		../include/CJRandFunction.h \
+		../include/CJUserFunction.h \
+		../include/CJTypeFunction.h \
+		../include/CJObjectTypeFunction.h \
+		../include/CJNumberFunction.h \
+		../include/CJStringFunction.h \
+		../include/CJBooleanFunction.h \
+		../include/CJArrayFunction.h \
+		../include/CJObjectFunction.h \
+		../include/CJLValue.h \
+		../include/CJDictionaryRef.h \
+		../include/CJObject.h \
+		../include/CJTypeValue.h \
+		../include/CJObjectValue.h \
+		../include/CJUserObject.h \
+		../include/CJDictionaryValue.h \
+		../include/CJTypeObjectFunction.h \
+		CQJavaScript.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ../obj/CQJCanvasFontMetrics.o CQJCanvasFontMetrics.cpp
+
+../obj/CQJCanvasImageDataArray.o: CQJCanvasImageDataArray.cpp CQJCanvasImageDataArray.h \
+		../include/CJObj.h \
+		../include/CJValue.h \
+		../include/CJToken.h \
+		../include/CJTypes.h \
+		../include/CJNameSpace.h \
+		CQJObject.h \
+		../include/CJavaScript.h \
+		../include/CJKeyword.h \
+		../include/CJIdentifier.h \
+		../include/CJUndefined.h \
+		../include/CJNull.h \
+		../include/CJTrue.h \
+		../include/CJFalse.h \
+		../include/CJNumber.h \
+		../include/CJString.h \
+		../include/CJArray.h \
+		../include/CJOperator.h \
+		../include/CJExecIdentifiers.h \
+		../include/CJExecExpression.h \
+		../include/CJExecExpressionList.h \
+		../include/CJFunction.h \
+		../include/CJDictionary.h \
+		../include/CJExecAssignExpression.h \
+		../include/CJExecIndexExpression.h \
+		../include/CJExecIncrDecrExpression.h \
+		../include/CJExecBlock.h \
+		../include/CJExecFunction.h \
+		../include/CJExecVar.h \
+		../include/CJExecWith.h \
+		../include/CJExecNew.h \
+		../include/CJExecArray.h \
+		../include/CJExecDictionary.h \
+		../include/CJExecBreak.h \
+		../include/CJExecContinue.h \
+		../include/CJExecReturn.h \
+		../include/CJExecDelete.h \
+		../include/CJExecFor.h \
+		../include/CJExecQuestion.h \
+		../include/CJExecIf.h \
+		../include/CJExecWhile.h \
+		../include/CJExecSwitch.h \
+		../include/CJExecTry.h \
+		../include/CJExecThrow.h \
+		../include/CJRealFunction.h \
+		../include/CJRandFunction.h \
+		../include/CJUserFunction.h \
+		../include/CJTypeFunction.h \
+		../include/CJObjectTypeFunction.h \
+		../include/CJNumberFunction.h \
+		../include/CJStringFunction.h \
+		../include/CJBooleanFunction.h \
+		../include/CJArrayFunction.h \
+		../include/CJObjectFunction.h \
+		../include/CJLValue.h \
+		../include/CJDictionaryRef.h \
+		../include/CJObject.h \
+		../include/CJTypeValue.h \
+		../include/CJObjectValue.h \
+		../include/CJUserObject.h \
+		../include/CJDictionaryValue.h \
+		../include/CJTypeObjectFunction.h \
+		CQJCanvasImageData.h \
+		CQJavaScript.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ../obj/CQJCanvasImageDataArray.o CQJCanvasImageDataArray.cpp
+
+../obj/CQJCanvasImageData.o: CQJCanvasImageData.cpp CQJCanvasImageData.h \
+		../include/CJObj.h \
+		../include/CJValue.h \
+		../include/CJToken.h \
+		../include/CJTypes.h \
+		../include/CJNameSpace.h \
+		CQJObject.h \
+		../include/CJavaScript.h \
+		../include/CJKeyword.h \
+		../include/CJIdentifier.h \
+		../include/CJUndefined.h \
+		../include/CJNull.h \
+		../include/CJTrue.h \
+		../include/CJFalse.h \
+		../include/CJNumber.h \
+		../include/CJString.h \
+		../include/CJArray.h \
+		../include/CJOperator.h \
+		../include/CJExecIdentifiers.h \
+		../include/CJExecExpression.h \
+		../include/CJExecExpressionList.h \
+		../include/CJFunction.h \
+		../include/CJDictionary.h \
+		../include/CJExecAssignExpression.h \
+		../include/CJExecIndexExpression.h \
+		../include/CJExecIncrDecrExpression.h \
+		../include/CJExecBlock.h \
+		../include/CJExecFunction.h \
+		../include/CJExecVar.h \
+		../include/CJExecWith.h \
+		../include/CJExecNew.h \
+		../include/CJExecArray.h \
+		../include/CJExecDictionary.h \
+		../include/CJExecBreak.h \
+		../include/CJExecContinue.h \
+		../include/CJExecReturn.h \
+		../include/CJExecDelete.h \
+		../include/CJExecFor.h \
+		../include/CJExecQuestion.h \
+		../include/CJExecIf.h \
+		../include/CJExecWhile.h \
+		../include/CJExecSwitch.h \
+		../include/CJExecTry.h \
+		../include/CJExecThrow.h \
+		../include/CJRealFunction.h \
+		../include/CJRandFunction.h \
+		../include/CJUserFunction.h \
+		../include/CJTypeFunction.h \
+		../include/CJObjectTypeFunction.h \
+		../include/CJNumberFunction.h \
+		../include/CJStringFunction.h \
+		../include/CJBooleanFunction.h \
+		../include/CJArrayFunction.h \
+		../include/CJObjectFunction.h \
+		../include/CJLValue.h \
+		../include/CJDictionaryRef.h \
+		../include/CJObject.h \
+		../include/CJTypeValue.h \
+		../include/CJObjectValue.h \
+		../include/CJUserObject.h \
+		../include/CJDictionaryValue.h \
+		../include/CJTypeObjectFunction.h \
+		CQJCanvasImageDataArray.h \
+		CQJavaScript.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ../obj/CQJCanvasImageData.o CQJCanvasImageData.cpp
+
+../obj/CQJCanvasLinearGradient.o: CQJCanvasLinearGradient.cpp CQJCanvasLinearGradient.h \
+		../include/CJObj.h \
+		../include/CJValue.h \
+		../include/CJToken.h \
+		../include/CJTypes.h \
+		../include/CJNameSpace.h \
+		CQJavaScript.h \
+		../include/CJavaScript.h \
+		../include/CJKeyword.h \
+		../include/CJIdentifier.h \
+		../include/CJUndefined.h \
+		../include/CJNull.h \
+		../include/CJTrue.h \
+		../include/CJFalse.h \
+		../include/CJNumber.h \
+		../include/CJString.h \
+		../include/CJArray.h \
+		../include/CJOperator.h \
+		../include/CJExecIdentifiers.h \
+		../include/CJExecExpression.h \
+		../include/CJExecExpressionList.h \
+		../include/CJFunction.h \
+		../include/CJDictionary.h \
+		../include/CJExecAssignExpression.h \
+		../include/CJExecIndexExpression.h \
+		../include/CJExecIncrDecrExpression.h \
+		../include/CJExecBlock.h \
+		../include/CJExecFunction.h \
+		../include/CJExecVar.h \
+		../include/CJExecWith.h \
+		../include/CJExecNew.h \
+		../include/CJExecArray.h \
+		../include/CJExecDictionary.h \
+		../include/CJExecBreak.h \
+		../include/CJExecContinue.h \
+		../include/CJExecReturn.h \
+		../include/CJExecDelete.h \
+		../include/CJExecFor.h \
+		../include/CJExecQuestion.h \
+		../include/CJExecIf.h \
+		../include/CJExecWhile.h \
+		../include/CJExecSwitch.h \
+		../include/CJExecTry.h \
+		../include/CJExecThrow.h \
+		../include/CJRealFunction.h \
+		../include/CJRandFunction.h \
+		../include/CJUserFunction.h \
+		../include/CJTypeFunction.h \
+		../include/CJObjectTypeFunction.h \
+		../include/CJNumberFunction.h \
+		../include/CJStringFunction.h \
+		../include/CJBooleanFunction.h \
+		../include/CJArrayFunction.h \
+		../include/CJObjectFunction.h \
+		../include/CJLValue.h \
+		../include/CJDictionaryRef.h \
+		../include/CJObject.h \
+		../include/CJTypeValue.h \
+		../include/CJObjectValue.h \
+		../include/CJUserObject.h \
+		../include/CJDictionaryValue.h \
+		../include/CJTypeObjectFunction.h \
+		CQJUtil.h \
+		../../CStrUtil/include/CStrParse.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ../obj/CQJCanvasLinearGradient.o CQJCanvasLinearGradient.cpp
+
+../obj/CQJCanvasPattern.o: CQJCanvasPattern.cpp CQJCanvasPattern.h \
+		../include/CJObj.h \
+		../include/CJValue.h \
+		../include/CJToken.h \
+		../include/CJTypes.h \
+		../include/CJNameSpace.h \
+		CQJavaScript.h \
+		../include/CJavaScript.h \
+		../include/CJKeyword.h \
+		../include/CJIdentifier.h \
+		../include/CJUndefined.h \
+		../include/CJNull.h \
+		../include/CJTrue.h \
+		../include/CJFalse.h \
+		../include/CJNumber.h \
+		../include/CJString.h \
+		../include/CJArray.h \
+		../include/CJOperator.h \
+		../include/CJExecIdentifiers.h \
+		../include/CJExecExpression.h \
+		../include/CJExecExpressionList.h \
+		../include/CJFunction.h \
+		../include/CJDictionary.h \
+		../include/CJExecAssignExpression.h \
+		../include/CJExecIndexExpression.h \
+		../include/CJExecIncrDecrExpression.h \
+		../include/CJExecBlock.h \
+		../include/CJExecFunction.h \
+		../include/CJExecVar.h \
+		../include/CJExecWith.h \
+		../include/CJExecNew.h \
+		../include/CJExecArray.h \
+		../include/CJExecDictionary.h \
+		../include/CJExecBreak.h \
+		../include/CJExecContinue.h \
+		../include/CJExecReturn.h \
+		../include/CJExecDelete.h \
+		../include/CJExecFor.h \
+		../include/CJExecQuestion.h \
+		../include/CJExecIf.h \
+		../include/CJExecWhile.h \
+		../include/CJExecSwitch.h \
+		../include/CJExecTry.h \
+		../include/CJExecThrow.h \
+		../include/CJRealFunction.h \
+		../include/CJRandFunction.h \
+		../include/CJUserFunction.h \
+		../include/CJTypeFunction.h \
+		../include/CJObjectTypeFunction.h \
+		../include/CJNumberFunction.h \
+		../include/CJStringFunction.h \
+		../include/CJBooleanFunction.h \
+		../include/CJArrayFunction.h \
+		../include/CJObjectFunction.h \
+		../include/CJLValue.h \
+		../include/CJDictionaryRef.h \
+		../include/CJObject.h \
+		../include/CJTypeValue.h \
+		../include/CJObjectValue.h \
+		../include/CJUserObject.h \
+		../include/CJDictionaryValue.h \
+		../include/CJTypeObjectFunction.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ../obj/CQJCanvasPattern.o CQJCanvasPattern.cpp
+
+../obj/CQJCanvasRadialGradient.o: CQJCanvasRadialGradient.cpp CQJCanvasRadialGradient.h \
+		../include/CJObj.h \
+		../include/CJValue.h \
+		../include/CJToken.h \
+		../include/CJTypes.h \
+		../include/CJNameSpace.h \
+		CQJavaScript.h \
+		../include/CJavaScript.h \
+		../include/CJKeyword.h \
+		../include/CJIdentifier.h \
+		../include/CJUndefined.h \
+		../include/CJNull.h \
+		../include/CJTrue.h \
+		../include/CJFalse.h \
+		../include/CJNumber.h \
+		../include/CJString.h \
+		../include/CJArray.h \
+		../include/CJOperator.h \
+		../include/CJExecIdentifiers.h \
+		../include/CJExecExpression.h \
+		../include/CJExecExpressionList.h \
+		../include/CJFunction.h \
+		../include/CJDictionary.h \
+		../include/CJExecAssignExpression.h \
+		../include/CJExecIndexExpression.h \
+		../include/CJExecIncrDecrExpression.h \
+		../include/CJExecBlock.h \
+		../include/CJExecFunction.h \
+		../include/CJExecVar.h \
+		../include/CJExecWith.h \
+		../include/CJExecNew.h \
+		../include/CJExecArray.h \
+		../include/CJExecDictionary.h \
+		../include/CJExecBreak.h \
+		../include/CJExecContinue.h \
+		../include/CJExecReturn.h \
+		../include/CJExecDelete.h \
+		../include/CJExecFor.h \
+		../include/CJExecQuestion.h \
+		../include/CJExecIf.h \
+		../include/CJExecWhile.h \
+		../include/CJExecSwitch.h \
+		../include/CJExecTry.h \
+		../include/CJExecThrow.h \
+		../include/CJRealFunction.h \
+		../include/CJRandFunction.h \
+		../include/CJUserFunction.h \
+		../include/CJTypeFunction.h \
+		../include/CJObjectTypeFunction.h \
+		../include/CJNumberFunction.h \
+		../include/CJStringFunction.h \
+		../include/CJBooleanFunction.h \
+		../include/CJArrayFunction.h \
+		../include/CJObjectFunction.h \
+		../include/CJLValue.h \
+		../include/CJDictionaryRef.h \
+		../include/CJObject.h \
+		../include/CJTypeValue.h \
+		../include/CJObjectValue.h \
+		../include/CJUserObject.h \
+		../include/CJDictionaryValue.h \
+		../include/CJTypeObjectFunction.h \
+		CQJUtil.h \
+		../../CStrUtil/include/CStrParse.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ../obj/CQJCanvasRadialGradient.o CQJCanvasRadialGradient.cpp
 
 ../obj/CQJDocument.o: CQJDocument.cpp CQJDocument.h \
 		../include/CJavaScript.h \
@@ -988,7 +1467,7 @@ compiler_clean: compiler_moc_header_clean
 		../include/CJKeyword.h \
 		../include/CJNameSpace.h \
 		../include/CJIdentifier.h \
-		../include/CJObjectType.h \
+		../include/CJObj.h \
 		../include/CJValue.h \
 		../include/CJUndefined.h \
 		../include/CJNull.h \
@@ -1028,6 +1507,7 @@ compiler_clean: compiler_moc_header_clean
 		../include/CJRandFunction.h \
 		../include/CJUserFunction.h \
 		../include/CJTypeFunction.h \
+		../include/CJObjectTypeFunction.h \
 		../include/CJNumberFunction.h \
 		../include/CJStringFunction.h \
 		../include/CJBooleanFunction.h \
@@ -1052,7 +1532,7 @@ compiler_clean: compiler_moc_header_clean
 		../include/CJKeyword.h \
 		../include/CJNameSpace.h \
 		../include/CJIdentifier.h \
-		../include/CJObjectType.h \
+		../include/CJObj.h \
 		../include/CJValue.h \
 		../include/CJUndefined.h \
 		../include/CJNull.h \
@@ -1092,6 +1572,7 @@ compiler_clean: compiler_moc_header_clean
 		../include/CJRandFunction.h \
 		../include/CJUserFunction.h \
 		../include/CJTypeFunction.h \
+		../include/CJObjectTypeFunction.h \
 		../include/CJNumberFunction.h \
 		../include/CJStringFunction.h \
 		../include/CJBooleanFunction.h \
@@ -1115,7 +1596,7 @@ compiler_clean: compiler_moc_header_clean
 		../include/CJKeyword.h \
 		../include/CJNameSpace.h \
 		../include/CJIdentifier.h \
-		../include/CJObjectType.h \
+		../include/CJObj.h \
 		../include/CJValue.h \
 		../include/CJUndefined.h \
 		../include/CJNull.h \
@@ -1155,6 +1636,7 @@ compiler_clean: compiler_moc_header_clean
 		../include/CJRandFunction.h \
 		../include/CJUserFunction.h \
 		../include/CJTypeFunction.h \
+		../include/CJObjectTypeFunction.h \
 		../include/CJNumberFunction.h \
 		../include/CJStringFunction.h \
 		../include/CJBooleanFunction.h \
@@ -1179,7 +1661,7 @@ compiler_clean: compiler_moc_header_clean
 		../include/CJKeyword.h \
 		../include/CJNameSpace.h \
 		../include/CJIdentifier.h \
-		../include/CJObjectType.h \
+		../include/CJObj.h \
 		../include/CJValue.h \
 		../include/CJUndefined.h \
 		../include/CJNull.h \
@@ -1219,6 +1701,7 @@ compiler_clean: compiler_moc_header_clean
 		../include/CJRandFunction.h \
 		../include/CJUserFunction.h \
 		../include/CJTypeFunction.h \
+		../include/CJObjectTypeFunction.h \
 		../include/CJNumberFunction.h \
 		../include/CJStringFunction.h \
 		../include/CJBooleanFunction.h \
@@ -1233,14 +1716,7 @@ compiler_clean: compiler_moc_header_clean
 		../include/CJDictionaryValue.h \
 		../include/CJTypeObjectFunction.h \
 		CQJCanvas.h \
-		CQJObject.h \
-		CQJCanvasContext2D.h \
-		CQJCanvasLinearGradient.h \
-		CQJCanvasRadialGradient.h \
-		CQJCanvasPattern.h \
-		CQJCanvasImageData.h \
-		CQJCanvasImageDataArray.h \
-		CQJCanvasFontMetrics.h
+		CQJObject.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ../obj/CQJSCanvas.o CQJSCanvas.cpp
 
 ../obj/CQJWindow.o: CQJWindow.cpp CQJWindow.h \
@@ -1251,7 +1727,7 @@ compiler_clean: compiler_moc_header_clean
 		../include/CJKeyword.h \
 		../include/CJNameSpace.h \
 		../include/CJIdentifier.h \
-		../include/CJObjectType.h \
+		../include/CJObj.h \
 		../include/CJValue.h \
 		../include/CJUndefined.h \
 		../include/CJNull.h \
@@ -1291,6 +1767,7 @@ compiler_clean: compiler_moc_header_clean
 		../include/CJRandFunction.h \
 		../include/CJUserFunction.h \
 		../include/CJTypeFunction.h \
+		../include/CJObjectTypeFunction.h \
 		../include/CJNumberFunction.h \
 		../include/CJStringFunction.h \
 		../include/CJBooleanFunction.h \

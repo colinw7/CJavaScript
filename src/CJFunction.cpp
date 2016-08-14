@@ -1,14 +1,14 @@
 #include <CJFunction.h>
 #include <CJavaScript.h>
 
-CJObjectTypeP CJFunctionType::type_;
+CJObjTypeP CJFunctionType::type_;
 
-CJObjectTypeP
+CJObjTypeP
 CJFunctionType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjectTypeP(new CJFunctionType);
+    type_ = CJObjTypeP(new CJFunctionType(js));
 
     js->addObjectType("function", type_);
   }
@@ -17,8 +17,8 @@ instance(CJavaScript *js)
 }
 
 CJFunctionType::
-CJFunctionType() :
- CJObjectType(CJToken::Type::Function, "function")
+CJFunctionType(CJavaScript *js) :
+ CJObjType(js, CJToken::Type::Function, "function")
 {
 }
 

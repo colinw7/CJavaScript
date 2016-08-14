@@ -5,16 +5,23 @@
 
 class CQJavaScript;
 
-class CQJDocumentType : public CJObjectType {
+class CQJDocumentType : public CJObjType {
  public:
-  CQJDocumentType();
+  static CJObjTypeP instance(CJavaScript *js);
+
+  CQJDocumentType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *, const std::string &, const Values &) override {
     return CJValueP();
   }
+
+ private:
+  static CJObjTypeP type_;
 };
 
-class CQJDocument : public CJObject {
+//------
+
+class CQJDocument : public CJObj {
  public:
   CQJDocument(CQJavaScript *js);
 

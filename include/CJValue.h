@@ -5,13 +5,15 @@
 
 class CJValue : public CJToken, public std::enable_shared_from_this<CJValue> {
  public:
-  CJValue(CJObjectTypeP valueType);
+  CJValue(CJObjTypeP valueType);
 
   virtual ~CJValue() { }
 
   virtual CJValue *dup(CJavaScript *) const = 0;
 
-  virtual CJObjectTypeP valueType() const { return valueType_; }
+  virtual CJObjTypeP valueType() const { return valueType_; }
+
+  virtual bool isObject() const { return false; }
 
   virtual std::string toString() const = 0;
 
@@ -29,7 +31,7 @@ class CJValue : public CJToken, public std::enable_shared_from_this<CJValue> {
 
   virtual void setIndexValue(int, CJValueP) { assert(false); }
 
-  virtual int length() const { return 0; }
+  virtual long length() const { return 0; }
 
   virtual int cmp(const CJValue *v) const {
     std::string s1 =    toString();
@@ -42,7 +44,7 @@ class CJValue : public CJToken, public std::enable_shared_from_this<CJValue> {
   }
 
  protected:
-  CJObjectTypeP valueType_;
+  CJObjTypeP valueType_;
 };
 
 #endif

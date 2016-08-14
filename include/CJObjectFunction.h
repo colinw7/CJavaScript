@@ -1,24 +1,22 @@
 #ifndef CJObjectFunction_H
 #define CJObjectFunction_H
 
-#include <CJFunction.h>
+#include <CJTypeFunction.h>
 
-// object function
-class CJObjectFunction : public CJFunction {
+// Object constructor function
+class CJObjectFunction : public CJTypeFunction {
  public:
-  CJObjectFunction(CJavaScript *js, const std::string &name) :
-   CJFunction(js, name, CJFunction::Type::Object) {
-  }
+  CJObjectFunction(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJObjectFunction(js, name_); }
-
-  bool hasObjectValue() const override { return true; }
+  CJValue *dup(CJavaScript *js) const override { return new CJObjectFunction(js); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 
   void print(std::ostream &os) const override {
-    os << "object fn";
+    os << "[Function: Object]";
   }
 };
+
+typedef std::shared_ptr<CJObjectFunction> CJObjectFunctionP;
 
 #endif

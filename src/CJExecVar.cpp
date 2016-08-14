@@ -34,7 +34,7 @@ exec(CJavaScript *js)
 
     if (idValue) {
       if (! value)
-        value = CJValueP(new CJUndefined(js));
+        value = js->createUndefinedValue();
 
       idValue->setValue(value);
     }

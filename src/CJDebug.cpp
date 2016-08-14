@@ -1,14 +1,16 @@
 #include <CJDebug.h>
+#include <CJObjFunction.h>
+#include <CJTypes.h>
 #include <CJavaScript.h>
 
-CJObjectTypeP CJDebugType::type_;
+CJObjTypeP CJDebugType::type_;
 
-CJObjectTypeP
+CJObjTypeP
 CJDebugType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjectTypeP(new CJDebugType);
+    type_ = CJObjTypeP(new CJDebugType(js));
 
     js->addObjectType("debug", type_);
   }
@@ -17,8 +19,8 @@ instance(CJavaScript *js)
 }
 
 CJDebugType::
-CJDebugType() :
- CJObjectType(CJToken::Type::Object, "Debug")
+CJDebugType(CJavaScript *js) :
+ CJObjType(js, CJToken::Type::Object, "Debug")
 {
 }
 
@@ -33,11 +35,11 @@ exec(CJavaScript *, const std::string &, const Values &)
 
 CJDebugObject::
 CJDebugObject(CJavaScript *js) :
- CJObject(CJDebugType::instance(js)), js_(js)
+ CJObj(CJDebugType::instance(js)), js_(js)
 {
-  setFunctionProperty(js, CJFunctionP(new CJObjectFunction(js, "printScopeStack")));
-  setFunctionProperty(js, CJFunctionP(new CJObjectFunction(js, "printScopeChain")));
-  setFunctionProperty(js, CJFunctionP(new CJObjectFunction(js, "printUserFunctions")));
+  setFunctionProperty(js, CJFunctionP(new CJObjFunction(js, "printScopeStack")));
+  setFunctionProperty(js, CJFunctionP(new CJObjFunction(js, "printScopeChain")));
+  setFunctionProperty(js, CJFunctionP(new CJObjFunction(js, "printUserFunctions")));
 }
 
 CJValueP

@@ -52,6 +52,8 @@ class CJExecExpression : public CJToken {
 
   const Tokens &tokens() const { return tokens_; }
 
+  CJTokenP token(int i) const { return tokens_[i]; }
+
   CJValueP exec(CJavaScript *js) override;
 
   void print(std::ostream &os) const override {

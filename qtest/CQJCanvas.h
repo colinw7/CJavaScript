@@ -2,18 +2,22 @@
 #define CQJCanvas_H
 
 #include <CQJObject.h>
-#include <QLinearGradient>
-#include <QRadialGradient>
-#include <QFontMetrics>
 
 class CQJavaScript;
 
-class CQJCanvasType : public CJObjectType {
+class CQJCanvasType : public CJObjType {
  public:
-  CQJCanvasType();
+  static CJObjTypeP instance(CJavaScript *js);
+
+  CQJCanvasType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *, const std::string &, const Values &) override;
+
+ private:
+  static CJObjTypeP type_;
 };
+
+//------
 
 class CQJCanvas : public CQJObject {
   Q_OBJECT
@@ -29,15 +33,5 @@ class CQJCanvas : public CQJObject {
 
   void print(std::ostream &os) const override { os << "canvas"; }
 };
-
-//------
-
-#include <CQJCanvasContext2D.h>
-#include <CQJCanvasLinearGradient.h>
-#include <CQJCanvasRadialGradient.h>
-#include <CQJCanvasPattern.h>
-#include <CQJCanvasImageData.h>
-#include <CQJCanvasImageDataArray.h>
-#include <CQJCanvasFontMetrics.h>
 
 #endif

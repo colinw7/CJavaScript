@@ -1,24 +1,23 @@
 #ifndef CJDebug_H
 #define CJDebug_H
 
-#include <CJObjectType.h>
-#include <CJObject.h>
+#include <CJObj.h>
 
 // Debug Type
-class CJDebugType : public CJObjectType {
+class CJDebugType : public CJObjType {
  public:
-  static CJObjectTypeP instance(CJavaScript *js);
+  static CJObjTypeP instance(CJavaScript *js);
 
-  CJDebugType();
+  CJDebugType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjectTypeP type_;
+  static CJObjTypeP type_;
 };
 
 // Debug Object
-class CJDebugObject : public CJObject {
+class CJDebugObject : public CJObj {
  public:
   CJDebugObject(CJavaScript *js);
 

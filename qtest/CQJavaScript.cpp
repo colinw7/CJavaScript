@@ -4,6 +4,7 @@
 #include <CQJDocument.h>
 #include <CQJImage.h>
 #include <CQJCanvas.h>
+#include <CQJCanvasContext2D.h>
 #include <CJavaScript.h>
 #include <CQApp.h>
 #include <CQHistoryLineEdit.h>
@@ -62,22 +63,15 @@ CQJavaScript()
 
   //---
 
-  jsWindowType_   = CJObjectTypeP(new CQJWindowType  ());
-  jsDocumentType_ = CJObjectTypeP(new CQJDocumentType());
-  jsImageType_    = CJObjectTypeP(new CQJImageType   (this));
-  jsCanvasType_   = CJObjectTypeP(new CQJCanvasType  ());
-
-  js_->addObjectType("window"  , jsWindowType_);
-  js_->addObjectType("document", jsDocumentType_);
-  js_->addObjectType("Image"   , jsImageType_);
-  js_->addObjectType("Canvas"  , jsCanvasType_);
+  js_->addObjectType("Image" , CQJImageType ::instance(this));
+  js_->addObjectType("Canvas", CQJCanvasType::instance(js_));
 
   jsWindow_          = CJValueP(new CQJWindow         (this));
   jsDocument_        = CJValueP(new CQJDocument       (this));
   jsCanvas_          = CJValueP(new CQJCanvas         (this));
   jsCanvasContext2D_ = CJValueP(new CQJCanvasContext2D(this));
 
-  js_->setProperty("window", jsWindow_);
+  js_->setProperty("window"  , jsWindow_);
   js_->setProperty("document", jsDocument_);
 
   //---

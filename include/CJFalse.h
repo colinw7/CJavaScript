@@ -1,20 +1,20 @@
 #ifndef CJFalse_H
 #define CJFalse_H
 
-#include <CJObjectType.h>
+#include <CJObj.h>
 #include <CJValue.h>
 
 // False Type
-class CJFalseType : public CJObjectType {
+class CJFalseType : public CJObjType {
  public:
-  static CJObjectTypeP instance(CJavaScript *js);
+  static CJObjTypeP instance(CJavaScript *js);
 
   CJFalseType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjectTypeP type_;
+  static CJObjTypeP type_;
 };
 
 //------
@@ -22,8 +22,12 @@ class CJFalseType : public CJObjectType {
 // False Value
 class CJFalse : public CJValue {
  public:
+  static CJValueP value(CJavaScript *js);
+
+ private:
   CJFalse(CJavaScript *js);
 
+ public:
   CJValue *dup(CJavaScript *js) const override { return new CJFalse(js); }
 
   bool isProtoValue() const override { return true; }

@@ -24,6 +24,7 @@ name() const
     case CJKeyword::Type::New     : return "new";
     case CJKeyword::Type::Return  : return "return";
     case CJKeyword::Type::Switch  : return "switch";
+    case CJKeyword::Type::This    : return "this";
     case CJKeyword::Type::Throw   : return "throw";
     case CJKeyword::Type::Try     : return "try";
     case CJKeyword::Type::Var     : return "var";

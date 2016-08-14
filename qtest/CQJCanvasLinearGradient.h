@@ -1,24 +1,28 @@
 #ifndef CQJCanvasLinearGradient_H
 #define CQJCanvasLinearGradient_H
 
-#include <CJObjectType.h>
-#include <CJObject.h>
+#include <CJObj.h>
+#include <QLinearGradient>
 
-class CQJCanvasLinearGradientType : public CJObjectType {
+class CQJavaScript;
+
+class CQJCanvasLinearGradientType : public CJObjType {
  public:
-  static CJObjectTypeP instance();
+  static CJObjTypeP instance(CJavaScript *js);
 
-  CQJCanvasLinearGradientType();
+  CQJCanvasLinearGradientType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *, const std::string &, const Values &) override {
     return CJValueP();
   }
 
  private:
-  static CJObjectTypeP type_;
+  static CJObjTypeP type_;
 };
 
-class CQJCanvasLinearGradient : public CJObject {
+//------
+
+class CQJCanvasLinearGradient : public CJObj {
  public:
   CQJCanvasLinearGradient(CQJavaScript *js, double x1=0, double y1=0, double x2=1, double y2=0);
 

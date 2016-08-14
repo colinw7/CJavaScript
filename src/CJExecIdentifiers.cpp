@@ -23,18 +23,27 @@ exec(CJavaScript *js)
       return dict->getProperty(name1);
     }
     else {
-      CJObjectTypeP valueType = evalue_->valueType();
+      CJObjTypeP valueType = evalue_->valueType();
 
-      if (! valueType->hasProperty(name1))
-        return CJValueP();
+      if (evalue_->type() == CJToken::Type::Object) {
+        CJValueP propVal = evalue_->cast<CJObj>()->getProperty(name1);
 
-      CJValueP propVal = valueType->getProperty(name1);
+        if (propVal)
+          return propVal;
+      }
 
-      CJObjectType::Values values;
+      if (valueType->hasProperty(name1)) {
+        CJValueP propVal = valueType->getProperty(name1);
 
-      values.push_back(evalue_);
+        //CJObjType::Values values;
 
-      return valueType->exec(js, name1, values);
+        //values.push_back(evalue_);
+
+        //return valueType->exec(js, name1, values);
+        return propVal;
+      }
+
+      return CJValueP();
     }
   }
   else {

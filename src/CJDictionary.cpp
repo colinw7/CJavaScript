@@ -1,14 +1,14 @@
 #include <CJDictionary.h>
 #include <CJavaScript.h>
 
-CJObjectTypeP CJDictionaryType::type_;
+CJObjTypeP CJDictionaryType::type_;
 
-CJObjectTypeP
+CJObjTypeP
 CJDictionaryType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjectTypeP(new CJDictionaryType(js));
+    type_ = CJObjTypeP(new CJDictionaryType(js));
 
     js->addObjectType("dictionary", type_);
   }
@@ -17,8 +17,8 @@ instance(CJavaScript *js)
 }
 
 CJDictionaryType::
-CJDictionaryType(CJavaScript *) :
- CJObjectType(CJToken::Type::Dictionary, "dictionary")
+CJDictionaryType(CJavaScript *js) :
+ CJObjType(js, CJToken::Type::Dictionary, "dictionary")
 {
 }
 

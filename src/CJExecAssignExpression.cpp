@@ -18,31 +18,101 @@ exec(CJavaScript *js)
 
   const CJExecExpression::Tokens &tokens = lexpr_->tokens();
 
-  CJTokenP varToken;
+  if (tokens.size() == 0)
+    return value;
 
-  if (tokens.size() == 1)
-    varToken = tokens[0];
+  CJValueP llvalue;
 
-  CJExecIdentifiers *identifiers = 0;
+  if (tokens.size() > 1) {
+    int spos = -1;
+
+    for (uint i = 0; i < tokens.size(); ++i) {
+      CJTokenP token = lexpr_->token(i);
+
+      if (token->type() == CJToken::Type::Operator) {
+        CJOperator *op = token->cast<CJOperator>();
+
+        if (op->type() == CJOperator::Type::Scope)
+          spos = i;
+      }
+    }
+
+    if (spos < 0) {
+      js->errorMsg(this, "Missing scope for multiple token assign");
+      return value;
+    }
+
+    if (spos != int(tokens.size()) - 2) {
+      js->errorMsg(this, "Only one token allowed after scope for multiple token assign");
+      return value;
+    }
+
+    CJExecExpressionP lexpr1(new CJExecExpression(lexpr_->type()));
+
+    for (uint i = 0; i < tokens.size() - 2; ++i)
+      lexpr1->addToken(lexpr_->token(i));
+
+    llvalue = lexpr1->exec(js);
+
+    if (! llvalue)
+      return value;
+
+    //llvalue->print(std::cerr);
+  }
+
+  //---
+
+  CJTokenP varToken = tokens.back();
+
+  CJExecIdentifiers *eidentifiers = 0;
   CJExecExpression  *indexExpr = 0;
 
   if      (varToken && varToken->type() == CJToken::Type::IndexExpression) {
-    identifiers = varToken->cast<CJExecIndexExpression>()->identifiers().get();
-    indexExpr   = varToken->cast<CJExecIndexExpression>()->indexExpression().get();
+    eidentifiers = varToken->cast<CJExecIndexExpression>()->identifiers().get();
+    indexExpr    = varToken->cast<CJExecIndexExpression>()->indexExpression().get();
   }
   else if (varToken && varToken->type() == CJToken::Type::Identifiers) {
-    identifiers = varToken->cast<CJExecIdentifiers>();
+    eidentifiers = varToken->cast<CJExecIdentifiers>();
   }
 
-  if (! identifiers) {
-    js->errorMsg("Missing variable name for assign");
+  if (! eidentifiers) {
+    js->errorMsg(this, "Missing variable name for assign");
     return value;
   }
 
-  CJLValueP lvalue = js->lookupLValue(identifiers->identifiers());
+  //---
 
-  if (! lvalue)
-    lvalue = js->lookupProperty(identifiers->identifiers(), /*create*/true);
+  const CJavaScript::Identifiers &identifiers = eidentifiers->identifiers();
+
+  CJLValueP lvalue = js->lookupLValue(identifiers);
+
+  if (llvalue) {
+    CJPropertyData data;
+
+    data.modifiable = true;
+
+    if (! js->lookupPropertyData(llvalue, identifiers, data)) {
+      js->errorMsg(this, "No property " + eidentifiers->toString() + " for value " +
+                   llvalue->toString());
+      return value;
+    }
+
+    if (! data.lvalue) {
+      js->errorMsg(this, "Property " + eidentifiers->toString() + " for value " +
+                   llvalue->toString() + " is not an lvalue");
+      return value;
+    }
+
+    lvalue = data.lvalue;
+  }
+  else {
+    lvalue = js->lookupLValue(identifiers);
+
+    if (! lvalue)
+      lvalue = js->lookupProperty(identifiers, /*create*/true);
+  }
+
+  //---
 
   CJValueP rvalue = rexpr_->exec(js);
 
@@ -108,16 +178,16 @@ exec(CJavaScript *js)
 
     long ind = ivalue->toInteger();
 
-    if      (varValue->hasIndex()) {
-      varValue->setIndexValue(ind, rvalue);
-    }
-    else if (varValue->type() == CJToken::Type::String) {
+    if      (varValue->type() == CJToken::Type::String) {
       CJString *str = varValue->cast<CJString>();
 
       str->setIndexValue(ind, rvalue);
     }
+    else if (varValue->hasIndex()) {
+      varValue->setIndexValue(ind, rvalue);
+    }
     else {
-      js->errorMsg("Variable is not an array");
+      js->errorMsg(this, "Variable is not an array");
       return value;
     }
   }

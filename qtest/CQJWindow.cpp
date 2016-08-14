@@ -3,9 +3,24 @@
 #include <QTimer>
 #include <iostream>
 
+CJObjTypeP CQJWindowType::type_;
+
+CJObjTypeP
 CQJWindowType::
-CQJWindowType() :
- CJObjectType(CJToken::Type::Object, "Window")
+instance(CJavaScript *js)
+{
+  if (! type_) {
+    type_ = CJObjTypeP(new CQJWindowType(js));
+
+    js->addObjectType("window", type_);
+  }
+
+  return type_;
+}
+
+CQJWindowType::
+CQJWindowType(CJavaScript *js) :
+ CJObjType(js, CJToken::Type::Object, "Window")
 {
 }
 
@@ -13,11 +28,11 @@ CQJWindowType() :
 
 CQJWindow::
 CQJWindow(CQJavaScript *qjs) :
- CQJObject(qjs, qjs->jsWindowType())
+ CQJObject(qjs, CQJWindowType::instance(qjs->js()))
 {
   CJavaScript *js = qjs->js();
 
-  type_->addFunction(js, "setTimeout");
+  type_->addObjectFunction(js, "setTimeout");
 
   timer_ = new QTimer(this);
 
@@ -52,7 +67,7 @@ timerSlot()
 {
   CJavaScript *js = js_->js();
 
-  CJObjectType::Values fnValues;
+  CJObjType::Values fnValues;
 
   fnValues.push_back(shared_from_this());
 

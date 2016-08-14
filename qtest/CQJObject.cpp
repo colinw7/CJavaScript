@@ -2,12 +2,12 @@
 #include <CQJavaScript.h>
 
 CQJObject::
-CQJObject(CQJavaScript *qjs, const CJObjectTypeP &type) :
- CJObject(type), js_(qjs)
+CQJObject(CQJavaScript *qjs, const CJObjTypeP &type) :
+ CJObj(type), js_(qjs)
 {
   CJavaScript *js = js_->js();
 
-  type_->addFunction(js, "addEventListener");
+  type_->addObjectFunction(js, "addEventListener");
 
   js_->addObject(this);
 }
@@ -59,7 +59,7 @@ callEventListener(const std::string &name, const EventArgs &args, const NameValu
 
     CJavaScript *js = js_->js();
 
-    CJObjectType::Values fnValues;
+    CJObjType::Values fnValues;
 
     fnValues.push_back(shared_from_this());
 

@@ -22,7 +22,7 @@ class CStrParse;
 #include <CJKeyword.h>
 #include <CJNameSpace.h>
 #include <CJIdentifier.h>
-#include <CJObjectType.h>
+#include <CJObj.h>
 #include <CJValue.h>
 #include <CJUndefined.h>
 #include <CJNull.h>
@@ -74,6 +74,7 @@ class CStrParse;
 #include <CJRandFunction.h>
 #include <CJUserFunction.h>
 #include <CJTypeFunction.h>
+#include <CJObjectTypeFunction.h>
 #include <CJNumberFunction.h>
 #include <CJStringFunction.h>
 #include <CJBooleanFunction.h>
@@ -135,7 +136,7 @@ struct CJPropertyData {
   bool          modifiable { false };
   bool          create { false };
   CJDictionaryP dict;
-  CJObjectP     obj;
+  CJObjP        obj;
   CJValueP      objValue;
   CJValueP      value;
   CJLValueP     lvalue;
@@ -221,8 +222,8 @@ class CJavaScript {
   bool isExecDebug() const { return execDebug_; }
   void setExecDebug(bool b) { execDebug_ = b; }
 
-  CJObjectTypeP addObjectType(const std::string &name, CJObjectTypeP type);
-  CJObjectTypeP getObjectType(const std::string &name) const;
+  CJObjTypeP addObjectType(const std::string &name, CJObjTypeP type);
+  CJObjTypeP getObjectType(const std::string &name) const;
 
   CJDictionaryP rootScope() const { return rootScope_; }
   CJDictionaryP currentScope() const { return currentScope_; }
@@ -234,11 +235,11 @@ class CJavaScript {
   bool lookupPropertyData(const Identifiers &identifiers, CJPropertyData &data);
 
   bool lookupPropertyData(CJDictionaryP scope, const Identifiers &identifiers,
-                          CJPropertyData &data, int ind);
-  bool lookupPropertyData(CJObjectP obj, const Identifiers &identifiers,
-                          CJPropertyData &data, int ind);
+                          CJPropertyData &data, int ind=0);
+  bool lookupPropertyData(CJObjP obj, const Identifiers &identifiers,
+                          CJPropertyData &data, int ind=0);
   bool lookupPropertyData(CJValueP value, const Identifiers &identifiers,
-                          CJPropertyData &data, int ind);
+                          CJPropertyData &data, int ind=0);
 
   CJValueP lookupValue(const Identifiers &identifiers);
 
@@ -255,7 +256,7 @@ class CJavaScript {
 
   CJValueP setVariable(const Identifiers &identifiers, CJValueP value);
 
-  void addTypeObject(CJToken::Type type, CJObjectTypeP obj);
+  void addTypeObject(CJToken::Type type, CJObjTypeP obj);
 
   void addTypeFunction(CJToken::Type type, CJFunctionP fn);
 
@@ -311,12 +312,24 @@ class CJavaScript {
   CJValueP execUnaryOp (CJOperator::Type op, CJValueP value);
 
   CJValueP createBoolValue(bool b) const {
+    if (b)
+      return createTrueValue();
+    else
+      return createFalseValue();
+  }
+
+  CJValueP createTrueValue() const {
     CJavaScript *th = const_cast<CJavaScript *>(this);
 
-    if (b)
-      return CJValueP(new CJTrue(th));
-    else
-      return CJValueP(new CJFalse(th));
+    //return CJValueP(new CJTrue(th));
+    return CJTrue::value(th);
+  }
+
+  CJValueP createFalseValue() const {
+    CJavaScript *th = const_cast<CJavaScript *>(this);
+
+    //return CJValueP(new CJFalse(th));
+    return CJFalse::value(th);
   }
 
   CJValueP createNumberValue(long l) const {
@@ -337,10 +350,26 @@ class CJavaScript {
     return CJValueP(new CJString(th, s, c));
   }
 
+  CJValueP createNullValue() const {
+    CJavaScript *th = const_cast<CJavaScript *>(this);
+
+    //return CJValueP(new CJNull(th));
+    return CJNull::value(th);
+  }
+
+  CJValueP createUndefinedValue() const {
+    CJavaScript *th = const_cast<CJavaScript *>(this);
+
+    //return CJValueP(new CJUndefined(th));
+    return CJUndefined::value(th);
+  }
+
   virtual long setInterval(const std::string & /*proc*/, double /*msecs*/) { return -1; }
 
   virtual void clearInterval(int /*timer*/) { }
 
+  void errorMsg(CJTokenP token, const std::string &msg) const;
+  void errorMsg(CJToken *token, const std::string &msg) const;
   void errorMsg(const std::string &msg) const;
 
  private:
@@ -360,33 +389,38 @@ class CJavaScript {
 
   std::pair<bool, CJKeyword::Type> isKeyword(const std::string &name) const;
 
-  CJExecExpressionListP interpExpressionList();
-  CJExecExpressionP     interpExpression();
-  CJExecIdentifiersP    interpIdentfiers();
-  CJExecBlockP          interpBlock(CJExecBlock::Type type);
-  CJExecForP            interpFor();
-  bool                  isInterpForIn();
-  CJExecQuestionP       interpQuestion(CJExecExpressionP bexpr);
-  CJExecIfP             interpIf();
-  CJExecWhileP          interpWhile();
-  CJExecSwitchP         interpSwitch();
-  CJExecTryP            interpTry();
-  CJExecThrowP          interpThrow();
-  CJExecVarP            interpVar();
-  CJExecWithP           interpWith();
-  CJExecArrayP          interpArray();
-  bool                  isInterpDictionary() const;
-  CJExecDictionaryP     interpDictionary();
-  CJExecNewP            interpNew();
-  CJExecDeleteP         interpDelete();
-  CJExecReturnP         interpReturn();
-  CJUserFunctionP       interpUserFunction(bool named);
-  CJExecFunctionP       interpFunction();
+  CJExecExpressionListP  interpExpressionList();
+  CJExecExpressionP      interpExpression();
+  CJExecThisP            interpThis();
+  CJExecIndexExpressionP interpIndexExpression();
+  CJExecIdentifiersP     interpIdentifiers();
+  CJExecBlockP           interpBlock(CJExecBlock::Type type);
+  CJExecForP             interpFor();
+  bool                   isInterpForIn();
+  CJExecQuestionP        interpQuestion(CJExecExpressionP bexpr);
+  CJExecIfP              interpIf();
+  CJExecWhileP           interpWhile();
+  CJExecSwitchP          interpSwitch();
+  CJExecTryP             interpTry();
+  CJExecThrowP           interpThrow();
+  CJExecVarP             interpVar();
+  CJExecWithP            interpWith();
+  CJExecArrayP           interpArray();
+  bool                   isInterpDictionary() const;
+  CJExecDictionaryP      interpDictionary();
+  CJExecNewP             interpNew();
+  CJExecDeleteP          interpDelete();
+  CJExecBreakP           interpBreak();
+  CJExecContinueP        interpContinue();
+  CJExecReturnP          interpReturn();
+  CJUserFunctionP        interpUserFunction(bool named);
+  CJExecFunctionP        interpFunction();
 
-  bool isOperator(CJTokenP token, CJOperator::Type opType) const;
-  bool isKeyword (CJTokenP token, CJKeyword ::Type opType) const;
+  bool isExecKeyword(CJKeyword::Type type) const;
+  bool isKeyword    (CJTokenP token, CJKeyword::Type type) const;
 
-  bool isExecOperator(CJOperator::Type opType) const;
+  bool isExecOperator(CJOperator::Type type) const;
+  bool isOperator    (CJTokenP token, CJOperator::Type type) const;
 
  private:
   typedef std::vector<CJValueP>                 Values;
@@ -396,8 +430,8 @@ class CJavaScript {
   typedef std::vector<CJExecBlockP>             BlockStack;
   typedef std::vector<CJUserFunctionP>          FunctionStack;
   typedef std::map<std::string,CJFunctionP>     Functions;
-  typedef std::map<CJToken::Type,CJObjectTypeP> TypeObject;
-  typedef std::map<std::string,CJObjectTypeP>   NamedType;
+  typedef std::map<CJToken::Type,CJObjTypeP> TypeObject;
+  typedef std::map<std::string,CJObjTypeP>   NamedType;
 
   bool            parseDebug_  { false };
   bool            interpDebug_ { false };

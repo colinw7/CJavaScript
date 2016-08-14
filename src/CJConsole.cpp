@@ -1,14 +1,16 @@
 #include <CJConsole.h>
+#include <CJObjFunction.h>
+#include <CJTypes.h>
 #include <CJavaScript.h>
 
-CJObjectTypeP CJConsoleType::type_;
+CJObjTypeP CJConsoleType::type_;
 
-CJObjectTypeP
+CJObjTypeP
 CJConsoleType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjectTypeP(new CJConsoleType);
+    type_ = CJObjTypeP(new CJConsoleType(js));
 
     js->addObjectType("console", type_);
   }
@@ -17,8 +19,8 @@ instance(CJavaScript *js)
 }
 
 CJConsoleType::
-CJConsoleType() :
- CJObjectType(CJToken::Type::Object, "Console")
+CJConsoleType(CJavaScript *js) :
+ CJObjType(js, CJToken::Type::Object, "Console")
 {
 }
 
@@ -33,9 +35,9 @@ exec(CJavaScript *, const std::string &, const Values &)
 
 CJConsoleObject::
 CJConsoleObject(CJavaScript *js) :
- CJObject(CJConsoleType::instance(js)), js_(js)
+ CJObj(CJConsoleType::instance(js)), js_(js)
 {
-  setFunctionProperty(js, CJFunctionP(new CJObjectFunction(js, "log")));
+  setFunctionProperty(js, CJFunctionP(new CJObjFunction(js, "log")));
 }
 
 CJValueP

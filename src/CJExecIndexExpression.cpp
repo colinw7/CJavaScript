@@ -11,10 +11,6 @@ CJValueP
 CJExecIndexExpression::
 exec(CJavaScript *js)
 {
-  CJValueP value;
-
-  //---
-
   // get indexed value
   CJValueP avalue;
 
@@ -34,13 +30,19 @@ exec(CJavaScript *js)
 
   if (! avalue) {
     js->errorMsg("Invalid index value");
-    return value;
+    return CJValueP();
   }
 
-  //---
+  // index value
+  return indexValue(js, avalue);
+}
 
+CJValueP
+CJExecIndexExpression::
+indexValue(CJavaScript *js, CJValueP avalue)
+{
   if (! iexpr_)
-    return value;
+    return CJValueP();
 
   // index value
   CJValueP res;
@@ -84,9 +86,56 @@ exec(CJavaScript *js)
   }
 
   if (! res)
-    res = CJValueP(new CJUndefined(js));
+    res = js->createUndefinedValue();
 
   return res;
+}
+
+void
+CJExecIndexExpression::
+setIndexValue(CJavaScript *js, CJValueP avalue, CJValueP rvalue)
+{
+  if (! iexpr_)
+    return;
+
+  // set index value
+  if      (avalue->type() == CJToken::Type::Array) {
+    CJArray *array = avalue->cast<CJArray>();
+
+    CJValueP ivalue = iexpr_->exec(js);
+
+    long ind = ivalue->toInteger();
+
+    array->setIndexValue(ind, rvalue);
+  }
+  else if (avalue->type() == CJToken::Type::Dictionary) {
+    CJDictionary *dict = avalue->cast<CJDictionary>();
+
+    CJValueP ivalue = iexpr_->exec(js);
+
+    dict->setProperty(ivalue->toString(), rvalue);
+  }
+  else if (avalue->type() == CJToken::Type::String) {
+    CJString *str = avalue->cast<CJString>();
+
+    CJValueP ivalue = iexpr_->exec(js);
+
+    long ind = ivalue->toInteger();
+
+    str->setIndexValue(ind, rvalue);
+  }
+  else {
+    CJValueP ivalue = iexpr_->exec(js);
+
+    long ind = ivalue->toInteger();
+
+    if (! avalue->hasIndex()) {
+      js->errorMsg("Value not an array for index");
+      return;
+    }
+
+    avalue->setIndexValue(ind, rvalue);
+  }
 }
 
 void

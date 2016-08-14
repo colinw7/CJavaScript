@@ -22,11 +22,6 @@ class CQJavaScript : public QFrame {
 
   CJavaScript *js() const { return js_; }
 
-  CJObjectTypeP jsWindowType  () const { return jsWindowType_  ; }
-  CJObjectTypeP jsDocumentType() const { return jsDocumentType_; }
-  CJObjectTypeP jsImageType   () const { return jsImageType_   ; }
-  CJObjectTypeP jsCanvasType  () const { return jsCanvasType_  ; }
-
   CJValueP jsWindow         () const { return jsWindow_         ; }
   CJValueP jsDocument       () const { return jsDocument_       ; }
   CJValueP jsCanvas         () const { return jsCanvas_         ; }
@@ -47,12 +42,8 @@ class CQJavaScript : public QFrame {
 
   CQJSCanvas*        canvas_ { 0 };
   CJavaScript*       js_ { 0 };
-  CJObjectTypeP      jsWindowType_;
   CJValueP           jsWindow_;
-  CJObjectTypeP      jsDocumentType_;
   CJValueP           jsDocument_;
-  CJObjectTypeP      jsImageType_;
-  CJObjectTypeP      jsCanvasType_;
   CJValueP           jsCanvas_;
   CJValueP           jsCanvasContext2D_;
   Objects            objects_;

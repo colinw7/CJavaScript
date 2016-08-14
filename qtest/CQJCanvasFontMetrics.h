@@ -1,24 +1,26 @@
 #ifndef CQJCanvasFontMetrics_H
 #define CQJCanvasFontMetrics_H
 
-#include <CJObjectType.h>
+#include <CJObj.h>
 #include <CQJObject.h>
 #include <QFont>
 #include <QFontMetricsF>
 
-class CQJCanvasFontMetricsType : public CJObjectType {
+class CQJCanvasFontMetricsType : public CJObjType {
  public:
-  static CJObjectTypeP instance();
+  static CJObjTypeP instance(CJavaScript *js);
 
-  CQJCanvasFontMetricsType();
+  CQJCanvasFontMetricsType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *, const std::string &, const Values &) override {
     return CJValueP();
   }
 
  private:
-  static CJObjectTypeP type_;
+  static CJObjTypeP type_;
 };
+
+//------
 
 class CQJCanvasFontMetrics : public CQJObject {
   Q_OBJECT

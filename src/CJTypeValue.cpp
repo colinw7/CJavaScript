@@ -1,8 +1,8 @@
 #include <CJTypeValue.h>
-#include <CJObjectType.h>
+#include <CJObj.h>
 
 CJTypeValue::
-CJTypeValue(CJavaScript *js, CJObjectTypeP objType, const std::string &name) :
+CJTypeValue(CJavaScript *js, CJObjTypeP objType, const std::string &name) :
  CJLValue(objType), js_(js), objType_(objType), name_(name)
 {
 }

@@ -1,14 +1,14 @@
 #include <CJTrue.h>
 #include <CJavaScript.h>
 
-CJObjectTypeP CJTrueType::type_;
+CJObjTypeP CJTrueType::type_;
 
-CJObjectTypeP
+CJObjTypeP
 CJTrueType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjectTypeP(new CJTrueType(js));
+    type_ = CJObjTypeP(new CJTrueType(js));
 
     js->addObjectType("true", type_);
   }
@@ -18,10 +18,10 @@ instance(CJavaScript *js)
 
 CJTrueType::
 CJTrueType(CJavaScript *js) :
- CJObjectType(CJToken::Type::True, "true")
+ CJObjType(js, CJToken::Type::True, "true")
 {
-  addFunction(js, "toString");
-  addFunction(js, "valueOf");
+  addObjectFunction(js, "toString");
+  addObjectFunction(js, "valueOf");
 }
 
 CJValueP
@@ -31,12 +31,24 @@ exec(CJavaScript *js, const std::string &name, const Values &)
   if      (name == "toString")
     return js->createStringValue("true");
   else if (name == "valueOf")
-    return CJValueP(new CJTrue(js));
+    return CJValueP(js->createTrueValue());
   else
     return CJValueP();
 }
 
 //------
+
+CJValueP
+CJTrue::
+value(CJavaScript *js)
+{
+  static CJValueP trueValue;
+
+  if (! trueValue)
+    trueValue = CJValueP(new CJTrue(js));
+
+  return trueValue;
+}
 
 CJTrue::
 CJTrue(CJavaScript *js) :

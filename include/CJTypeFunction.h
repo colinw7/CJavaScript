@@ -3,28 +3,26 @@
 
 #include <CJFunction.h>
 
-// type function
+// function called on type name
 class CJTypeFunction : public CJFunction {
  public:
-  CJTypeFunction(CJavaScript *js, const std::string &name, CJObjectTypeP type=CJObjectTypeP()) :
-   CJFunction(js, name, CJFunction::Type::Object), type_(type) {
-  }
+  CJTypeFunction(CJavaScript *js, const std::string &name, CJObjTypeP type=CJObjTypeP());
 
-  CJObjectTypeP objectType() const { return type_; }
-  void setObjectType(CJObjectTypeP type) { type_ = type; }
+  CJObjTypeP objectType() const { return type_; }
+  void setObjectType(CJObjTypeP type) { type_ = type; }
 
   CJValue *dup(CJavaScript *js) const override { return new CJTypeFunction(js, name_, type_); }
 
-  bool hasObjectValue() const override { return true; }
+  bool hasObjectValue() const override { return false; }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 
   void print(std::ostream &os) const override {
-    os << "type fn";
+    os << "[Function " + name_ + "]";
   }
 
  private:
-  CJObjectTypeP type_;
+  CJObjTypeP type_;
 };
 
 typedef std::shared_ptr<CJTypeFunction> CJTypeFunctionP;

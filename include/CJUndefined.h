@@ -1,27 +1,31 @@
 #ifndef CJUndefined_H
 #define CJUndefined_H
 
-#include <CJObjectType.h>
+#include <CJObj.h>
 #include <CJValue.h>
 
 // Undefined Type
-class CJUndefinedType : public CJObjectType {
+class CJUndefinedType : public CJObjType {
  public:
-  static CJObjectTypeP instance(CJavaScript *js);
+  static CJObjTypeP instance(CJavaScript *js);
 
-  CJUndefinedType();
+  CJUndefinedType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjectTypeP type_;
+  static CJObjTypeP type_;
 };
 
 // Undefined Value
 class CJUndefined : public CJValue {
  public:
+  static CJValueP value(CJavaScript *js);
+
+ private:
   CJUndefined(CJavaScript *js);
 
+ public:
   CJValue *dup(CJavaScript *js) const override { return new CJUndefined(js); }
 
   std::string toString() const override { return "undefined"; }

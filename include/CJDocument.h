@@ -1,24 +1,23 @@
 #ifndef CJDocument_H
 #define CJDocument_H
 
-#include <CJObjectType.h>
-#include <CJObject.h>
+#include <CJObj.h>
 
 // Document Type
-class CJDocumentType : public CJObjectType {
+class CJDocumentType : public CJObjType {
  public:
-  static CJObjectTypeP instance(CJavaScript *js);
+  static CJObjTypeP instance(CJavaScript *js);
 
-  CJDocumentType();
+  CJDocumentType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjectTypeP type_;
+  static CJObjTypeP type_;
 };
 
 // Document Object
-class CJDocumentObject : public CJObject {
+class CJDocumentObject : public CJObj {
  public:
   CJDocumentObject(CJavaScript *js);
 

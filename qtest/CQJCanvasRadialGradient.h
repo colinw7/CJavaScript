@@ -1,24 +1,28 @@
 #ifndef CQJCanvasRadialGradient_H
 #define CQJCanvasRadialGradient_H
 
-#include <CJObjectType.h>
-#include <CJObject.h>
+#include <CJObj.h>
+#include <QRadialGradient>
 
-class CQJCanvasRadialGradientType : public CJObjectType {
+class CQJavaScript;
+
+class CQJCanvasRadialGradientType : public CJObjType {
  public:
-  static CJObjectTypeP instance();
+  static CJObjTypeP instance(CJavaScript *js);
 
-  CQJCanvasRadialGradientType();
+  CQJCanvasRadialGradientType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *, const std::string &, const Values &) override {
     return CJValueP();
   }
 
  private:
-  static CJObjectTypeP type_;
+  static CJObjTypeP type_;
 };
 
-class CQJCanvasRadialGradient : public CJObject {
+//------
+
+class CQJCanvasRadialGradient : public CJObj {
  public:
   CQJCanvasRadialGradient(CQJavaScript *js, double x1=0, double y1=0, double r1=1,
                           double x2=0, double y2=0, double r2=1);

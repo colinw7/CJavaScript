@@ -33,8 +33,9 @@ exec(CJavaScript *js, const Values &values)
   int nv = values.size();
   int na = args_ .size();
 
-  if (nv > 0)
-    scope_->setProperty("this", values[0]);
+  // TODO: values[0]->this ?
+  //if (nv > 0)
+  //  scope_->setProperty("this", values[0]);
 
   for (int i = 1; i < nv; ++i) {
     int j = i - 1;

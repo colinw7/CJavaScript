@@ -6,8 +6,10 @@
 
 class CQJavaScript;
 
-class CQJImageType : public CJObjectType {
+class CQJImageType : public CJObjType {
  public:
+  static CJObjTypeP instance(CQJavaScript *js);
+
   CQJImageType(CQJavaScript *js);
 
   bool hasConstructor() const { return true; }
@@ -19,8 +21,12 @@ class CQJImageType : public CJObjectType {
   }
 
  private:
+  static CJObjTypeP type_;
+
   CQJavaScript *js_ { 0 };
 };
+
+//------
 
 class CQJImage : public CQJObject {
  public:

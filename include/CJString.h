@@ -1,26 +1,29 @@
 #ifndef CJString_H
 #define CJString_H
 
-#include <CJObjectType.h>
-#include <CJValue.h>
+#include <CJObj.h>
 
 // String Type
-class CJStringType : public CJObjectType {
+class CJStringType : public CJObjType {
  public:
-  static CJObjectTypeP instance(CJavaScript *js);
+  static CJObjTypeP instance(CJavaScript *js);
 
   CJStringType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjectTypeP type_;
+  static CJObjTypeP type_;
 };
 
 //-------
 
 // String Value
-class CJString : public CJValue {
+class CJString : public CJObj {
+ public:
+  static double parseFloat(const std::string &text);
+  static long   parseInt  (const std::string &text);
+
  public:
   CJString(CJavaScript *js, const std::string &text="", char c='\"');
 
@@ -39,16 +42,21 @@ class CJString : public CJValue {
 
   bool toBoolean() const override;
 
+  bool hasIndex() const override { return true; }
+
   CJValueP indexValue(int i) const override;
 
   void setIndexValue(int i, CJValueP value) override;
 
-  int length() const override { return text_.size(); }
+  long length() const override { return text_.size(); }
+
+  CJValueP getProperty(const std::string &key) const override;
+  void setProperty(const std::string &key, CJValueP value) override;
 
   void print(std::ostream &os) const override;
 
  private:
-  CJavaScript *js_ { 0 };
+  CJavaScript* js_ { 0 };
   std::string  text_;
   char         c_ { '\"' };
 };

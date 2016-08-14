@@ -76,8 +76,8 @@ void *CQJObject::qt_metacast(const char *_clname)
     if (!_clname) return Q_NULLPTR;
     if (!strcmp(_clname, qt_meta_stringdata_CQJObject.stringdata0))
         return static_cast<void*>(const_cast< CQJObject*>(this));
-    if (!strcmp(_clname, "CJObject"))
-        return static_cast< CJObject*>(const_cast< CQJObject*>(this));
+    if (!strcmp(_clname, "CJObj"))
+        return static_cast< CJObj*>(const_cast< CQJObject*>(this));
     return QObject::qt_metacast(_clname);
 }
 

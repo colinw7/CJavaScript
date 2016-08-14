@@ -42,10 +42,9 @@ exec(CJavaScript *js)
   else if (typeName_ == "Boolean") {
     CJValueP value1 = exprList_->exec(js);
 
-    if (value1 && value1->toBoolean())
-      value = CJValueP(new CJTrue(js));
-    else
-      value = CJValueP(new CJFalse(js));
+    bool b = (value1 && value1->toBoolean());
+
+    value = js->createBoolValue(b);
   }
   else if (typeName_ == "Array") {
     CJArrayP array;
@@ -66,10 +65,10 @@ exec(CJavaScript *js)
     CJValueP typeValue = scope->getProperty(typeName_);
 
     if (typeValue && typeValue->type() == CJToken::Type::Function) {
-      CJObjectTypeP userType = js->getObjectType(typeName_);
+      CJObjTypeP userType = js->getObjectType(typeName_);
 
       if (! userType)
-        userType = js->addObjectType(typeName_, CJObjectTypeP(new CJUserType(typeName_)));
+        userType = js->addObjectType(typeName_, CJObjTypeP(new CJUserType(js, typeName_)));
 
       CJUserObjectP userObj(new CJUserObject(js, userType));
 
@@ -77,7 +76,7 @@ exec(CJavaScript *js)
 
       CJFunctionP fn = std::static_pointer_cast<CJFunction>(typeValue);
 
-      CJObjectType::Values fnValues;
+      CJObjType::Values fnValues;
 
       fnValues.push_back(objValue);
 
@@ -89,7 +88,7 @@ exec(CJavaScript *js)
       value = objValue;
     }
     else {
-      CJObjectTypeP userType = js->getObjectType(typeName_);
+      CJObjTypeP userType = js->getObjectType(typeName_);
 
       if (! userType) {
         js->errorMsg("Invalid type name '" + typeName_ + "'");
@@ -101,7 +100,7 @@ exec(CJavaScript *js)
         return CJValueP();
       }
 
-      CJObjectType::Values fnValues;
+      CJObjType::Values fnValues;
 
       for (auto &v : values)
         fnValues.push_back(v);

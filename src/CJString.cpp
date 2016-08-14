@@ -2,14 +2,14 @@
 #include <CJavaScript.h>
 #include <CJUtil.h>
 
-CJObjectTypeP CJStringType::type_;
+CJObjTypeP CJStringType::type_;
 
-CJObjectTypeP
+CJObjTypeP
 CJStringType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjectTypeP(new CJStringType(js));
+    type_ = CJObjTypeP(new CJStringType(js));
 
     js->addObjectType("string", type_);
 
@@ -21,19 +21,23 @@ instance(CJavaScript *js)
 
 CJStringType::
 CJStringType(CJavaScript *js) :
- CJObjectType(CJToken::Type::String, "string")
+ CJObjType(js, CJToken::Type::String, "string")
 {
-  addFunction(js, "charAt");
-  addFunction(js, "concat");
-  addFunction(js, "indexOf");
-  addFunction(js, "lastIndexOf");
-  addFunction(js, "replace");
-  addFunction(js, "slice");
-  addFunction(js, "split");
-  addFunction(js, "substr");
-  addFunction(js, "substring");
-  addFunction(js, "toLowerCase");
-  addFunction(js, "toUpperCase");
+  addTypeFunction(js, "fromCharCode");
+  addTypeFunction(js, "fromCodePoint");
+  addTypeFunction(js, "raw");
+
+  addObjectFunction(js, "charAt");
+  addObjectFunction(js, "concat");
+  addObjectFunction(js, "indexOf");
+  addObjectFunction(js, "lastIndexOf");
+  addObjectFunction(js, "replace");
+  addObjectFunction(js, "slice");
+  addObjectFunction(js, "split");
+  addObjectFunction(js, "substr");
+  addObjectFunction(js, "substring");
+  addObjectFunction(js, "toLowerCase");
+  addObjectFunction(js, "toUpperCase");
 }
 
 CJValueP
@@ -50,7 +54,20 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
   std::string str = cstr->text();
 
-  if      (name == "charAt") {
+  //---
+
+  // type functions
+  if      (name == "fromCharCode") {
+    return CJValueP();
+  }
+  else if (name == "fromCodePoint") {
+    return CJValueP();
+  }
+  else if (name == "raw") {
+    return CJValueP();
+  }
+  // object functions
+  else if (name == "charAt") {
     if (values.size() != 2) {
       js->errorMsg("Invalid number of arguments for " + name);
       return CJValueP();
@@ -106,11 +123,13 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       return js->createNumberValue(long(p));
     }
   }
+#if 0
   else if (name == "length") {
     long len = cstr->length();
 
     return js->createNumberValue(len);
   }
+#endif
   else if (name == "replace") {
     if (values.size() != 3) {
       js->errorMsg("Invalid number of arguments for " + name);
@@ -253,15 +272,52 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
 CJString::
 CJString(CJavaScript *js, const std::string &text, char c) :
- CJValue(CJStringType::instance(js)), js_(js), text_(text), c_(c)
+ CJObj(CJStringType::instance(js)), js_(js), text_(text), c_(c)
 {
+  addPseudoProperty("length");
+}
+
+CJValueP
+CJString::
+getProperty(const std::string &key) const
+{
+  if (key == "length")
+    return js_->createNumberValue(length());
+
+  return CJObj::getProperty(key);
+}
+
+void
+CJString::
+setProperty(const std::string &key, CJValueP value)
+{
+  if (key == "length") {
+    // TODO:
+    //return CJValueP();
+  }
+
+  CJObj::setProperty(key, value);
 }
 
 double
 CJString::
 toReal() const
 {
-  const char *c_str = text_.c_str();
+  return parseFloat(text_);
+}
+
+long
+CJString::
+toInteger() const
+{
+  return parseInt(text_);
+}
+
+double
+CJString::
+parseFloat(const std::string &text)
+{
+  const char *c_str = text.c_str();
 
   // skip leading space
   int i = 0;
@@ -296,9 +352,9 @@ toReal() const
 
 long
 CJString::
-toInteger() const
+parseInt(const std::string &text)
 {
-  const char *c_str = text_.c_str();
+  const char *c_str = text.c_str();
 
   // skip leading space
   int i = 0;
@@ -327,7 +383,7 @@ toInteger() const
 
   if (*p != '\0') {
     // TODO: error
-    return false;
+    return integer;
   }
 
   return integer;

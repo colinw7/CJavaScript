@@ -6,7 +6,7 @@
 
 class CQJavaScript;
 
-class CQJObject : public QObject, public CJObject {
+class CQJObject : public QObject, public CJObj {
   Q_OBJECT
 
  public:
@@ -15,7 +15,7 @@ class CQJObject : public QObject, public CJObject {
   typedef std::vector<NameValue>          NameValues;
 
  public:
-  CQJObject(CQJavaScript *js, const CJObjectTypeP &type);
+  CQJObject(CQJavaScript *js, const CJObjTypeP &type);
  ~CQJObject();
 
   CQJavaScript *js() const { return js_; }

@@ -1,25 +1,25 @@
 #ifndef CJTypeObjectFunction_H
 #define CJTypeObjectFunction_H
 
+#include <CJFunction.h>
+
 class CJTypeObjectFunction : public CJFunction {
  public:
-  CJTypeObjectFunction(CJavaScript *js, CJObjectTypeP obj, const std::string &name) :
-   CJFunction(js, name, Type::Normal), obj_(obj), name_(name) {
-  }
+  CJTypeObjectFunction(CJavaScript *js, CJObjTypeP obj, const std::string &name);
 
   CJValue *dup(CJavaScript *js) const override {
-    return new CJTypeObjectFunction(js, obj_, name_);
+    return new CJTypeObjectFunction(js, objType_, name_);
   }
 
-  bool hasObjectValue() const override { return true; }
+  bool hasObjectValue() const override { return hasObjValue_; }
+  void setHasObjectValue(bool b) { hasObjValue_ = b; }
 
-  CJValueP exec(CJavaScript *js, const Values &values) {
-    return obj_->exec(js, name_, values);
-  }
+  CJValueP exec(CJavaScript *js, const Values &values);
 
  private:
-  CJObjectTypeP obj_;
-  std::string   name_;
+  CJObjTypeP  objType_;
+  std::string name_;
+  bool        hasObjValue_ { true };
 };
 
 typedef std::shared_ptr<CJTypeObjectFunction> CJTypeObjectFunctionP;

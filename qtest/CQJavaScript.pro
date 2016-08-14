@@ -16,7 +16,14 @@ CONFIG += silent
 # Input
 SOURCES += \
 CQJavaScript.cpp \
+CQJCanvasContext2D.cpp \
 CQJCanvas.cpp \
+CQJCanvasFontMetrics.cpp \
+CQJCanvasImageDataArray.cpp \
+CQJCanvasImageData.cpp \
+CQJCanvasLinearGradient.cpp \
+CQJCanvasPattern.cpp \
+CQJCanvasRadialGradient.cpp \
 CQJDocument.cpp \
 CQJImage.cpp \
 CQJObject.cpp \
@@ -39,6 +46,7 @@ CQJDocument.h \
 CQJImage.h \
 CQJObject.h \
 CQJSCanvas.h \
+CQJUtil.h \
 CQJWindow.h \
 \
 CQHistoryLineEdit.h \

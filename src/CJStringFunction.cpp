@@ -1,4 +1,5 @@
 #include <CJStringFunction.h>
+#include <CJavaScript.h>
 #include <CJString.h>
 
 CJStringFunction::
@@ -9,7 +10,12 @@ CJStringFunction(CJavaScript *js) :
 
 CJValueP
 CJStringFunction::
-exec(CJavaScript *, const Values &)
+exec(CJavaScript *js, const Values &values)
 {
-  return CJValueP();
+  if (values.size() <= 1)
+    return js->createStringValue("");
+
+  std::string s = values[1]->toString();
+
+  return js->createStringValue(s);
 }

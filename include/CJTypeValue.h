@@ -9,11 +9,11 @@ class CJTypeValue : public CJLValue {
   typedef std::vector<CJValueP> Values;
 
  public:
-  CJTypeValue(CJavaScript *js, CJObjectTypeP objType, const std::string &name);
+  CJTypeValue(CJavaScript *js, CJObjTypeP objType, const std::string &name);
 
   CJValue *dup(CJavaScript *js) const override { return new CJTypeValue(js, objType_, name_); }
 
-  CJObjectTypeP getObjType() const { return objType_; }
+  CJObjTypeP getObjType() const { return objType_; }
 
   CJValueP value() const;
 
@@ -31,7 +31,7 @@ class CJTypeValue : public CJLValue {
 
  private:
   CJavaScript*  js_ { 0 };
-  CJObjectTypeP objType_;
+  CJObjTypeP objType_;
   std::string   name_;
 };
 

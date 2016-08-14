@@ -58,7 +58,13 @@ bool
 CJNameSpace::
 hasProperty(const std::string &key) const
 {
-  return (keyValues_.find(key) != keyValues_.end());
+  if (keyValues_.find(key) != keyValues_.end())
+    return true;
+
+  if (keyNames_.find(key) != keyNames_.end())
+    return true;
+
+  return false;
 }
 
 CJValueP
@@ -95,12 +101,17 @@ getRealProperty(const std::string &key, double def) const
 
 CJNameSpace::Names
 CJNameSpace::
-getPropertyNames() const
+getPropertyNames(bool pseudo) const
 {
   Names names;
 
   for (const auto &kv : keyValues_)
     names.push_back(kv.first);
+
+  if (pseudo) {
+    for (const auto &n : keyNames_)
+      names.push_back(n);
+  }
 
   return names;
 }
@@ -110,4 +121,11 @@ CJNameSpace::
 deleteProperty(const std::string &key)
 {
   keyValues_.erase(key);
+}
+
+void
+CJNameSpace::
+addPseudoProperty(const std::string &key)
+{
+  keyNames_.insert(key);
 }

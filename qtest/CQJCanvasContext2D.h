@@ -1,24 +1,27 @@
 #ifndef CQJCanvasContext2D_H
 #define CQJCanvasContext2D_H
 
-#include <CJObjectType.h>
-#include <CJObject.h>
+#include <CJObj.h>
 
-class CQJCanvasContext2DType : public CJObjectType {
+class CQJavaScript;
+
+class CQJCanvasContext2DType : public CJObjType {
  public:
-  static CJObjectTypeP instance(CQJavaScript *js);
+  static CJObjTypeP instance(CQJavaScript *js);
 
-  CQJCanvasContext2DType();
+  CQJCanvasContext2DType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *, const std::string &, const Values &) override {
     return CJValueP();
   }
 
  private:
-  static CJObjectTypeP type_;
+  static CJObjTypeP type_;
 };
 
-class CQJCanvasContext2D : public CJObject {
+//------
+
+class CQJCanvasContext2D : public CJObj {
  public:
   CQJCanvasContext2D(CQJavaScript *js);
 

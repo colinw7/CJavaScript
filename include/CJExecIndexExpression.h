@@ -24,6 +24,9 @@ class CJExecIndexExpression : public CJExecExpression {
 
   CJValueP exec(CJavaScript *js) override;
 
+  CJValueP indexValue(CJavaScript *js, CJValueP avalue);
+  void setIndexValue(CJavaScript *js, CJValueP avalue, CJValueP rvalue);
+
   void print(std::ostream &os) const override;
 
  private:

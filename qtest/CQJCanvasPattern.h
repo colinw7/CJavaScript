@@ -1,24 +1,28 @@
 #ifndef CQJCanvasPattern_H
 #define CQJCanvasPattern_H
 
-#include <CJObjectType.h>
-#include <CJObject.h>
+#include <CJObj.h>
+#include <QImage>
 
-class CQJCanvasPatternType : public CJObjectType {
+class CQJavaScript;
+
+class CQJCanvasPatternType : public CJObjType {
  public:
-  static CJObjectTypeP instance();
+  static CJObjTypeP instance(CJavaScript *js);
 
-  CQJCanvasPatternType();
+  CQJCanvasPatternType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *, const std::string &, const Values &) override {
     return CJValueP();
   }
 
  private:
-  static CJObjectTypeP type_;
+  static CJObjTypeP type_;
 };
 
-class CQJCanvasPattern : public CJObject {
+//------
+
+class CQJCanvasPattern : public CJObj {
  public:
   enum class Repeat {
     None,

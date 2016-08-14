@@ -1,8 +1,8 @@
 #include <CJValue.h>
-#include <CJObjectType.h>
+#include <CJObj.h>
 
 CJValue::
-CJValue(CJObjectTypeP valueType) :
+CJValue(CJObjTypeP valueType) :
  CJToken(valueType->type()), valueType_(valueType)
 {
 }

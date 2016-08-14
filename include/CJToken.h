@@ -3,6 +3,7 @@
 
 #include <CJTypes.h>
 #include <iostream>
+#include <sstream>
 #include <cassert>
 
 class CJToken {
@@ -33,6 +34,7 @@ class CJToken {
     IncrDecrExpression,
     Block,
     Function,
+    This,
     For,
     If,
     While,
@@ -57,6 +59,9 @@ class CJToken {
 
   Type type() const { return type_; }
 
+  int lineNum() const { return lineNum_; }
+  void setLineNum(int i) { lineNum_ = i; }
+
   bool isBoolType() const { return type_ == Type::True || type_ == Type::False; }
 
   template<typename T> T *cast() { return static_cast<T *>(this); }
@@ -67,6 +72,11 @@ class CJToken {
 
   virtual CJValueP exec(CJavaScript *) { return CJValueP(); }
 
+  virtual std::string toString() const {
+    std::ostringstream ss; ss << *this;
+    return ss.str();
+  }
+
   virtual void print(std::ostream &os) const = 0;
 
   friend std::ostream &operator<<(std::ostream &os, const CJToken &rhs) {
@@ -76,7 +86,8 @@ class CJToken {
   }
 
  protected:
-  Type type_;
+  Type type_    { Type::None };
+  int  lineNum_ { 0 };
 };
 
 typedef std::shared_ptr<CJToken> CJTokenP;

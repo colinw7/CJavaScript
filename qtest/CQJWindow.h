@@ -5,14 +5,21 @@
 
 class QTimer;
 
-class CQJWindowType : public CJObjectType {
+class CQJWindowType : public CJObjType {
  public:
-  CQJWindowType();
+  static CJObjTypeP instance(CJavaScript *js);
+
+  CQJWindowType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *, const std::string &, const Values &) override {
     return CJValueP();
   }
+
+ private:
+  static CJObjTypeP type_;
 };
+
+//------
 
 class CQJWindow : public CQJObject {
   Q_OBJECT

@@ -1,42 +1,35 @@
 #ifndef CJNumber_H
 #define CJNumber_H
 
-#include <CJObjectType.h>
-#include <CJValue.h>
+#include <CJObj.h>
 #include <limits>
 #include <sstream>
 
 // Number Type
-class CJNumberType : public CJObjectType {
+class CJNumberType : public CJObjType {
  public:
-  static CJObjectTypeP instance(CJavaScript *js);
+  static CJObjTypeP instance(CJavaScript *js);
 
   CJNumberType(CJavaScript *js);
+
+  CJValueP getProperty(const std::string &key) const;
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjectTypeP type_;
+  static CJObjTypeP type_;
 };
 
 //------
 
 // Number Value
-class CJNumber : public CJValue {
+class CJNumber : public CJObj {
  public:
   CJNumber(CJavaScript *js, double real=0.0);
 
   CJNumber *dup(CJavaScript *js) const override { return new CJNumber(js, real_); }
 
-  std::string toString() const override {
-    std::ostringstream ss;
-
-    ss.precision(std::numeric_limits<double>::max_digits10);
-
-    ss << real_;
-
-    return ss.str();
-  }
+  std::string toString() const override;
 
   double real() const { return real_; }
   void setReal(double r) { real_ = r; }
@@ -55,12 +48,9 @@ class CJNumber : public CJValue {
     return 0;
   }
 
-  void print(std::ostream &os) const override {
-    os << toString();
-  }
-
  private:
-  double real_;
+  CJavaScript* js_ { 0 };
+  double       real_;
 };
 
 typedef std::shared_ptr<CJNumber> CJNumberP;

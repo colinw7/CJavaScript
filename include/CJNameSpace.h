@@ -3,11 +3,13 @@
 
 #include <CJTypes.h>
 #include <map>
+#include <set>
 #include <vector>
 
 class CJNameSpace {
  public:
   typedef std::map<std::string,CJValueP> KeyValues;
+  typedef std::set<std::string>          KeyNames;
   typedef std::vector<std::string>       Names;
 
  public:
@@ -18,6 +20,8 @@ class CJNameSpace {
   virtual ~CJNameSpace() { }
 
   const KeyValues &keyValues() const { return keyValues_; }
+
+  const KeyNames &keyNames() const { return keyNames_; }
 
   void setRealProperty   (CJavaScript *js, const std::string &key, double r);
   void setIntegerProperty(CJavaScript *js, const std::string &key, long i);
@@ -35,12 +39,17 @@ class CJNameSpace {
 
   virtual CJValueP getProperty(const std::string &key) const;
 
-  Names getPropertyNames() const;
+  Names getPropertyNames(bool pseudo=true) const;
 
   void deleteProperty(const std::string &key);
 
+  void addPseudoProperty(const std::string &key);
+
+  const KeyNames &getPseudoPropertyNames() const { return keyNames_; }
+
  protected:
   KeyValues keyValues_;
+  KeyNames  keyNames_;
 };
 
 #endif

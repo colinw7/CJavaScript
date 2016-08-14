@@ -2,19 +2,36 @@
 #include <CQJavaScript.h>
 #include <CQJavaScript.h>
 
+CJObjTypeP CQJDocumentType::type_;
+
+CJObjTypeP
 CQJDocumentType::
-CQJDocumentType() :
- CJObjectType(CJToken::Type::Object, "Document")
+instance(CJavaScript *js)
+{
+  if (! type_) {
+    type_ = CJObjTypeP(new CQJDocumentType(js));
+
+    js->addObjectType("document", type_);
+  }
+
+  return type_;
+}
+
+CQJDocumentType::
+CQJDocumentType(CJavaScript *js) :
+ CJObjType(js, CJToken::Type::Object, "Document")
 {
 }
 
+//---
+
 CQJDocument::
 CQJDocument(CQJavaScript *qjs) :
- CJObject(qjs->jsDocumentType()), js_(qjs)
+ CJObj(CQJDocumentType::instance(qjs->js())), js_(qjs)
 {
   CJavaScript *js = qjs->js();
 
-  type_->addFunction(js, "getElementById");
+  type_->addObjectFunction(js, "getElementById");
 }
 
 CJValueP

@@ -1,14 +1,15 @@
 #include <CJArray.h>
 #include <CJavaScript.h>
+#include <algorithm>
 
-CJObjectTypeP CJArrayType::type_;
+CJObjTypeP CJArrayType::type_;
 
-CJObjectTypeP
+CJObjTypeP
 CJArrayType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjectTypeP(new CJArrayType(js));
+    type_ = CJObjTypeP(new CJArrayType(js));
 
     js->addObjectType("array", type_);
 
@@ -20,16 +21,23 @@ instance(CJavaScript *js)
 
 CJArrayType::
 CJArrayType(CJavaScript *js) :
- CJObjectType(CJToken::Type::Array, "array")
+ CJObjType(js, CJToken::Type::Array, "array")
 {
-  addFunction(js, "concat");
-  addFunction(js, "join");
-  addFunction(js, "pop");
-  addFunction(js, "push");
-  addFunction(js, "reverse");
-  addFunction(js, "shift");
-  addFunction(js, "sort");
-  addFunction(js, "unshift");
+  addTypeFunction(js, "isArray");
+  addTypeFunction(js, "observe");
+  addTypeFunction(js, "unobserve");
+  addTypeFunction(js, "from");
+  addTypeFunction(js, "of");
+
+  addObjectFunction(js, "toString");
+  addObjectFunction(js, "concat");
+  addObjectFunction(js, "join");
+  addObjectFunction(js, "pop");
+  addObjectFunction(js, "push");
+  addObjectFunction(js, "reverse");
+  addObjectFunction(js, "shift");
+  addObjectFunction(js, "sort");
+  addObjectFunction(js, "unshift");
 }
 
 CJValueP
@@ -44,13 +52,57 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
   CJArray *array = values[0]->cast<CJArray>();
   assert(array);
 
-  if      (name == "concat") {
+  // type functions
+  if      (name == "isArray") {
+    if (values.size() > 1)
+      return js->createBoolValue(values[1]->type() == CJToken::Type::Array);
+    else
+      return CJValueP();
+  }
+  else if (name == "observe") {
+  }
+  else if (name == "unobserve") {
+  }
+  else if (name == "from") {
+    if (values.size() > 1) {
+      if (values[1]->hasIndex()) {
+        long len = values[1]->length();
+
+        CJArray *array = new CJArray(js);
+
+        for (uint i = 0; i < len; ++i)
+          array->addValue(values[1]->indexValue(i));
+
+        return CJValueP(array);
+      }
+      else
+        return CJValueP();
+    }
+    else
+      return CJValueP();
+  }
+  else if (name == "of") {
+    CJArray *array = new CJArray(js);
+
+    for (uint i = 1; i < values.size(); ++i)
+      array->addValue(values[i]);
+
+    return CJValueP(array);
+  }
+  // object functions
+  else if (name == "toString") {
+    return js->createStringValue(array->toString());
+  }
+  else if (name == "concat") {
     if (values.size() != 2) {
       js->errorMsg("Invalid number of arguments for " + name);
       return CJValueP();
     }
 
-    if (values[1]->hasIndex()) {
+    if      (values[1]->type() == CJToken::Type::String) {
+      array->addValue(values[1]);
+    }
+    else if (values[1]->hasIndex()) {
       int len = values[1]->length();
 
       for (int i = 0; i < len; ++i) {
@@ -82,11 +134,13 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     return js->createStringValue(str);
   }
+#if 0
   else if (name == "length") {
     long len = array->length();
 
     return js->createNumberValue(len);
   }
+#endif
   else if (name == "pop") {
     if (values.size() != 1) {
       js->errorMsg("Invalid number of arguments for " + name);
@@ -166,24 +220,29 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
 CJArray::
 CJArray(CJavaScript *js, int n) :
- CJValue(CJArrayType::instance(js))
+ CJObj(CJArrayType::instance(js)), js_(js)
 {
   if (n > 0)
     values_.resize(n);
+
+  addPseudoProperty("length");
 }
 
 CJArray::
 CJArray(CJavaScript *js, const Values &values) :
- CJValue(CJArrayType::instance(js)), values_(values)
+ CJObj(CJArrayType::instance(js)), js_(js), values_(values)
 {
+  addPseudoProperty("length");
 }
 
 CJArray::
 CJArray(CJavaScript *js, const std::vector<CJValueP> &values) :
- CJValue(CJArrayType::instance(js))
+ CJObj(CJArrayType::instance(js)), js_(js)
 {
   for (const auto &v : values)
     values_.push_back(v);
+
+  addPseudoProperty("length");
 }
 
 void
@@ -282,6 +341,28 @@ sort()
   Cmp cmp;
 
   std::sort(values_.begin(), values_.end(), cmp);
+}
+
+CJValueP
+CJArray::
+getProperty(const std::string &key) const
+{
+  if (key == "length")
+    return js_->createNumberValue(length());
+
+  return CJObj::getProperty(key);
+}
+
+void
+CJArray::
+setProperty(const std::string &key, CJValueP value)
+{
+  if (key == "length") {
+    // TODO:
+    //return CJValueP();
+  }
+
+  CJObj::setProperty(key, value);
 }
 
 void

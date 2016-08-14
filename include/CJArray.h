@@ -1,35 +1,32 @@
 #ifndef CJArray_H
 #define CJArray_H
 
-#include <CJObjectType.h>
-#include <CJValue.h>
+#include <CJObj.h>
 #include <deque>
 #include <vector>
-#include <algorithm>
 
 // Array Type
-class CJArrayType : public CJObjectType {
+class CJArrayType : public CJObjType {
  public:
-  static CJObjectTypeP instance(CJavaScript *js);
+  static CJObjTypeP instance(CJavaScript *js);
 
   CJArrayType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjectTypeP type_;
+  static CJObjTypeP type_;
 };
 
 //-------
 
 // Array Value
-class CJArray : public CJValue {
+class CJArray : public CJObj {
  public:
   typedef std::deque<CJValueP> Values;
 
  public:
   CJArray(CJavaScript *js, int n=0);
-
   CJArray(CJavaScript *js, const Values &values);
   CJArray(CJavaScript *js, const std::vector<CJValueP> &values);
 
@@ -42,7 +39,11 @@ class CJArray : public CJValue {
 
   void setValues(const std::vector<CJValueP> &values);
 
-  std::string toString() const override { return ""; }
+  std::string toString() const override {
+    std::ostringstream ss; ss << *this;
+
+    return ss.str();
+  }
 
   double toReal() const override { return 0; }
 
@@ -62,16 +63,20 @@ class CJArray : public CJValue {
 
   void setIndexValue(int i, CJValueP value) override;
 
-  int length() const override { return values_.size(); }
+  long length() const override { return values_.size(); }
 
   void reverse();
 
   void sort();
 
+  CJValueP getProperty(const std::string &key) const override;
+  void setProperty(const std::string &key, CJValueP value) override;
+
   void print(std::ostream &os) const override;
 
  private:
-  Values values_;
+  CJavaScript *js_ { 0 };
+  Values       values_;
 };
 
 typedef std::shared_ptr<CJArray> CJArrayP;

@@ -5,7 +5,7 @@
 
 class CJLValue : public CJValue {
  public:
-  CJLValue(CJObjectTypeP valueType) :
+  CJLValue(CJObjTypeP valueType) :
    CJValue(valueType) {
   }
 

@@ -2,6 +2,7 @@
 #define CJExecExpressionList_H
 
 #include <CJToken.h>
+#include <vector>
 #include <iostream>
 
 // <expression> [, <expression>]*
@@ -11,58 +12,19 @@ class CJExecExpressionList : public CJToken {
   typedef std::vector<CJValueP>          Values;
 
  public:
-  CJExecExpressionList(CJToken::Type type=CJToken::Type::ExpressionList) :
-   CJToken(type) {
-  }
+  CJExecExpressionList(CJToken::Type type=CJToken::Type::ExpressionList);
 
   const Expressions &expressions() const { return expressions_; }
 
-  void addExpression(CJExecExpressionP expr) {
-    expressions_.push_back(expr);
-  }
+  void addExpression(CJExecExpressionP expr);
 
-  CJExecExpressionP indexExpression(int i) {
-    if (i < 0 || i >= int(expressions_.size()))
-      return CJExecExpressionP();
+  CJExecExpressionP indexExpression(int i);
 
-    return expressions_[i];
-  }
+  Values getValues(CJavaScript *js) const;
 
-  Values getValues(CJavaScript *js) const {
-    Values values;
+  CJValueP exec(CJavaScript *js) override;
 
-    for (auto &e : expressions_) {
-      assert(e);
-
-      CJValueP value = e->exec(js);
-
-      values.push_back(value);
-    }
-
-    return values;
-  }
-
-  CJValueP exec(CJavaScript *js) override {
-    Values values = getValues(js);
-
-    if (values.empty())
-      return CJValueP();
-
-    return values.back();
-  }
-
-  void print(std::ostream &os) const override {
-    int i = 0;
-
-    for (auto &e : expressions_) {
-      if (i > 0)
-        os << ", ";
-
-      os << *e;
-
-      ++i;
-    }
-  }
+  void print(std::ostream &os) const override;
 
  private:
   Expressions expressions_;

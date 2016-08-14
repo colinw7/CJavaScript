@@ -4,6 +4,12 @@
 #include <CJString.h>
 #include <CJArray.h>
 
+CJTypeFunction::
+CJTypeFunction(CJavaScript *js, const std::string &name, CJObjTypeP type) :
+ CJFunction(js, name, CJFunction::Type::Type), type_(type)
+{
+}
+
 CJValueP
 CJTypeFunction::
 exec(CJavaScript *js, const Values &values)
@@ -18,15 +24,15 @@ exec(CJavaScript *js, const Values &values)
   CJValueP ovalue = values[0];
 
   if      (ovalue->type() == CJToken::Type::Object) {
-    value = ovalue->cast<CJObject>()->execNameFn(js, name(), values);
+    value = ovalue->cast<CJObj>()->execNameFn(js, name(), values);
   }
   else if (ovalue->type() == CJToken::Type::String) {
-    CJObjectTypeP stringType = CJStringType::instance(js);
+    CJObjTypeP stringType = CJStringType::instance(js);
 
     value = stringType->exec(js, name(), values);
   }
   else if (ovalue->type() == CJToken::Type::Array) {
-    CJObjectTypeP arrayType = CJArrayType::instance(js);
+    CJObjTypeP arrayType = CJArrayType::instance(js);
 
     value = arrayType->exec(js, name(), values);
   }

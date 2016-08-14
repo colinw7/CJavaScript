@@ -1,22 +1,22 @@
 #ifndef CJDictionary_H
 #define CJDictionary_H
 
-#include <CJObjectType.h>
+#include <CJObj.h>
 #include <CJValue.h>
 #include <CJNameSpace.h>
 #include <sstream>
 
 // Dictionary Type
-class CJDictionaryType : public CJObjectType {
+class CJDictionaryType : public CJObjType {
  public:
-  static CJObjectTypeP instance(CJavaScript *js);
+  static CJObjTypeP instance(CJavaScript *js);
 
   CJDictionaryType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjectTypeP type_;
+  static CJObjTypeP type_;
 };
 
 //------

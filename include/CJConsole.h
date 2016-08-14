@@ -1,24 +1,23 @@
 #ifndef CJConsole_H
 #define CJConsole_H
 
-#include <CJObjectType.h>
-#include <CJObject.h>
+#include <CJObj.h>
 
 // Console Type
-class CJConsoleType : public CJObjectType {
+class CJConsoleType : public CJObjType {
  public:
-  static CJObjectTypeP instance(CJavaScript *js);
+  static CJObjTypeP instance(CJavaScript *js);
 
-  CJConsoleType();
+  CJConsoleType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjectTypeP type_;
+  static CJObjTypeP type_;
 };
 
 // Console Object
-class CJConsoleObject : public CJObject {
+class CJConsoleObject : public CJObj {
  public:
   CJConsoleObject(CJavaScript *js);
 

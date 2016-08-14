@@ -2,9 +2,24 @@
 #include <CQJavaScript.h>
 #include <iostream>
 
+CJObjTypeP CQJImageType::type_;
+
+CJObjTypeP
 CQJImageType::
-CQJImageType(CQJavaScript *qjs) :
- CJObjectType(CJToken::Type::Object, "Image"), js_(qjs)
+instance(CQJavaScript *js)
+{
+  if (! type_) {
+    type_ = CJObjTypeP(new CQJImageType(js));
+
+    js->js()->addObjectType("Image", type_);
+  }
+
+  return type_;
+}
+
+CQJImageType::
+CQJImageType(CQJavaScript *js) :
+ CJObjType(js->js(), CJToken::Type::Object, "Image"), js_(js)
 {
 }
 
@@ -19,7 +34,7 @@ construct(CJavaScript *, const Values &)
 
 CQJImage::
 CQJImage(CQJavaScript *qjs) :
- CQJObject(qjs, qjs->jsImageType())
+ CQJObject(qjs, CQJImageType::instance(qjs))
 {
   CJavaScript *js = js_->js();
 
@@ -47,7 +62,7 @@ void
 CQJImage::
 setProperty(const std::string &name, CJValueP value)
 {
-  CJObject::setProperty(name, value);
+  CJObj::setProperty(name, value);
 
   if      (name == "src") {
     std::string filename = value->toString();
@@ -61,7 +76,7 @@ setProperty(const std::string &name, CJValueP value)
     if (value->type() == CJToken::Type::Function) {
       CJFunctionP fn = std::static_pointer_cast<CJFunction>(value);
 
-      CJObjectType::Values values;
+      CJObjType::Values values;
 
       values.push_back(shared_from_this());
 

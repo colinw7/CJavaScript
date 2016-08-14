@@ -26,6 +26,7 @@ class CJKeyword : public CJToken {
     New,
     Return,
     Switch,
+    This,
     Throw,
     Try,
     Var,

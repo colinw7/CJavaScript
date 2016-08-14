@@ -1,14 +1,14 @@
 #include <CJNull.h>
 #include <CJavaScript.h>
 
-CJObjectTypeP CJNullType::type_;
+CJObjTypeP CJNullType::type_;
 
-CJObjectTypeP
+CJObjTypeP
 CJNullType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjectTypeP(new CJNullType(js));
+    type_ = CJObjTypeP(new CJNullType(js));
 
     js->addObjectType("null", type_);
   }
@@ -17,8 +17,8 @@ instance(CJavaScript *js)
 }
 
 CJNullType::
-CJNullType(CJavaScript *) :
- CJObjectType(CJToken::Type::Null, "null")
+CJNullType(CJavaScript *js) :
+ CJObjType(js, CJToken::Type::Null, "null")
 {
 }
 
@@ -30,6 +30,18 @@ exec(CJavaScript *, const std::string &, const Values &)
 }
 
 //------
+
+CJValueP
+CJNull::
+value(CJavaScript *js)
+{
+  static CJValueP nullValue;
+
+  if (! nullValue)
+    nullValue = CJValueP(new CJNull(js));
+
+  return nullValue;
+}
 
 CJNull::
 CJNull(CJavaScript *js) :

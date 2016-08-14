@@ -1,14 +1,14 @@
 #include <CJFalse.h>
 #include <CJavaScript.h>
 
-CJObjectTypeP CJFalseType::type_;
+CJObjTypeP CJFalseType::type_;
 
-CJObjectTypeP
+CJObjTypeP
 CJFalseType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjectTypeP(new CJFalseType(js));
+    type_ = CJObjTypeP(new CJFalseType(js));
 
     js->addObjectType("false", type_);
   }
@@ -18,10 +18,10 @@ instance(CJavaScript *js)
 
 CJFalseType::
 CJFalseType(CJavaScript *js) :
- CJObjectType(CJToken::Type::False, "false")
+ CJObjType(js, CJToken::Type::False, "false")
 {
-  addFunction(js, "toString");
-  addFunction(js, "valueOf");
+  addObjectFunction(js, "toString");
+  addObjectFunction(js, "valueOf");
 }
 
 CJValueP
@@ -31,12 +31,24 @@ exec(CJavaScript *js, const std::string &name, const Values &)
   if      (name == "toString")
     return js->createStringValue("false");
   else if (name == "valueOf")
-    return CJValueP(new CJFalse(js));
+    return js->createFalseValue();
   else
     return CJValueP();
 }
 
 //------
+
+CJValueP
+CJFalse::
+value(CJavaScript *js)
+{
+  static CJValueP falseValue;
+
+  if (! falseValue)
+    falseValue = CJValueP(new CJFalse(js));
+
+  return falseValue;
+}
 
 CJFalse::
 CJFalse(CJavaScript *js) :

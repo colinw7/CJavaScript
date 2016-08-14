@@ -1,14 +1,14 @@
 #include <CJDocument.h>
 #include <CJavaScript.h>
 
-CJObjectTypeP CJDocumentType::type_;
+CJObjTypeP CJDocumentType::type_;
 
-CJObjectTypeP
+CJObjTypeP
 CJDocumentType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjectTypeP(new CJDocumentType);
+    type_ = CJObjTypeP(new CJDocumentType(js));
 
     js->addObjectType("document", type_);
   }
@@ -17,8 +17,8 @@ instance(CJavaScript *js)
 }
 
 CJDocumentType::
-CJDocumentType() :
- CJObjectType(CJToken::Type::Object, "Document")
+CJDocumentType(CJavaScript *js) :
+ CJObjType(js, CJToken::Type::Object, "Document")
 {
 }
 
@@ -33,9 +33,9 @@ exec(CJavaScript *, const std::string &, const Values &)
 
 CJDocumentObject::
 CJDocumentObject(CJavaScript *js) :
- CJObject(CJDocumentType::instance(js)), js_(js)
+ CJObj(CJDocumentType::instance(js)), js_(js)
 {
-  type_->addFunction(js, "write");
+  type_->addObjectFunction(js, "write");
 }
 
 CJValueP

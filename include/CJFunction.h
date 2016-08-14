@@ -1,21 +1,21 @@
 #ifndef CJFunction_H
 #define CJFunction_H
 
-#include <CJObjectType.h>
+#include <CJObj.h>
 #include <CJValue.h>
 #include <vector>
 
 // Function Type
-class CJFunctionType : public CJObjectType {
+class CJFunctionType : public CJObjType {
  public:
-  static CJObjectTypeP instance(CJavaScript *js);
+  static CJObjTypeP instance(CJavaScript *js);
 
-  CJFunctionType();
+  CJFunctionType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjectTypeP type_;
+  static CJObjTypeP type_;
 };
 
 //------
@@ -28,8 +28,11 @@ class CJFunction : public CJValue {
     Real,
     Real2,
     Random,
+    Type,
+    ObjectType,
+    Object,
     User,
-    Object
+    Global
   };
 
   typedef std::vector<CJValueP> Values;

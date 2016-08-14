@@ -1,6 +1,12 @@
 #include <CJUserObject.h>
 #include <CJavaScript.h>
 
+CJUserType::
+CJUserType(CJavaScript *js, const std::string &name) :
+ CJObjType(js, CJToken::Type::Object, name)
+{
+}
+
 CJValueP
 CJUserType::
 exec(CJavaScript *, const std::string &, const Values &)
@@ -11,8 +17,8 @@ exec(CJavaScript *, const std::string &, const Values &)
 //------
 
 CJUserObject::
-CJUserObject(CJavaScript *js, CJObjectTypeP userType) :
- CJObject(userType), js_(js)
+CJUserObject(CJavaScript *js, CJObjTypeP userType) :
+ CJObj(userType), js_(js)
 {
 }
 

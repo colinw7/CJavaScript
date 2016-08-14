@@ -1,4 +1,5 @@
 #include <CJBooleanFunction.h>
+#include <CJavaScript.h>
 #include <CJTrue.h>
 
 CJBooleanFunction::
@@ -9,7 +10,15 @@ CJBooleanFunction(CJavaScript *js) :
 
 CJValueP
 CJBooleanFunction::
-exec(CJavaScript *, const Values &)
+exec(CJavaScript *js, const Values &values)
 {
-  return CJValueP();
+  if (values.size() <= 1)
+    return js->createFalseValue();
+
+  bool b = values[1]->toBoolean();
+
+  if (b)
+    return js->createTrueValue();
+  else
+    return js->createFalseValue();
 }
