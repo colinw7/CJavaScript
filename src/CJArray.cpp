@@ -220,7 +220,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
 CJArray::
 CJArray(CJavaScript *js, int n) :
- CJObj(CJArrayType::instance(js)), js_(js)
+ CJObj(js, CJArrayType::instance(js))
 {
   if (n > 0)
     values_.resize(n);
@@ -230,14 +230,14 @@ CJArray(CJavaScript *js, int n) :
 
 CJArray::
 CJArray(CJavaScript *js, const Values &values) :
- CJObj(CJArrayType::instance(js)), js_(js), values_(values)
+ CJObj(js, CJArrayType::instance(js)), values_(values)
 {
   addPseudoProperty("length");
 }
 
 CJArray::
 CJArray(CJavaScript *js, const std::vector<CJValueP> &values) :
- CJObj(CJArrayType::instance(js)), js_(js)
+ CJObj(js, CJArrayType::instance(js))
 {
   for (const auto &v : values)
     values_.push_back(v);
@@ -345,24 +345,24 @@ sort()
 
 CJValueP
 CJArray::
-getProperty(const std::string &key) const
+getProperty(CJavaScript *js, const std::string &key) const
 {
   if (key == "length")
-    return js_->createNumberValue(length());
+    return js->createNumberValue(length());
 
-  return CJObj::getProperty(key);
+  return CJObj::getProperty(js, key);
 }
 
 void
 CJArray::
-setProperty(const std::string &key, CJValueP value)
+setProperty(CJavaScript *js, const std::string &key, CJValueP value)
 {
   if (key == "length") {
     // TODO:
     //return CJValueP();
   }
 
-  CJObj::setProperty(key, value);
+  CJObj::setProperty(js, key, value);
 }
 
 void

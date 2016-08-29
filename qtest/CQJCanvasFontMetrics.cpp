@@ -26,7 +26,7 @@ CQJCanvasFontMetrics(CQJavaScript *qjs, const QFont &font, const std::string &te
  CQJObject(qjs, CQJCanvasFontMetricsType::instance(qjs->js())),
  text_(text), font_(font), fm_(font)
 {
-  CJavaScript *js = js_->js();
+  CJavaScript *js = qjs_->js();
 
   setRealProperty(js, "width", fm_.width(text.c_str()));
 }

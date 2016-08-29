@@ -1,5 +1,11 @@
 #include <CJKeyword.h>
 
+CJKeyword::
+CJKeyword(const Type &type) :
+ CJToken(CJToken::Type::Keyword), type_(type)
+{
+}
+
 std::string
 CJKeyword::
 name() const

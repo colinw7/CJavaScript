@@ -50,15 +50,14 @@ class CJString : public CJObj {
 
   long length() const override { return text_.size(); }
 
-  CJValueP getProperty(const std::string &key) const override;
-  void setProperty(const std::string &key, CJValueP value) override;
+  CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
+  void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
 
   void print(std::ostream &os) const override;
 
  private:
-  CJavaScript* js_ { 0 };
-  std::string  text_;
-  char         c_ { '\"' };
+  std::string text_;
+  char        c_ { '\"' };
 };
 
 typedef std::shared_ptr<CJString> CJStringP;

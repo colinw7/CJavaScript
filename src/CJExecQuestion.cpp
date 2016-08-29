@@ -1,9 +1,10 @@
 #include <CJExecQuestion.h>
+#include <CJExecExpression.h>
 #include <CJavaScript.h>
 
 CJExecQuestion::
 CJExecQuestion(CJExecExpressionP bexpr) :
- CJToken(CJToken::Type::Question), bexpr_(bexpr)
+ CJToken(CJToken::Type::Question), bexpr_(std::move(bexpr))
 {
 }
 

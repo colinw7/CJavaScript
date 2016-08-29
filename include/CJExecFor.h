@@ -56,6 +56,4 @@ class CJExecFor : public CJToken {
   CJExecBlockP          block_;
 };
 
-typedef std::shared_ptr<CJExecFor> CJExecForP;
-
 #endif

@@ -1,6 +1,7 @@
 #ifndef CQJSCanvas_H
 #define CQJSCanvas_H
 
+#include <CJTypes.h>
 #include <QFrame>
 #include <QPen>
 
@@ -10,7 +11,7 @@ class CQJSCanvas : public QFrame {
   Q_OBJECT
 
  public:
-  CQJSCanvas(CQJavaScript *js);
+  CQJSCanvas(CQJavaScript *js, int size=600);
 
   void setFillColor   (const QColor &c);
   void setFillGradient(const QGradient &g);
@@ -62,6 +63,9 @@ class CQJSCanvas : public QFrame {
   const QFont &font() const { return font_; }
   void setFont(const QFont &v) { font_ = v; }
 
+  const Qt::Alignment &fontAlign() const { return fontAlign_; }
+  void setFontAlign(const Qt::Alignment &v) { fontAlign_ = v; }
+
   void resizeEvent(QResizeEvent *);
 
   void paintEvent(QPaintEvent *);
@@ -77,14 +81,20 @@ class CQJSCanvas : public QFrame {
 
   void contextMenuEvent(QContextMenuEvent *e);
 
+  void keyPressEvent  (QKeyEvent *e);
+  void keyReleaseEvent(QKeyEvent *e);
+
   QSize sizeHint() const;
 
  private:
   void setPen();
   void setBrush();
 
+  void callEventListener(const std::string &name, const std::string &prop, CJValueP event);
+
  private:
-  CQJavaScript*    js_ { 0 };
+  CQJavaScript*    qjs_ { 0 };
+  int              size_ { 600 };
   QPainter*        ip_ { 0 };
   QImage           qimage_;
   QColor           fillColor_   { QColor(Qt::black) };
@@ -103,8 +113,9 @@ class CQJSCanvas : public QFrame {
   QPen             pen_;
   QBrush           fillBrush_;
   QBrush           strokeBrush_;
-  QRectF           rect_;
+//QRectF           rect_;
   QFont            font_;
+  Qt::Alignment    fontAlign_ { Qt::AlignBaseline };
 };
 
 #endif

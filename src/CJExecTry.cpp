@@ -1,4 +1,5 @@
 #include <CJExecTry.h>
+#include <CJExecIdentifiers.h>
 #include <CJavaScript.h>
 
 CJExecTry::
@@ -27,8 +28,22 @@ void
 CJExecTry::
 print(std::ostream &os) const
 {
-  if (tryBlock_ && catchIdentifiers_ && catchBlock_) {
-    os << "try " << *tryBlock_ << " catch (" << *catchIdentifiers_ << ") " << *catchBlock_;
+  os << "try";
+
+  if (tryBlock_)
+    os << " " << *tryBlock_;
+
+  if (catchIdentifiers_ || catchBlock_) {
+    os << " catch";
+
+    if (catchIdentifiers_)
+      os << " (" << *catchIdentifiers_ << ")";
+
+    if (catchBlock_)
+      os << " " << *catchBlock_;
+  }
+
+  if (finallyBlock_) {
+    os << "finally " << *finallyBlock_;
   }
 }
-

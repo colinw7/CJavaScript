@@ -31,6 +31,4 @@ class CJExecAssignExpression : public CJExecExpression {
   CJExecExpressionP rexpr_;
 };
 
-typedef std::shared_ptr<CJExecAssignExpression> CJExecAssignExpressionP;
-
 #endif

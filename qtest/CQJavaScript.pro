@@ -24,11 +24,16 @@ CQJCanvasImageData.cpp \
 CQJCanvasLinearGradient.cpp \
 CQJCanvasPattern.cpp \
 CQJCanvasRadialGradient.cpp \
+CQJDialog.cpp \
 CQJDocument.cpp \
+CQJEvent.cpp \
 CQJImage.cpp \
+CQJIntervalFunction.cpp \
 CQJObject.cpp \
+CQJRequestAnimationFrame.cpp \
 CQJSCanvas.cpp \
 CQJWindow.cpp \
+CQJWindowTimer.cpp \
 \
 CQHistoryLineEdit.cpp \
 
@@ -42,12 +47,17 @@ CQJCanvasImageData.h \
 CQJCanvasLinearGradient.h \
 CQJCanvasPattern.h \
 CQJCanvasRadialGradient.h \
+CQJDialog.h \
 CQJDocument.h \
+CQJEvent.h \
 CQJImage.h \
+CQJIntervalFunction.h \
 CQJObject.h \
+CQJRequestAnimationFrame.h \
 CQJSCanvas.h \
 CQJUtil.h \
 CQJWindow.h \
+CQJWindowTimer.h \
 \
 CQHistoryLineEdit.h \
 
@@ -70,6 +80,7 @@ INCLUDEPATH += \
 ../../CUtil/include \
 ../../CMath/include \
 ../../CStrUtil/include \
+../../CRegExp/include \
 ../../CRGBName/include \
 ../../CCSS/include \
 ../../CXML/include \

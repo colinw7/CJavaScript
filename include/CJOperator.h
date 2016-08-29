@@ -74,10 +74,7 @@ class CJOperator : public CJToken {
   };
 
  public:
-  CJOperator(const Type &type, int precedence, Associativty associativty, Ary ary) :
-   CJToken(CJToken::Type::Operator), type_(type), precedence_(precedence),
-   associativty_(associativty), ary_(ary) {
-  }
+  CJOperator(const Type &type, int precedence, Associativty associativty, Ary ary);
 
   CJOperator *dup() const { return new CJOperator(type_, precedence_, associativty_, ary_); }
 
@@ -89,27 +86,15 @@ class CJOperator : public CJToken {
 
   Associativty associativty() const { return associativty_; }
 
-  bool isAssign() const {
-    return (type_ == Type::PlusAssign ||
-            type_ == Type::MinusAssign ||
-            type_ == Type::TimesAssign ||
-            type_ == Type::DivideAssign ||
-            type_ == Type::ModulusAssign ||
-            type_ == Type::Assign ||
-            type_ == Type::LeftShiftAssign ||
-            type_ == Type::RightShiftAssign ||
-            type_ == Type::UnsignedRightShiftAssign ||
-            type_ == Type::BitwiseAndAssign ||
-            type_ == Type::BitwiseOrAssign ||
-            type_ == Type::BitwiseNotAssign ||
-            type_ == Type::BitwiseXorAssign);
-  }
+  bool isAssign() const;
 
   static bool isAllowUnary(Type type);
 
   void print(std::ostream &os) const override { os << name(); }
 
   std::string name() const;
+
+  static std::string typeName(Type type);
 
  private:
   Type         type_         { Type::None };

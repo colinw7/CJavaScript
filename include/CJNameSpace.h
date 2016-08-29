@@ -11,6 +11,7 @@ class CJNameSpace {
   typedef std::map<std::string,CJValueP> KeyValues;
   typedef std::set<std::string>          KeyNames;
   typedef std::vector<std::string>       Names;
+  typedef std::map<std::string,bool>     ReadOnly;
 
  public:
   CJNameSpace(const KeyValues &keyValues=KeyValues()) :
@@ -30,14 +31,14 @@ class CJNameSpace {
   void setFunctionProperty(CJavaScript *js, const std::string &key, CJFunctionP function);
   void setFunctionProperty(CJavaScript *js, CJFunctionP function);
 
-  std::string getStringProperty(const std::string &key, const std::string &def="") const;
-  double      getRealProperty  (const std::string &key, double def=0.0) const;
+  std::string getStringProperty(CJavaScript *js, const std::string &key,
+                                const std::string &def="") const;
 
-  virtual void setProperty(const std::string &key, CJValueP value);
+  double getRealProperty(CJavaScript *js, const std::string &key, double def=0.0) const;
 
-  virtual bool hasProperty(const std::string &key) const;
-
-  virtual CJValueP getProperty(const std::string &key) const;
+  virtual void setProperty(CJavaScript *js, const std::string &key, CJValueP value);
+  virtual bool hasProperty(CJavaScript *js, const std::string &key) const;
+  virtual CJValueP getProperty(CJavaScript *js, const std::string &key) const;
 
   Names getPropertyNames(bool pseudo=true) const;
 
@@ -47,9 +48,21 @@ class CJNameSpace {
 
   const KeyNames &getPseudoPropertyNames() const { return keyNames_; }
 
+  bool isReadOnlyProperty(const std::string &key) const;
+  void setReadOnlyProperty(const std::string &key, bool b=true);
+
+  void print(std::ostream &os) const;
+
+  friend std::ostream &operator<<(std::ostream &os, const CJNameSpace &ns) {
+    ns.print(os);
+
+    return os;
+  }
+
  protected:
   KeyValues keyValues_;
   KeyNames  keyNames_;
+  ReadOnly  readOnly_;
 };
 
 #endif

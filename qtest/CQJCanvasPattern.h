@@ -34,10 +34,10 @@ class CQJCanvasPattern : public CJObj {
  public:
   CQJCanvasPattern(CQJavaScript *js, const QImage &qimage, const Repeat &repeat);
 
-  CQJavaScript *js() const { return js_; }
+  CQJavaScript *qjs() const { return qjs_; }
 
   CJValue *dup(CJavaScript *) const override {
-    return new CQJCanvasPattern(js_, qimage_, repeat_); }
+    return new CQJCanvasPattern(qjs_, qimage_, repeat_); }
 
   const QImage &qimage() const { return qimage_; }
 
@@ -58,7 +58,7 @@ class CQJCanvasPattern : public CJObj {
   void print(std::ostream &os) const override { os << "canvasPattern"; }
 
  private:
-  CQJavaScript* js_ { 0 };
+  CQJavaScript* qjs_ { 0 };
   QImage        qimage_;
   Repeat        repeat_ { Repeat::XY };
 };

@@ -3,7 +3,7 @@
 
 CJUserFunction::
 CJUserFunction(CJavaScript *js, const std::string &name, const Args &args, CJExecBlockP block) :
- CJFunction(js, name, CJFunction::Type::User), args_(args), block_(block)
+ CJFunction(js, name, CJFunction::Type::User), args_(args), block_(std::move(block))
 {
 }
 
@@ -19,11 +19,18 @@ setScope(CJavaScript *js, const CJavaScript::UserFunctions &userFunctions)
 //js->printScopeChain(scope_, "proc " + name_);
 }
 
+CJValueP
+CJUserFunction::
+getScopeProperty(const std::string &name) const
+{
+  return scope_->getProperty(js_, name);
+}
+
 void
 CJUserFunction::
-setProperty(const std::string &name, CJValueP value)
+setScopeProperty(const std::string &name, CJValueP value)
 {
-  scope_->setProperty(name, value);
+  scope_->setProperty(js_, name, value);
 }
 
 CJValueP
@@ -35,13 +42,13 @@ exec(CJavaScript *js, const Values &values)
 
   // TODO: values[0]->this ?
   //if (nv > 0)
-  //  scope_->setProperty("this", values[0]);
+  //  setScopeProperty("this", values[0]);
 
   for (int i = 1; i < nv; ++i) {
     int j = i - 1;
 
     if (j < na)
-      scope_->setProperty(args_[j], values[i]);
+      setScopeProperty(args_[j], values[i]);
   }
 
   CJUserFunctionP fn = std::static_pointer_cast<CJUserFunction>(shared_from_this());

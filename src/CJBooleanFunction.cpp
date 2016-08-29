@@ -12,10 +12,10 @@ CJValueP
 CJBooleanFunction::
 exec(CJavaScript *js, const Values &values)
 {
-  if (values.size() <= 1)
+  if (values.size() < 1)
     return js->createFalseValue();
 
-  bool b = values[1]->toBoolean();
+  bool b = values[0]->toBoolean();
 
   if (b)
     return js->createTrueValue();

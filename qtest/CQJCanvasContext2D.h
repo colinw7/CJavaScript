@@ -25,9 +25,9 @@ class CQJCanvasContext2D : public CJObj {
  public:
   CQJCanvasContext2D(CQJavaScript *js);
 
-  CQJavaScript *js() const { return js_; }
+  CQJavaScript *qjs() const { return qjs_; }
 
-  CJValue *dup(CJavaScript *) const override { return new CQJCanvasContext2D(js_); }
+  CJValue *dup(CJavaScript *) const override { return new CQJCanvasContext2D(qjs_); }
 
   std::string toString() const override {
     std::ostringstream ss; ss << *this;
@@ -45,9 +45,11 @@ class CQJCanvasContext2D : public CJObj {
  private:
   void initFill();
   void initStroke();
+  void initFont();
 
  private:
-  CQJavaScript *js_ { 0 };
+  CQJavaScript *qjs_ { 0 };
+  std::string   lastFont_;
 };
 
 #endif

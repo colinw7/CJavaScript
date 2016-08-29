@@ -54,6 +54,13 @@ class CJExecExpression : public CJToken {
 
   CJTokenP token(int i) const { return tokens_[i]; }
 
+  CJToken::Type lastTokenType() const {
+    if (tokens_.empty())
+      return CJToken::Type::None;
+
+    return tokens_.back()->type();
+  }
+
   CJValueP exec(CJavaScript *js) override;
 
   void print(std::ostream &os) const override {
@@ -69,13 +76,10 @@ class CJExecExpression : public CJToken {
     }
   }
 
- private:
-  bool isShortCircuit(const Operators &operators, const Values &values) const;
+  static bool isShortCircuit(const Operators &operators, const Values &values);
 
  private:
   Tokens tokens_;
 };
-
-typedef std::shared_ptr<CJExecExpression> CJExecExpressionP;
 
 #endif

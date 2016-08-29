@@ -12,10 +12,10 @@ CJValueP
 CJStringFunction::
 exec(CJavaScript *js, const Values &values)
 {
-  if (values.size() <= 1)
+  if (values.size() < 1)
     return js->createStringValue("");
 
-  std::string s = values[1]->toString();
+  std::string s = values[0]->toString();
 
   return js->createStringValue(s);
 }

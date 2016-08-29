@@ -21,6 +21,16 @@ exec(CJavaScript *js, const Values &values)
 
     return js.exec();
   }
+  else if (name_ == "isFinite") {
+    if (values.size() < 1) {
+      js->errorMsg("Wrong number of function values");
+      return CJValueP();
+    }
+
+    double r = values[0]->toReal();
+
+    return js->createBoolValue(! CJUtil::isInf(r) && ! CJUtil::isNaN(r));
+  }
   else if (name_ == "isNaN") {
     if (values.size() < 1) {
       js->errorMsg("Wrong number of function values");

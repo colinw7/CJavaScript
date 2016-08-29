@@ -27,7 +27,7 @@ CQJDocumentType(CJavaScript *js) :
 
 CQJDocument::
 CQJDocument(CQJavaScript *qjs) :
- CJObj(CQJDocumentType::instance(qjs->js())), js_(qjs)
+ CQJObject(qjs, CQJDocumentType::instance(qjs->js()))
 {
   CJavaScript *js = qjs->js();
 
@@ -36,18 +36,18 @@ CQJDocument(CQJavaScript *qjs) :
 
 CJValueP
 CQJDocument::
-execNameFn(CJavaScript *, const std::string &name, const Values &values)
+execNameFn(CJavaScript *js, const std::string &name, const Values &values)
 {
   if (name == "getElementById") {
     if (values.size() == 2) {
       std::string id = values[1]->toString();
 
       if (id == "canvas")
-        return js_->jsCanvas();
+        return qjs_->jsCanvas();
     }
 
     return CJValueP();
   }
-  else
-    return CJValueP();
+
+  return CQJObject::execNameFn(js, name, values);
 }

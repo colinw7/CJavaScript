@@ -25,7 +25,7 @@ CQJCanvasRadialGradientType(CJavaScript *js) :
 CQJCanvasRadialGradient::
 CQJCanvasRadialGradient(CQJavaScript *qjs, double x1, double y1, double r1,
                         double x2, double y2, double r2) :
- CJObj(CQJCanvasRadialGradientType::instance(qjs->js())), js_(qjs)
+ CJObj(qjs->js(), CQJCanvasRadialGradientType::instance(qjs->js())), qjs_(qjs)
 {
   CJavaScript *js = qjs->js();
 

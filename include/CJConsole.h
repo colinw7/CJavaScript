@@ -16,6 +16,8 @@ class CJConsoleType : public CJObjType {
   static CJObjTypeP type_;
 };
 
+//------
+
 // Console Object
 class CJConsoleObject : public CJObj {
  public:
@@ -24,9 +26,6 @@ class CJConsoleObject : public CJObj {
   CJValue *dup(CJavaScript *js) const override { return new CJConsoleObject(js); }
 
   CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values) override;
-
- private:
-  CJavaScript *js_;
 };
 
 #endif

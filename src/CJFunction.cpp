@@ -1,24 +1,27 @@
 #include <CJFunction.h>
 #include <CJavaScript.h>
 
-CJObjTypeP CJFunctionType::type_;
+CJFunctionType::NameTypeMap CJFunctionType::nameTypeMap_;
 
 CJObjTypeP
 CJFunctionType::
-instance(CJavaScript *js)
+instance(CJavaScript *js, const std::string &name)
 {
-  if (! type_) {
-    type_ = CJObjTypeP(new CJFunctionType(js));
+  auto p = nameTypeMap_.find(name);
 
-    js->addObjectType("function", type_);
-  }
+  if (p == nameTypeMap_.end())
+    p = nameTypeMap_.insert(p, NameTypeMap::value_type(name, CJObjTypeP()));
 
-  return type_;
+  (*p).second = CJObjTypeP(new CJFunctionType(js, name));
+
+  js->addObjectType(name, (*p).second);
+
+  return (*p).second;
 }
 
 CJFunctionType::
-CJFunctionType(CJavaScript *js) :
- CJObjType(js, CJToken::Type::Function, "function")
+CJFunctionType(CJavaScript *js, const std::string &name) :
+ CJObjType(js, CJToken::Type::Function, name), name_(name)
 {
 }
 
@@ -33,6 +36,7 @@ exec(CJavaScript *, const std::string &, const Values &)
 
 CJFunction::
 CJFunction(CJavaScript *js, const std::string &name, Type type) :
- CJValue(CJFunctionType::instance(js)), name_(name), type_(type)
+ CJObj(js, CJFunctionType::instance(js, name)), name_(name), type_(type)
 {
+  setProperty(js, "prototype", CJDictionaryP(new CJDictionary(js)));
 }

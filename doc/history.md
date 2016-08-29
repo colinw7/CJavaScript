@@ -20,3 +20,14 @@
  . single instance of false, true, undefined and null types
  . add infinity and nan values
  . Improve error message line numbers.
+# 8/28/2016
+ . Support 2d and higher array assign
+ . Add break and continue label names
+ . Add labels
+ . Fix expression multiple operator unstack on precedence
+ . Improve token line number tracking
+ . Add do .. while
+ . Add require to load .js file
+ . Add RegExp support
+ . Add expression evaluation debug
+ . Add requestAnimationFrame

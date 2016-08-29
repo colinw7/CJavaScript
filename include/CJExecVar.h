@@ -69,6 +69,4 @@ class CJExecVar : public CJToken {
   VarValues varValues_;
 };
 
-typedef std::shared_ptr<CJExecVar> CJExecVarP;
-
 #endif

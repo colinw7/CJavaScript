@@ -47,6 +47,4 @@ class CJExecIf : public CJToken {
   ExpressionBlock       elseBlock_;
 };
 
-typedef std::shared_ptr<CJExecIf> CJExecIfP;
-
 #endif

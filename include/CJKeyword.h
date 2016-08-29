@@ -36,9 +36,7 @@ class CJKeyword : public CJToken {
   };
 
  public:
-  CJKeyword(const Type &type) :
-   CJToken(CJToken::Type::Keyword), type_(type) {
-  }
+  CJKeyword(const Type &type);
 
   Type type() const { return type_; }
 

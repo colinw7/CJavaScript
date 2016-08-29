@@ -48,6 +48,4 @@ class CJExecSwitch : public CJToken {
   DefaultBlock          defaultBlock_;
 };
 
-typedef std::shared_ptr<CJExecSwitch> CJExecSwitchP;
-
 #endif

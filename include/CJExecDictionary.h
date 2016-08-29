@@ -33,6 +33,4 @@ class CJExecDictionary : public CJToken {
   DictionaryValues values_;
 };
 
-typedef std::shared_ptr<CJExecDictionary> CJExecDictionaryP;
-
 #endif

@@ -18,8 +18,8 @@ instance(CQJavaScript *js)
 }
 
 CQJImageType::
-CQJImageType(CQJavaScript *js) :
- CJObjType(js->js(), CJToken::Type::Object, "Image"), js_(js)
+CQJImageType(CQJavaScript *qjs) :
+ CJObjType(qjs->js(), CJToken::Type::Object, "Image"), qjs_(qjs)
 {
 }
 
@@ -27,7 +27,7 @@ CJValueP
 CQJImageType::
 construct(CJavaScript *, const Values &)
 {
-  return CJValueP(new CQJImage(js_));
+  return CJValueP(new CQJImage(qjs_));
 }
 
 //------
@@ -36,7 +36,7 @@ CQJImage::
 CQJImage(CQJavaScript *qjs) :
  CQJObject(qjs, CQJImageType::instance(qjs))
 {
-  CJavaScript *js = js_->js();
+  CJavaScript *js = qjs_->js();
 
   setStringProperty(js, "src"   , "");
   setStringProperty(js, "onLoad", "");
@@ -44,10 +44,8 @@ CQJImage(CQJavaScript *qjs) :
 
 CJValueP
 CQJImage::
-getProperty(const std::string &name) const
+getProperty(CJavaScript *js, const std::string &name) const
 {
-  CJavaScript *js = js_->js();
-
   if      (name == "width") {
     return js->createNumberValue(long(qimage_.width()));
   }
@@ -55,14 +53,14 @@ getProperty(const std::string &name) const
     return js->createNumberValue(long(qimage_.height()));
   }
   else
-    return CQJObject::getProperty(name);
+    return CQJObject::getProperty(js, name);
 }
 
 void
 CQJImage::
-setProperty(const std::string &name, CJValueP value)
+setProperty(CJavaScript *js, const std::string &name, CJValueP value)
 {
-  CJObj::setProperty(name, value);
+  CJObj::setProperty(js, name, value);
 
   if      (name == "src") {
     std::string filename = value->toString();
@@ -71,8 +69,6 @@ setProperty(const std::string &name, CJValueP value)
       qimage_ = QImage(filename.c_str());
   }
   else if (name == "onload") {
-    CJavaScript *js = js_->js();
-
     if (value->type() == CJToken::Type::Function) {
       CJFunctionP fn = std::static_pointer_cast<CJFunction>(value);
 

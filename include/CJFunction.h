@@ -2,26 +2,32 @@
 #define CJFunction_H
 
 #include <CJObj.h>
-#include <CJValue.h>
+#include <CJDictionary.h>
 #include <vector>
 
 // Function Type
 class CJFunctionType : public CJObjType {
  public:
-  static CJObjTypeP instance(CJavaScript *js);
+  static CJObjTypeP instance(CJavaScript *js, const std::string &name);
 
-  CJFunctionType(CJavaScript *js);
+  CJFunctionType(CJavaScript *js, const std::string &name);
+
+  const std::string &name() const { return name_; }
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjTypeP type_;
+  typedef std::map<std::string,CJObjTypeP> NameTypeMap;
+
+  static NameTypeMap nameTypeMap_;
+
+  std::string name_;
 };
 
 //------
 
 // Function Value
-class CJFunction : public CJValue {
+class CJFunction : public CJObj {
  public:
   enum class Type {
     Normal,
@@ -46,15 +52,11 @@ class CJFunction : public CJValue {
 
   const std::string &name() const { return name_; }
 
-  const Type &type() const { return type_; }
-
   std::string toString() const override { return name_; }
 
-  double toReal() const override { return 1; }
-
-  bool toBoolean() const override { return true; }
-
   virtual bool hasObjectValue() const { return false; }
+
+  const Type &type() const { return type_; }
 
   virtual CJValueP exec(CJavaScript *js, const Values &values) = 0;
 

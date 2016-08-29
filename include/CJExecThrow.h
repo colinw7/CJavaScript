@@ -21,6 +21,4 @@ class CJExecThrow : public CJToken {
   CJExecExpressionP expr_;
 };
 
-typedef std::shared_ptr<CJExecThrow> CJExecThrowP;
-
 #endif

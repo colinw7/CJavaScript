@@ -1,4 +1,8 @@
 #include <CJExecVar.h>
+#include <CJExecIdentifiers.h>
+#include <CJExecExpression.h>
+#include <CJExecArray.h>
+#include <CJExecDictionary.h>
 #include <CJavaScript.h>
 
 CJExecVar::
@@ -51,7 +55,7 @@ print(std::ostream &os) const
 
   for (const auto &v : varValues_) {
     if (v.identifiers)
-      os << " " << v.identifiers;
+      os << " " << *v.identifiers;
 
     if (v.expr || v.block || v.array || v.dict || v.value) {
       os << " = ";
@@ -63,4 +67,6 @@ print(std::ostream &os) const
       else if (v.value) os << *v.value;
     }
   }
+
+  os << ";";
 }

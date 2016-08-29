@@ -36,19 +36,19 @@ CJNumberType(CJavaScript *js) :
 
 CJValueP
 CJNumberType::
-getProperty(const std::string &key) const
+getProperty(CJavaScript *js, const std::string &key) const
 {
   if      (key == "MAX_VALUE") {
-    return js_->createNumberValue(std::numeric_limits<double>::max());
+    return js->createNumberValue(std::numeric_limits<double>::max());
   }
   else if (key == "MIN_VALUE") {
-    return js_->createNumberValue(std::numeric_limits<double>::min());
+    return js->createNumberValue(std::numeric_limits<double>::min());
   }
   else if (key == "NaN") {
-    return js_->createNumberValue(CJUtil::getNaN());
+    return js->createNumberValue(CJUtil::getNaN());
   }
 
-  return CJObjType::getProperty(key);
+  return CJObjType::getProperty(js, key);
 }
 
 CJValueP
@@ -116,7 +116,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
 CJNumber::
 CJNumber(CJavaScript *js, double real) :
- CJObj(CJNumberType::instance(js)), js_(js), real_(real)
+ CJObj(js, CJNumberType::instance(js)), real_(real)
 {
 }
 

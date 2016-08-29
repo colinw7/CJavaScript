@@ -1,9 +1,10 @@
 #include <CJExecDelete.h>
+#include <CJExecIdentifiers.h>
 #include <CJavaScript.h>
 
 CJExecDelete::
 CJExecDelete() :
- CJToken(CJToken::Type::Return)
+ CJToken(CJToken::Type::ExecDelete)
 {
 }
 
@@ -22,6 +23,10 @@ void
 CJExecDelete::
 print(std::ostream &os) const
 {
+  os << "delete";
+
   if (identifiers_)
-    os << "delete " << *identifiers_;
+    os << " " << *identifiers_;
+
+  os << ";";
 }

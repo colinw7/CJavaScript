@@ -3,7 +3,6 @@
 
 #include <CJNameSpace.h>
 #include <CJToken.h>
-#include <set>
 
 class CJObjType : public CJNameSpace, public std::enable_shared_from_this<CJObjType> {
  public:
@@ -24,9 +23,15 @@ class CJObjType : public CJNameSpace, public std::enable_shared_from_this<CJObjT
 
   virtual CJValueP construct(CJavaScript *, const Values &) { return CJValueP(); }
 
-  virtual CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) = 0;
+  CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
 
-  void print(std::ostream &os) const {
+  KeyNames getTypePropertyNames() const;
+
+  virtual CJValueP exec(CJavaScript *, const std::string &, const Values &) {
+    return CJValueP();
+  }
+
+  virtual void print(std::ostream &os) const {
     os << name_;
   }
 
@@ -37,11 +42,9 @@ class CJObjType : public CJNameSpace, public std::enable_shared_from_this<CJObjT
   }
 
  protected:
-  CJavaScript*  js_;
+  CJavaScript*  js_ { 0 };
   CJToken::Type type_;
   std::string   name_;
 };
-
-typedef std::shared_ptr<CJObjType> CJObjTypeP;
 
 #endif

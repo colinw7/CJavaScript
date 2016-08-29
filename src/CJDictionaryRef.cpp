@@ -11,7 +11,7 @@ CJValueP
 CJDictionaryRef::
 value() const
 {
-  return dict_->getProperty(name_);
+  return dict_->getProperty(js_, name_);
 }
 
 void

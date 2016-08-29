@@ -8,7 +8,7 @@ setRealProperty(CJavaScript *js, const std::string &key, double r)
 {
   CJValueP value = js->createNumberValue(r);
 
-  setProperty(key, value);
+  setProperty(js, key, value);
 }
 
 void
@@ -17,7 +17,7 @@ setIntegerProperty(CJavaScript *js, const std::string &key, long i)
 {
   CJValueP value = js->createNumberValue(i);
 
-  setProperty(key, value);
+  setProperty(js, key, value);
 }
 
 void
@@ -26,37 +26,37 @@ setStringProperty(CJavaScript *js, const std::string &key, const std::string &st
 {
   CJValueP value = js->createStringValue(str);
 
-  setProperty(key, value);
+  setProperty(js, key, value);
 }
 
 void
 CJNameSpace::
-setFunctionProperty(CJavaScript *, const std::string &key, CJFunctionP function)
+setFunctionProperty(CJavaScript *js, const std::string &key, CJFunctionP function)
 {
   CJValueP value = std::static_pointer_cast<CJValue>(function);
 
-  setProperty(key, value);
+  setProperty(js, key, value);
 }
 
 void
 CJNameSpace::
-setFunctionProperty(CJavaScript *, CJFunctionP function)
+setFunctionProperty(CJavaScript *js, CJFunctionP function)
 {
   CJValueP value = std::static_pointer_cast<CJValue>(function);
 
-  setProperty(function->name(), value);
+  setProperty(js, function->name(), value);
 }
 
 void
 CJNameSpace::
-setProperty(const std::string &key, CJValueP value)
+setProperty(CJavaScript *, const std::string &key, CJValueP value)
 {
   keyValues_[key] = value;
 }
 
 bool
 CJNameSpace::
-hasProperty(const std::string &key) const
+hasProperty(CJavaScript *, const std::string &key) const
 {
   if (keyValues_.find(key) != keyValues_.end())
     return true;
@@ -69,7 +69,7 @@ hasProperty(const std::string &key) const
 
 CJValueP
 CJNameSpace::
-getProperty(const std::string &key) const
+getProperty(CJavaScript *, const std::string &key) const
 {
   auto p = keyValues_.find(key);
 
@@ -81,9 +81,9 @@ getProperty(const std::string &key) const
 
 std::string
 CJNameSpace::
-getStringProperty(const std::string &key, const std::string &def) const
+getStringProperty(CJavaScript *js, const std::string &key, const std::string &def) const
 {
-  CJValueP v = getProperty(key);
+  CJValueP v = getProperty(js, key);
   if (! v) return def;
 
   return v->toString();
@@ -91,9 +91,9 @@ getStringProperty(const std::string &key, const std::string &def) const
 
 double
 CJNameSpace::
-getRealProperty(const std::string &key, double def) const
+getRealProperty(CJavaScript *js, const std::string &key, double def) const
 {
-  CJValueP v = getProperty(key);
+  CJValueP v = getProperty(js, key);
   if (! v) return def;
 
   return v->toReal();
@@ -128,4 +128,46 @@ CJNameSpace::
 addPseudoProperty(const std::string &key)
 {
   keyNames_.insert(key);
+}
+
+bool
+CJNameSpace::
+isReadOnlyProperty(const std::string &key)  const
+{
+  auto p = readOnly_.find(key);
+
+  if (p != readOnly_.end())
+    return (*p).second;
+
+  return false;
+}
+
+void
+CJNameSpace::
+setReadOnlyProperty(const std::string &key, bool b)
+{
+  readOnly_[key] = b;
+}
+
+void
+CJNameSpace::
+print(std::ostream &os) const
+{
+  int i = 0;
+
+  for (const auto &kv : keyValues_) {
+    if (i > 0) os << " ";
+
+    os << kv.first << ": " << *kv.second;
+
+    ++i;
+  }
+
+  for (const auto &n : keyNames_) {
+    if (i > 0) os << " ";
+
+    os << n << ": <pseudo>";
+
+    ++i;
+  }
 }

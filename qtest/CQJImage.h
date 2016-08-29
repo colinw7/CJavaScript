@@ -23,7 +23,7 @@ class CQJImageType : public CJObjType {
  private:
   static CJObjTypeP type_;
 
-  CQJavaScript *js_ { 0 };
+  CQJavaScript *qjs_ { 0 };
 };
 
 //------
@@ -39,15 +39,15 @@ class CQJImage : public CQJObject {
  public:
   CQJImage(CQJavaScript *js);
 
-  CJValue *dup(CJavaScript *) const override { return new CQJImage(js_); }
+  CJValue *dup(CJavaScript *) const override { return new CQJImage(qjs_); }
 
   QImage qimage() const { return qimage_; }
 
   const Repeat &repeat() const { return repeat_; }
   void setRepeat(const Repeat &v) { repeat_ = v; }
 
-  CJValueP getProperty(const std::string &name) const;
-  void setProperty(const std::string &name, CJValueP value);
+  CJValueP getProperty(CJavaScript *js, const std::string &name) const override;
+  void setProperty(CJavaScript *js, const std::string &name, CJValueP value) override;
 
   CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values);
 

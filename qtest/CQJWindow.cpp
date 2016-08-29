@@ -1,6 +1,6 @@
 #include <CQJWindow.h>
+#include <CQJWindowTimer.h>
 #include <CQJavaScript.h>
-#include <QTimer>
 #include <iostream>
 
 CJObjTypeP CQJWindowType::type_;
@@ -33,10 +33,50 @@ CQJWindow(CQJavaScript *qjs) :
   CJavaScript *js = qjs->js();
 
   type_->addObjectFunction(js, "setTimeout");
+}
 
-  timer_ = new QTimer(this);
+long
+CQJWindow::
+addTimer(CJFunctionP timerFn, double t)
+{
+  CQJWindowP window = std::static_pointer_cast<CQJWindow>(shared_from_this());
 
-  connect(timer_, SIGNAL(timeout()), this, SLOT(timerSlot()));
+  CQJWindowTimer *timer = new CQJWindowTimer(window, timerFn);
+
+  timers_.push_back(timer);
+
+  timer->start(t);
+
+  return timer->id();
+}
+
+void
+CQJWindow::
+removeTimer(long id)
+{
+  for (uint i = 0; i < timers_.size(); ++i) {
+    if (timers_[i]->id() != id)
+      continue;
+
+    delete timers_[i];
+
+    timers_[i] = 0;
+  }
+}
+
+void
+CQJWindow::
+addOneShotTimer(CJFunctionP timerFn, double t)
+{
+  CQJWindowP window = std::static_pointer_cast<CQJWindow>(shared_from_this());
+
+  CQJWindowTimer *timer = new CQJWindowTimer(window, timerFn);
+
+  timers_.push_back(timer);
+
+  timer->setSingleShot(true);
+
+  timer->start(t);
 }
 
 CJValueP
@@ -49,7 +89,15 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
       double   t       = values[2]->toReal();
 
       if (fnValue->type() == CJToken::Type::Function) {
-        timerFn_ = std::static_pointer_cast<CJFunction>(fnValue);
+        CJFunctionP timerFn = std::static_pointer_cast<CJFunction>(fnValue);
+
+        if (! timer_) {
+          CQJWindowP window = std::static_pointer_cast<CQJWindow>(shared_from_this());
+
+          timer_ = new CQJWindowTimer(window, timerFn);
+        }
+        else
+          timer_->setFunction(timerFn);
 
         timer_->start(t);
       }
@@ -59,17 +107,4 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
   }
   else
     return CQJObject::execNameFn(js, name, values);
-}
-
-void
-CQJWindow::
-timerSlot()
-{
-  CJavaScript *js = js_->js();
-
-  CJObjType::Values fnValues;
-
-  fnValues.push_back(shared_from_this());
-
-  timerFn_->exec(js, fnValues);
 }

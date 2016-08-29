@@ -2,22 +2,21 @@
 #define CJExecContinue_H
 
 #include <CJToken.h>
-#include <iostream>
 
 // continue
 class CJExecContinue : public CJToken {
  public:
-  CJExecContinue() :
-   CJToken(CJToken::Type::Return) {
-  }
+  CJExecContinue();
 
   CJValueP exec(CJavaScript *js) override;
 
-  void print(std::ostream &os) const override {
-    os << "continue";
-  }
-};
+  CJExecIdentifiersP identifiers() const { return identifiers_; }
+  void setIdentifiers(CJExecIdentifiersP identifiers) { identifiers_ = identifiers; }
 
-typedef std::shared_ptr<CJExecContinue> CJExecContinueP;
+  void print(std::ostream &os) const override;
+
+ private:
+  CJExecIdentifiersP identifiers_;
+};
 
 #endif

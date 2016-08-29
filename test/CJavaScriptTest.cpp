@@ -9,8 +9,9 @@ main(int argc, char **argv)
   std::string filename;
 
   bool pdebug = false;
-  bool edebug = false;
   bool idebug = false;
+  bool edebug = false;
+  bool xdebug = false;
   bool parse  = false; // just parse
   bool prompt = false;
 
@@ -22,10 +23,13 @@ main(int argc, char **argv)
         idebug = true;
       else if (strcmp(&argv[i][1], "edebug") == 0)
         edebug = true;
+      else if (strcmp(&argv[i][1], "xdebug") == 0)
+        xdebug = true;
       else if (strcmp(&argv[i][1], "debug") == 0) {
         pdebug = true;
         idebug = true;
         edebug = true;
+        xdebug = true;
       }
       else if (strcmp(&argv[i][1], "parse") == 0)
         parse = true;
@@ -43,6 +47,7 @@ main(int argc, char **argv)
   js.setParseDebug (pdebug);
   js.setInterpDebug(idebug);
   js.setExecDebug  (edebug);
+  js.setExprDebug  (xdebug);
 
   if (! filename.empty()) {
     js.loadFile(filename);
@@ -60,21 +65,40 @@ main(int argc, char **argv)
   if (prompt) {
     CReadLine readline;
 
-    readline.setPrompt("> ");
+    readline.setAutoHistory(true);
+
+    std::string line;
+    int         depth = 0;
 
     while (true) {
-      std::string line = readline.readLine();
+      std::string prompt = ">";
+
+      for (int i = 0; i < depth; ++i)
+        prompt += "+";
+
+      readline.setPrompt(prompt + " ");
+
+      if (line != "")
+        line += " ";
+
+      line += readline.readLine();
 
       if (line == "exit")
         break;
 
-      js.loadString(line);
+      depth = js.isCompleteLine(line);
 
-      CJValueP value = js.exec();
+      if (depth == 0) {
+        js.loadString(line);
 
-      if (value) {
-        value->print(std::cout);
-        std::cout << std::endl;
+        CJValueP value = js.exec();
+
+        if (value) {
+          value->print(std::cout);
+          std::cout << std::endl;
+        }
+
+        line = "";
       }
     }
   }

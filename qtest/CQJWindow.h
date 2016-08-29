@@ -3,8 +3,6 @@
 
 #include <CQJObject.h>
 
-class QTimer;
-
 class CQJWindowType : public CJObjType {
  public:
   static CJObjTypeP instance(CJavaScript *js);
@@ -21,24 +19,35 @@ class CQJWindowType : public CJObjType {
 
 //------
 
+class CQJWindow;
+class CQJWindowTimer;
+
+typedef std::shared_ptr<CQJWindow> CQJWindowP;
+
+//------
+
 class CQJWindow : public CQJObject {
   Q_OBJECT
 
  public:
   CQJWindow(CQJavaScript *js);
 
-  CJValue *dup(CJavaScript *) const override { return new CQJWindow(js_); }
+  CJValue *dup(CJavaScript *) const override { return new CQJWindow(qjs_); }
+
+  long addTimer(CJFunctionP timerFn, double t);
+  void removeTimer(long id);
+
+  void addOneShotTimer(CJFunctionP timerFn, double t);
 
   CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values);
 
   void print(std::ostream &os) const override { os << "window"; }
 
- private slots:
-  void timerSlot();
-
  private:
-  QTimer*     timer_ { 0 };
-  CJFunctionP timerFn_;
+  typedef std::vector<CQJWindowTimer *> Timers;
+
+  CQJWindowTimer *timer_ { 0 };
+  Timers          timers_;
 };
 
 #endif

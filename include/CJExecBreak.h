@@ -7,17 +7,17 @@
 // break
 class CJExecBreak : public CJToken {
  public:
-  CJExecBreak() :
-   CJToken(CJToken::Type::Break) {
-  }
+  CJExecBreak();
 
   CJValueP exec(CJavaScript *js) override;
 
-  void print(std::ostream &os) const override {
-    os << "break";
-  }
-};
+  CJExecIdentifiersP identifiers() const { return identifiers_; }
+  void setIdentifiers(CJExecIdentifiersP identifiers) { identifiers_ = identifiers; }
 
-typedef std::shared_ptr<CJExecBreak> CJExecBreakP;
+  void print(std::ostream &os) const override;
+
+ private:
+  CJExecIdentifiersP identifiers_;
+};
 
 #endif

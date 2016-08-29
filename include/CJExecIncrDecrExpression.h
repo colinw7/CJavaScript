@@ -36,6 +36,4 @@ class CJExecIncrDecrExpression : public CJExecExpression {
   bool               post_ { false };
 };
 
-typedef std::shared_ptr<CJExecIncrDecrExpression> CJExecIncrDecrExpressionP;
-
 #endif

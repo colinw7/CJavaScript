@@ -13,19 +13,19 @@ exec(CJavaScript *js, const Values &values)
 {
   CJArray *array = 0;
 
-  if      (values.size() == 1) {
+  if      (values.size() < 1) {
     array = new CJArray(js);
   }
-  else if (values.size() == 2) {
-    long n = values[1]->toInteger();
+  else if (values.size() == 1) {
+    long n = values[0]->toInteger();
 
     array = new CJArray(js, n);
   }
   else {
     array = new CJArray(js);
 
-    for (uint i = 1; i < values.size(); ++i)
-      array->addValue(values[i]);
+    for (auto & value : values)
+      array->addValue(value);
   }
 
   return CJValueP(array);

@@ -26,9 +26,9 @@ class CQJCanvasLinearGradient : public CJObj {
  public:
   CQJCanvasLinearGradient(CQJavaScript *js, double x1=0, double y1=0, double x2=1, double y2=0);
 
-  CQJavaScript *js() const { return js_; }
+  CQJavaScript *qjs() const { return qjs_; }
 
-  CJValue *dup(CJavaScript *) const override { return new CQJCanvasLinearGradient(js_); }
+  CJValue *dup(CJavaScript *) const override { return new CQJCanvasLinearGradient(qjs_); }
 
   const QLinearGradient &lg() const { return lg_; }
 
@@ -46,7 +46,7 @@ class CQJCanvasLinearGradient : public CJObj {
   void print(std::ostream &os) const override { os << "canvasLinearGradient"; }
 
  private:
-  CQJavaScript*   js_ { 0 };
+  CQJavaScript*   qjs_ { 0 };
   QLinearGradient lg_;
 };
 

@@ -35,7 +35,7 @@ exec(CJavaScript *, const std::string &, const Values &)
 
 CJConsoleObject::
 CJConsoleObject(CJavaScript *js) :
- CJObj(CJConsoleType::instance(js)), js_(js)
+ CJObj(js, CJConsoleType::instance(js))
 {
   setFunctionProperty(js, CJFunctionP(new CJObjFunction(js, "log")));
 }

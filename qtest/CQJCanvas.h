@@ -25,7 +25,7 @@ class CQJCanvas : public CQJObject {
  public:
   CQJCanvas(CQJavaScript *js);
 
-  CJValue *dup(CJavaScript *) const override { return new CQJCanvas(js_); }
+  CJValue *dup(CJavaScript *) const override { return new CQJCanvas(qjs_); }
 
   void updateSize();
 

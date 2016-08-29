@@ -20,6 +20,4 @@ class CJExecDelete : public CJToken {
   CJExecIdentifiersP identifiers_;
 };
 
-typedef std::shared_ptr<CJExecDelete> CJExecDeleteP;
-
 #endif

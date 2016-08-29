@@ -16,9 +16,9 @@ class CJObjectValue : public CJLValue {
 
   CJObjP getObject() const { return obj_; }
 
-  CJValueP value() const;
-
-  void setValue(CJValueP value);
+  // get/set value
+  CJValueP value() const override;
+  void setValue(CJValueP value) override;
 
   std::string toString() const override { return value()->toString(); }
 

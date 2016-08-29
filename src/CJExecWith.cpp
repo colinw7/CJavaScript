@@ -1,4 +1,5 @@
 #include <CJExecWith.h>
+#include <CJExecIdentifiers.h>
 #include <CJavaScript.h>
 
 CJExecWith::

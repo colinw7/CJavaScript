@@ -1,6 +1,8 @@
 #ifndef CJRandFunction_H
 #define CJRandFunction_H
 
+#include <CJFunction.h>
+
 // function calling API with signature: double result = fn(double r1, double r2);
 class CJRandFunction : public CJFunction {
  public:

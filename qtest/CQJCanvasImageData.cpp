@@ -28,7 +28,7 @@ CQJCanvasImageData(CQJavaScript *qjs, int w, int h) :
 {
   qimage_ = QImage(w, h, QImage::Format_ARGB32);
 
-  CJavaScript *js = js_->js();
+  CJavaScript *js = qjs_->js();
 
   setRealProperty(js, "width" , w);
   setRealProperty(js, "height", h);
@@ -38,7 +38,7 @@ CQJCanvasImageData::
 CQJCanvasImageData(CQJavaScript *qjs, const QImage &image) :
  CQJObject(qjs, CQJCanvasImageDataType::instance(qjs->js())), qimage_(image)
 {
-  CJavaScript *js = js_->js();
+  CJavaScript *js = qjs_->js();
 
   setRealProperty(js, "width" , image.width ());
   setRealProperty(js, "height", image.height());
@@ -46,7 +46,7 @@ CQJCanvasImageData(CQJavaScript *qjs, const QImage &image) :
 
 CJValueP
 CQJCanvasImageData::
-getProperty(const std::string &key) const
+getProperty(CJavaScript *js, const std::string &key) const
 {
   if (key == "data") {
     CQJCanvasImageData *th = const_cast<CQJCanvasImageData *>(this);
@@ -54,10 +54,10 @@ getProperty(const std::string &key) const
     CQJCanvasImageDataP data =
       std::static_pointer_cast<CQJCanvasImageData>(th->shared_from_this());
 
-    return CJValueP(new CQJCanvasImageDataArray(js(), data));
+    return CJValueP(new CQJCanvasImageDataArray(qjs(), data));
   }
   else
-    return CJObj::getProperty(key);
+    return CJObj::getProperty(js, key);
 }
 
 CJValueP

@@ -18,9 +18,9 @@ class CQJObject : public QObject, public CJObj {
   CQJObject(CQJavaScript *js, const CJObjTypeP &type);
  ~CQJObject();
 
-  CQJavaScript *js() const { return js_; }
+  CQJavaScript *qjs() const { return qjs_; }
 
-  CJValue *dup(CJavaScript *) const override { return new CQJObject(js_, type()); }
+  CJValue *dup(CJavaScript *) const override { return new CQJObject(qjs_, type()); }
 
   std::string toString() const override {
     std::ostringstream ss; ss << *this;
@@ -33,15 +33,19 @@ class CQJObject : public QObject, public CJObj {
 
   CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values);
 
-  void callEventListener(const std::string &name, const EventArgs &args=EventArgs(),
+  bool callEventListener(const std::string &name, const std::string &prop,
+                         const EventArgs &args=EventArgs(),
                          const NameValues &nameValues=NameValues());
 
   void print(std::ostream &os) const override { os << "object"; }
 
+ private:
+  bool callEventListener(CJValueP value, const EventArgs &args, const NameValues &nameValues);
+
  protected:
   typedef std::map<std::string,CJValueP> EventListeners;
 
-  CQJavaScript*  js_ { 0 };
+  CQJavaScript*  qjs_ { 0 };
   EventListeners eventListeners_;
 };
 

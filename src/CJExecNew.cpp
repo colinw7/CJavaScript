@@ -1,4 +1,5 @@
 #include <CJExecNew.h>
+#include <CJExecExpressionList.h>
 #include <CJavaScript.h>
 
 CJExecNew::
@@ -59,22 +60,31 @@ exec(CJavaScript *js)
 
     value = std::static_pointer_cast<CJValue>(array);
   }
+  else if (typeName_ == "Date") {
+    value = js->createDateValue(values);
+  }
   else {
     CJDictionaryP scope = js->currentScope();
 
-    CJValueP typeValue = scope->getProperty(typeName_);
+    CJValueP typeValue = scope->getProperty(js, typeName_);
+
+    while (! typeValue && scope->getParent()) {
+      scope = scope->getParent();
+
+      typeValue = scope->getProperty(js, typeName_);
+    }
 
     if (typeValue && typeValue->type() == CJToken::Type::Function) {
+      CJFunctionP fn = std::static_pointer_cast<CJFunction>(typeValue);
+
       CJObjTypeP userType = js->getObjectType(typeName_);
 
       if (! userType)
         userType = js->addObjectType(typeName_, CJObjTypeP(new CJUserType(js, typeName_)));
 
-      CJUserObjectP userObj(new CJUserObject(js, userType));
+      CJUserObjectP userObj(new CJUserObject(js, userType, fn));
 
       CJValueP objValue = std::static_pointer_cast<CJValue>(userObj);
-
-      CJFunctionP fn = std::static_pointer_cast<CJFunction>(typeValue);
 
       CJObjType::Values fnValues;
 
@@ -83,7 +93,11 @@ exec(CJavaScript *js)
       for (auto &v : values)
         fnValues.push_back(v);
 
+      js->pushThis(fn);
+
       CJValueP fnValue = fn->exec(js, fnValues);
+
+      js->popThis();
 
       value = objValue;
     }

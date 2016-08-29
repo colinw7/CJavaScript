@@ -9,9 +9,9 @@ class CJDictionaryRef : public CJLValue {
 
   CJValue *dup(CJavaScript *js) const override { return new CJDictionaryRef(js, dict_, name_); }
 
-  CJValueP value() const;
-
-  void setValue(CJValueP value);
+  // get/set value
+  CJValueP value() const override;
+  void setValue(CJValueP value) override;
 
   std::string toString() const override { return ""; }
 

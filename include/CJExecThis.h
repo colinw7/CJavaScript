@@ -14,6 +14,8 @@ class CJExecThis : public CJToken {
 
   void setAssignExpression(CJExecExpressionP assign) { assign_ = assign; }
 
+  void setIncrDecr(CJOperatorP op, bool postOp=true) { incrDecr_ = op; postOp_ = postOp; }
+
   CJValueP exec(CJavaScript *js) override;
 
   void print(std::ostream &os) const override;
@@ -22,8 +24,8 @@ class CJExecThis : public CJToken {
   CJExecIdentifiersP     identifiers_;
   CJExecIndexExpressionP iexpr_;
   CJExecExpressionP      assign_;
+  CJOperatorP            incrDecr_;
+  bool                   postOp_ { true };
 };
-
-typedef std::shared_ptr<CJExecThis> CJExecThisP;
 
 #endif

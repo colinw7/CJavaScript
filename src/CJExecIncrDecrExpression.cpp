@@ -1,4 +1,5 @@
 #include <CJExecIncrDecrExpression.h>
+#include <CJExecIdentifiers.h>
 #include <CJavaScript.h>
 
 CJExecIncrDecrExpression::
@@ -48,4 +49,6 @@ print(std::ostream &os) const
     else
       os << *op_ << *expr_;
   }
+
+  os << ";";
 }

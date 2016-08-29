@@ -16,23 +16,27 @@ dirs:
 	@if [ ! -e ../lib ]; then mkdir ../lib; fi
 
 SRC = \
+CJAlertFunction.cpp \
 CJArray.cpp \
 CJArrayFunction.cpp \
 CJavaScript.cpp \
 CJBooleanFunction.cpp \
 CJConsole.cpp \
+CJDate.cpp \
+CJDateFunction.cpp \
 CJDebug.cpp \
 CJDictionary.cpp \
 CJDictionaryRef.cpp \
-CJDictionaryValue.cpp \
 CJDocument.cpp \
 CJExecArray.cpp \
 CJExecAssignExpression.cpp \
 CJExecBlock.cpp \
 CJExecBreak.cpp \
+CJExecConst.cpp \
 CJExecContinue.cpp \
 CJExecDelete.cpp \
 CJExecDictionary.cpp \
+CJExecDo.cpp \
 CJExecExpression.cpp \
 CJExecExpressionList.cpp \
 CJExecFor.cpp \
@@ -41,6 +45,7 @@ CJExecIdentifiers.cpp \
 CJExecIf.cpp \
 CJExecIncrDecrExpression.cpp \
 CJExecIndexExpression.cpp \
+CJExecLabel.cpp \
 CJExecNew.cpp \
 CJExecQuestion.cpp \
 CJExecReturn.cpp \
@@ -49,13 +54,20 @@ CJExecThis.cpp \
 CJExecThrow.cpp \
 CJExecTry.cpp \
 CJExecVar.cpp \
+CJExecVoid.cpp \
 CJExecWhile.cpp \
 CJExecWith.cpp \
 CJFalse.cpp \
 CJFunction.cpp \
+CJFunctionFunction.cpp \
 CJGlobalFunction.cpp \
+CJIdentifier.cpp \
+CJIntervalFunction.cpp \
 CJKeyword.cpp \
+CJLValue.cpp \
+CJMath.cpp \
 CJNameSpace.cpp \
+CJNameSpaceValue.cpp \
 CJNull.cpp \
 CJNumber.cpp \
 CJNumberFunction.cpp \
@@ -66,9 +78,15 @@ CJObjectTypeFunction.cpp \
 CJObjectValue.cpp \
 CJObjFunction.cpp \
 CJOperator.cpp \
+CJRandFunction.cpp \
 CJRealFunction.cpp \
+CJRegExp.cpp \
+CJRegExpFunction.cpp \
+CJRequireFunction.cpp \
 CJString.cpp \
 CJStringFunction.cpp \
+CJSystem.cpp \
+CJToken.cpp \
 CJTrue.cpp \
 CJTypeFunction.cpp \
 CJTypeObjectFunction.cpp \
@@ -86,6 +104,7 @@ $(CDEBUG) \
 -I. \
 -I$(INC_DIR) \
 -I../../CFile/include \
+-I../../CRegExp/include \
 -I../../CStrUtil/include \
 -I../../COS/include \
 

@@ -1,12 +1,105 @@
 #include <CJExecExpression.h>
+#include <CJExecIdentifiers.h>
+#include <CJExecFunction.h>
+#include <CJExecIndexExpression.h>
 #include <CJavaScript.h>
 
 CJValueP
 CJExecExpression::
 exec(CJavaScript *js)
 {
-  Values    values;
-  Operators operators;
+  class State {
+   public:
+    State(CJavaScript *js) :
+     js_(js) {
+    }
+
+    void pushValue(CJExecIdentifiers *identifiers) {
+      CJValueP value = identifiers->exec(js_);
+
+      //if (! value) {
+      //  std::stringstream ss; ss << *identifiers;
+      //  js->errorMsg("Invalid named value : " + ss.str());
+      //}
+
+      if (js_->isExprDebug()) {
+        if (value)
+          std::cerr << "pushValue " << *identifiers << "=" << *value << std::endl;
+        else
+          std::cerr << "pushValue " << *identifiers << "=<null>" << std::endl;
+      }
+
+      values_.push_back(value);
+    }
+
+    void pushValue(CJValueP value) {
+      if (js_->isExprDebug()) {
+        if (value)
+          std::cerr << "pushValue " << *value << std::endl;
+        else
+          std::cerr << "pushValue <null>" << std::endl;
+      }
+
+      values_.push_back(value);
+    }
+
+    CJValueP popValue() {
+      if (js_->isExprDebug())
+        std::cerr << "popValue" << std::endl;
+
+      CJValueP value = values_.back();
+
+      values_.pop_back();
+
+      return value;
+    }
+
+    bool anyValues() {
+      return ! values_.empty();
+    }
+
+    int numValues() {
+      return values_.size();
+    }
+
+    void pushOperator(CJOperator *op) {
+      if (js_->isExprDebug())
+        std::cerr << "pushOperator " << *op << std::endl;
+
+       operators_.push_back(op);
+     }
+
+     void popOperator() {
+      if (js_->isExprDebug())
+        std::cerr << "popOperator" << std::endl;
+
+       operators_.pop_back();
+     }
+
+     bool anyOperators() {
+       return ! operators_.empty();
+     }
+
+     CJOperator *lastOp() {
+       return operators_.lastOp();
+     }
+
+     bool isShortCircuit() {
+       return CJExecExpression::isShortCircuit(operators_, values_);
+     }
+
+   private:
+    CJavaScript *js_;
+    Values       values_;
+    Operators    operators_;
+  };
+
+  //---
+
+  State state(js);
+
+  if (js->isExprDebug())
+    std::cerr << *this << std::endl;
 
   int len = tokens_.size();
 
@@ -21,14 +114,13 @@ exec(CJavaScript *js)
     if      (token->isValue()) {
       CJValueP value = std::static_pointer_cast<CJValue>(token);
 
-      values.push_back(value);
+      state.pushValue(value);
     }
     else if (type == CJToken::Type::Operator) {
       CJOperator *op = token->cast<CJOperator>();
 
-      bool unstack = false;
-
-      CJOperator *lastOp = operators.lastOp();
+      bool        unstack = false;
+      CJOperator *lastOp  = state.lastOp();
 
       if (lastOp) {
         if      (lastOp->precedence() < op->precedence())
@@ -37,86 +129,89 @@ exec(CJavaScript *js)
           unstack = (lastOp->associativty() == CJOperator::Associativty::Left);
       }
 
-      if (unstack) {
-        operators.pop_back();
+      while (unstack) {
+        state.popOperator();
 
         CJValueP value;
 
         if (lastOp->ary() == CJOperator::Ary::Binary) {
-          if (values.size() < 2) {
-            js->errorMsg("Missing values for binary op");
+          if (state.numValues() < 2) {
+            js->errorMsg(this, "Missing values for binary op");
             return CJValueP();
           }
 
-          CJValueP value2 = values.back(); values.pop_back();
-          CJValueP value1 = values.back(); values.pop_back();
+          CJValueP value2 = state.popValue();
+          CJValueP value1 = state.popValue();
 
           value = js->execBinaryOp(lastOp->type(), value1, value2);
 
           if (value)
-            values.push_back(value);
+            state.pushValue(value);
           else
-            js->errorMsg("Invalid binary operator value : " +
+            js->errorMsg(this, "Invalid binary operator value : " +
                          (value1 ? value1->toString() : "<null>") + " " + lastOp->name() + " " +
                          (value2 ? value2->toString() : "<null>"));
         }
         else {
-          if (values.size() < 1) {
-            js->errorMsg("Missing value for unary op");
+          if (state.numValues() < 1) {
+            js->errorMsg(this, "Missing value for unary op");
             return CJValueP();
           }
 
-          CJValueP value1 = values.back(); values.pop_back();
+          CJValueP value1 = state.popValue();
 
           value = js->execUnaryOp(lastOp->type(), value1);
 
           if (value)
-            values.push_back(value);
+            state.pushValue(value);
           else
-            js->errorMsg("Invalid unary operator value : " +
+            js->errorMsg(this, "Invalid unary operator value : " +
                          lastOp->name() + " " + value1->toString());
+        }
+
+        //---
+
+        unstack = false;
+        lastOp  = state.lastOp();
+
+        if (lastOp) {
+          if      (lastOp->precedence() < op->precedence())
+            unstack = true;
+          else if (lastOp->precedence() == op->precedence())
+            unstack = (lastOp->associativty() == CJOperator::Associativty::Left);
         }
       }
 
-      operators.push_back(op);
+      //---
+
+      state.pushOperator(op);
     }
     else if (type == CJToken::Type::Identifiers) {
       CJExecIdentifiers *identifiers = token->cast<CJExecIdentifiers>();
 
-      CJOperator *lastOp = operators.lastOp();
+      CJOperator *lastOp = state.lastOp();
 
       if (lastOp && lastOp->type() == CJOperator::Type::Scope) {
-        if (values.empty()) {
-          js->errorMsg("Missing value for identifiers scope");
+        if (! state.anyValues()) {
+          js->errorMsg(this, "Missing value for identifiers scope");
           continue;
         }
 
-        CJValueP value = values.back();
+        CJValueP value = state.popValue();
 
-        values.pop_back();
-
-        operators.pop_back();
+        state.popOperator();
 
         identifiers->setEValue(value);
 
-        CJValueP res = identifiers->exec(js);
-
-        values.push_back(res);
+        state.pushValue(identifiers);
       }
       else {
-        CJValueP value = identifiers->exec(js);
-
-        //if (! value) {
-        //  std::stringstream ss; ss << *identifiers;
-        //  js->errorMsg("Invalid named value : " + ss.str());
-        //}
-
-        values.push_back(value);
+        state.pushValue(identifiers);
       }
     }
-    else if (type == CJToken::Type::Function) {
-      if (isShortCircuit(operators, values)) {
-        bool b = values[0]->toBoolean();
+    else if (type == CJToken::Type::ExecFunction) {
+      if (state.isShortCircuit()) {
+        bool b = state.popValue()->toBoolean();
 
         return CJValueP(js->createBoolValue(b));
       }
@@ -125,122 +220,118 @@ exec(CJavaScript *js)
 
       CJExecFunction *fn = token->cast<CJExecFunction>();
 
-      CJOperator *lastOp = operators.lastOp();
+      CJOperator *lastOp = state.lastOp();
 
       if (lastOp && lastOp->type() == CJOperator::Type::Scope) {
-        if (values.empty()) {
-          js->errorMsg("Missing value for function scope");
+        if (! state.anyValues()) {
+          js->errorMsg(this, "Missing value for function scope");
           continue;
         }
 
-        CJValueP value = values.back();
+        CJValueP value = state.popValue();
 
-        values.pop_back();
-
-        operators.pop_back();
+        state.popOperator();
 
         fn->setEValue(value);
 
         CJValueP res = fn->exec(js);
 
-        values.push_back(res);
+        state.pushValue(res);
       }
       else {
         CJValueP res = fn->exec(js);
 
-        values.push_back(res);
+        state.pushValue(res);
       }
     }
     else if (type == CJToken::Type::IndexExpression) {
       CJExecIndexExpression *iexec = token->cast<CJExecIndexExpression>();
 
       if (! iexec->isBound()) {
-        if (values.empty()) {
-          js->errorMsg("Missing value for index ");
+        if (! state.anyValues()) {
+          js->errorMsg(this, "Missing value for index ");
           continue;
         }
 
-        CJValueP value = values.back();
-
-        values.pop_back();
+        CJValueP value = state.popValue();
 
         iexec->setEValue(value);
 
         CJValueP res = iexec->exec(js);
 
-        values.push_back(res);
+        state.pushValue(res);
       }
       else {
         CJValueP value = token->exec(js);
 
-        values.push_back(value);
+        state.pushValue(value);
       }
     }
     else {
-      if (isShortCircuit(operators, values)) {
-        bool b = values[0]->toBoolean();
+      if (state.isShortCircuit()) {
+        bool b = state.popValue()->toBoolean();
 
         return CJValueP(js->createBoolValue(b));
       }
 
       CJValueP value = token->exec(js);
 
-      values.push_back(value);
+      state.pushValue(value);
     }
   }
 
-  while (! operators.empty()) {
-    CJOperator *lastOp = operators.lastOp();
+  while (state.anyOperators()) {
+    CJOperator *lastOp = state.lastOp();
 
-    operators.pop_back();
+    state.popOperator();
 
     CJValueP value;
 
     if (lastOp->ary() == CJOperator::Ary::Binary) {
-      if (values.size() < 2) {
-        js->errorMsg("Missing values for binary op");
+      if (state.numValues() < 2) {
+        js->errorMsg(this, "Missing values for binary op");
         return CJValueP();
       }
 
-      CJValueP value2 = values.back(); values.pop_back();
-      CJValueP value1 = values.back(); values.pop_back();
+      CJValueP value2 = state.popValue();
+      CJValueP value1 = state.popValue();
 
       value = js->execBinaryOp(lastOp->type(), value1, value2);
 
       if (value)
-        values.push_back(value);
+        state.pushValue(value);
       else
-        js->errorMsg("Invalid binary operator value : " +
+        js->errorMsg(this, "Invalid binary operator value : " +
                      (value1 ? value1->toString() : "<null>") + " " + lastOp->name() + " " +
                      (value2 ? value2->toString() : "<null>"));
     }
     else {
-      if (values.size() < 1) {
-        js->errorMsg("Missing value for unary op");
+      if (state.numValues() < 1) {
+        js->errorMsg(this, "Missing value for unary op");
         return CJValueP();
       }
 
-      CJValueP value1 = values.back(); values.pop_back();
+      CJValueP value1 = state.popValue();
 
       value = js->execUnaryOp(lastOp->type(), value1);
 
       if (value)
-        values.push_back(value);
+        state.pushValue(value);
       else
-        js->errorMsg("Invalid unary operator value : " +
+        js->errorMsg(this, "Invalid unary operator value : " +
                      lastOp->name() + " " + value1->toString());
     }
   }
 
-  if (values.empty())
+  if (! state.anyValues())
     return CJValueP();
 
-  return values.back();
+  return state.popValue();
 }
 
 bool
 CJExecExpression::
-isShortCircuit(const Operators &operators, const Values &values) const
+isShortCircuit(const Operators &operators, const Values &values)
 {
   CJOperator *lastOp = operators.lastOp();
 

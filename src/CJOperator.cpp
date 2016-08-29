@@ -1,5 +1,31 @@
 #include <CJOperator.h>
 
+CJOperator::
+CJOperator(const Type &type, int precedence, Associativty associativty, Ary ary) :
+ CJToken(CJToken::Type::Operator), type_(type), precedence_(precedence),
+ associativty_(associativty), ary_(ary)
+{
+}
+
+bool
+CJOperator::
+isAssign() const
+{
+  return (type_ == Type::PlusAssign ||
+          type_ == Type::MinusAssign ||
+          type_ == Type::TimesAssign ||
+          type_ == Type::DivideAssign ||
+          type_ == Type::ModulusAssign ||
+          type_ == Type::Assign ||
+          type_ == Type::LeftShiftAssign ||
+          type_ == Type::RightShiftAssign ||
+          type_ == Type::UnsignedRightShiftAssign ||
+          type_ == Type::BitwiseAndAssign ||
+          type_ == Type::BitwiseOrAssign ||
+          type_ == Type::BitwiseNotAssign ||
+          type_ == Type::BitwiseXorAssign);
+}
+
 bool
 CJOperator::
 isAllowUnary(Type type)
@@ -62,7 +88,14 @@ std::string
 CJOperator::
 name() const
 {
-  switch (type_) {
+  return typeName(type_);
+}
+
+std::string
+CJOperator::
+typeName(Type type)
+{
+  switch (type) {
     case Type::None                    : return "<none>";
     case Type::UnaryPlus               : return "+";
     case Type::Plus                    : return "+";

@@ -1,4 +1,5 @@
 #include <CJExecThrow.h>
+#include <CJExecExpression.h>
 #include <CJavaScript.h>
 
 CJExecThrow::

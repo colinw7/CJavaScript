@@ -1,9 +1,10 @@
 #include <CJExecWhile.h>
+#include <CJExecExpressionList.h>
 #include <CJavaScript.h>
 
 CJExecWhile::
 CJExecWhile() :
- CJToken(CJToken::Type::While)
+ CJToken(CJToken::Type::ExecWhile)
 {
 }
 

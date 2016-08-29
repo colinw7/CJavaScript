@@ -1,4 +1,5 @@
 #include <CJExecIndexExpression.h>
+#include <CJExecIdentifiers.h>
 #include <CJavaScript.h>
 
 CJExecIndexExpression::
@@ -61,7 +62,14 @@ indexValue(CJavaScript *js, CJValueP avalue)
 
     CJValueP ivalue = iexpr_->exec(js);
 
-    res = dict->getProperty(ivalue->toString());
+    res = dict->getProperty(js, ivalue->toString());
+  }
+  else if (avalue->type() == CJToken::Type::Function) {
+    CJFunction *fn = avalue->cast<CJFunction>();
+
+    CJValueP ivalue = iexpr_->exec(js);
+
+    res = fn->getProperty(js, ivalue->toString());
   }
   else if (avalue->type() == CJToken::Type::String) {
     CJString *str = avalue->cast<CJString>();
@@ -113,7 +121,14 @@ setIndexValue(CJavaScript *js, CJValueP avalue, CJValueP rvalue)
 
     CJValueP ivalue = iexpr_->exec(js);
 
-    dict->setProperty(ivalue->toString(), rvalue);
+    dict->setProperty(js, ivalue->toString(), rvalue);
+  }
+  else if (avalue->type() == CJToken::Type::Function) {
+    CJFunction *fn = avalue->cast<CJFunction>();
+
+    CJValueP ivalue = iexpr_->exec(js);
+
+    fn->setProperty(js, ivalue->toString(), rvalue);
   }
   else if (avalue->type() == CJToken::Type::String) {
     CJString *str = avalue->cast<CJString>();
@@ -136,6 +151,44 @@ setIndexValue(CJavaScript *js, CJValueP avalue, CJValueP rvalue)
 
     avalue->setIndexValue(ind, rvalue);
   }
+}
+
+bool
+CJExecIndexExpression::
+decodeExpressions(CJExecIdentifiersP &identifiers, std::vector<CJExecExpressionP> &indices) const
+{
+  if (! iexpr_)
+    return false;
+
+  indices.push_back(iexpr_);
+
+  if (identifiers_) {
+    identifiers = identifiers_;
+
+    return true;
+  }
+
+  if (expr_ && expr_->type() == CJToken::Type::IndexExpression) {
+    CJExecIndexExpressionP iexpr = std::static_pointer_cast<CJExecIndexExpression>(expr_);
+
+    CJExecIdentifiersP             identifiers1;
+    std::vector<CJExecExpressionP> indices1;
+
+    if (! iexpr->decodeExpressions(identifiers1, indices1))
+      return false;
+
+    if (identifiers1 && ! identifiers)
+      identifiers = identifiers1;
+
+    for (const auto &i : indices)
+      indices1.push_back(i);
+
+    indices = indices1;
+
+    return true;
+  }
+
+  return false;
 }
 
 void

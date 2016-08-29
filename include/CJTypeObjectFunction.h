@@ -14,7 +14,7 @@ class CJTypeObjectFunction : public CJFunction {
   bool hasObjectValue() const override { return hasObjValue_; }
   void setHasObjectValue(bool b) { hasObjValue_ = b; }
 
-  CJValueP exec(CJavaScript *js, const Values &values);
+  CJValueP exec(CJavaScript *js, const Values &values) override;
 
  private:
   CJObjTypeP  objType_;

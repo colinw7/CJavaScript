@@ -15,7 +15,7 @@ class CJValue : public CJToken, public std::enable_shared_from_this<CJValue> {
 
   virtual bool isObject() const { return false; }
 
-  virtual std::string toString() const = 0;
+  virtual std::string toString() const override = 0;
 
   virtual double toReal() const = 0;
 

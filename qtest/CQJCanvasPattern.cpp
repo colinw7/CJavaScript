@@ -23,7 +23,8 @@ CQJCanvasPatternType(CJavaScript *js) :
 
 CQJCanvasPattern::
 CQJCanvasPattern(CQJavaScript *qjs, const QImage &qimage, const Repeat &repeat) :
- CJObj(CQJCanvasPatternType::instance(qjs->js())), js_(qjs), qimage_(qimage), repeat_(repeat)
+ CJObj(qjs->js(), CQJCanvasPatternType::instance(qjs->js())),
+ qjs_(qjs), qimage_(qimage), repeat_(repeat)
 {
 }
 

@@ -1,5 +1,6 @@
 #include <CJDebug.h>
 #include <CJObjFunction.h>
+#include <CJUserFunction.h>
 #include <CJTypes.h>
 #include <CJavaScript.h>
 
@@ -35,7 +36,7 @@ exec(CJavaScript *, const std::string &, const Values &)
 
 CJDebugObject::
 CJDebugObject(CJavaScript *js) :
- CJObj(CJDebugType::instance(js)), js_(js)
+ CJObj(js, CJDebugType::instance(js))
 {
   setFunctionProperty(js, CJFunctionP(new CJObjFunction(js, "printScopeStack")));
   setFunctionProperty(js, CJFunctionP(new CJObjFunction(js, "printScopeChain")));

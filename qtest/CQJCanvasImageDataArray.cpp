@@ -26,7 +26,7 @@ CQJCanvasImageDataArray(CQJavaScript *qjs, CQJCanvasImageDataP data) :
   int w = data_->qimage().width ();
   int h = data_->qimage().height();
 
-  CJavaScript *js = js_->js();
+  CJavaScript *js = qjs_->js();
 
   setRealProperty(js, "length", 4*w*h);
 }
@@ -41,7 +41,7 @@ indexValue(int i) const
   int w = data_->qimage().width ();
   int h = data_->qimage().height();
 
-  CJavaScript *js = js_->js();
+  CJavaScript *js = qjs_->js();
 
   if (i1 < 0 || i1 >= w*h)
     //return CJValueP();

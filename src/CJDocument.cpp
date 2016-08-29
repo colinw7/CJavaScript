@@ -33,7 +33,7 @@ exec(CJavaScript *, const std::string &, const Values &)
 
 CJDocumentObject::
 CJDocumentObject(CJavaScript *js) :
- CJObj(CJDocumentType::instance(js)), js_(js)
+ CJObj(js, CJDocumentType::instance(js))
 {
   type_->addObjectFunction(js, "write");
 }

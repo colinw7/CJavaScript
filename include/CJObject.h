@@ -30,9 +30,6 @@ class CJObject : public CJObj {
   CJObject(CJavaScript *js);
 
   CJValue *dup(CJavaScript *) const override { return new CJObject(js_); }
-
- private:
-  CJavaScript *js_ { 0 };
 };
 
 #endif

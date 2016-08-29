@@ -12,9 +12,10 @@ class CJExecIndexExpression : public CJExecExpression {
   CJExecIdentifiersP identifiers() const { return identifiers_; }
   void setIdentifiers(CJExecIdentifiersP identifiers) { identifiers_ = identifiers; }
 
+  CJExecExpressionP expression() const { return expr_; }
   void setExpression(CJExecExpressionP expr) { expr_ = expr; }
 
-  CJExecExpressionP indexExpression() const  { return iexpr_; }
+  CJExecExpressionP indexExpression() const { return iexpr_; }
   void setIndexExpression(CJExecExpressionP iexpr) { iexpr_ = iexpr; }
 
   void setEValue(CJValueP evalue) { evalue_ = evalue; }
@@ -27,6 +28,9 @@ class CJExecIndexExpression : public CJExecExpression {
   CJValueP indexValue(CJavaScript *js, CJValueP avalue);
   void setIndexValue(CJavaScript *js, CJValueP avalue, CJValueP rvalue);
 
+  bool decodeExpressions(CJExecIdentifiersP &identifiers,
+                         std::vector<CJExecExpressionP> &indices) const;
+
   void print(std::ostream &os) const override;
 
  private:
@@ -35,7 +39,5 @@ class CJExecIndexExpression : public CJExecExpression {
   CJValueP           evalue_;
   CJExecExpressionP  iexpr_;
 };
-
-typedef std::shared_ptr<CJExecIndexExpression> CJExecIndexExpressionP;
 
 #endif

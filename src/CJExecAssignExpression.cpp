@@ -1,4 +1,6 @@
 #include <CJExecAssignExpression.h>
+#include <CJExecIndexExpression.h>
+#include <CJExecIdentifiers.h>
 #include <CJavaScript.h>
 
 CJExecAssignExpression::
@@ -65,19 +67,28 @@ exec(CJavaScript *js)
   CJTokenP varToken = tokens.back();
 
   CJExecIdentifiers *eidentifiers = 0;
-  CJExecExpression  *indexExpr = 0;
+
+  std::vector<CJExecExpressionP> indices;
 
   if      (varToken && varToken->type() == CJToken::Type::IndexExpression) {
-    eidentifiers = varToken->cast<CJExecIndexExpression>()->identifiers().get();
-    indexExpr    = varToken->cast<CJExecIndexExpression>()->indexExpression().get();
+    CJExecIndexExpression *iexpr = varToken->cast<CJExecIndexExpression>();
+
+    CJExecIdentifiersP identifiers;
+
+    if (! iexpr->decodeExpressions(identifiers, indices)) {
+      js->errorMsg(this, "Missing variable name for assign");
+      return value;
+    }
+
+    eidentifiers = identifiers.get();
   }
   else if (varToken && varToken->type() == CJToken::Type::Identifiers) {
     eidentifiers = varToken->cast<CJExecIdentifiers>();
-  }
 
-  if (! eidentifiers) {
-    js->errorMsg(this, "Missing variable name for assign");
-    return value;
+    if (! eidentifiers) {
+      js->errorMsg(this, "Missing variable name for assign");
+      return value;
+    }
   }
 
   //---
@@ -173,22 +184,55 @@ exec(CJavaScript *js)
       break;
   }
 
-  if (indexExpr) {
-    CJValueP ivalue = indexExpr->exec(js);
+  if (! indices.empty()) {
+    std::vector<long> inds;
 
-    long ind = ivalue->toInteger();
+    for (auto indexExpr : indices) {
+      
 
-    if      (varValue->type() == CJToken::Type::String) {
-      CJString *str = varValue->cast<CJString>();
+      CJValueP ivalue = indexExpr->exec(js);
 
-      str->setIndexValue(ind, rvalue);
+      if (! ivalue) {
+        js->errorMsg(this, "Invalid array index expression '" + indexExpr->toString() + "'");
+        return value;
+      }
+
+      long ind = ivalue->toInteger();
+
+      inds.push_back(ind);
     }
-    else if (varValue->hasIndex()) {
-      varValue->setIndexValue(ind, rvalue);
-    }
-    else {
-      js->errorMsg(this, "Variable is not an array");
-      return value;
+
+    for (uint i = 0; i < inds.size(); ++i) {
+      int ind = inds[i];
+
+      if (i == inds.size() - 1) {
+        if      (varValue->type() == CJToken::Type::String) {
+          CJString *str = varValue->cast<CJString>();
+
+          str->setIndexValue(ind, rvalue);
+        }
+        else if (varValue->hasIndex()) {
+          varValue->setIndexValue(ind, rvalue);
+        }
+        else {
+          js->errorMsg(this, "Variable is not an array");
+          return value;
+        }
+      }
+      else {
+        if (varValue->hasIndex()) {
+          varValue = varValue->indexValue(ind);
+
+          if (! varValue) {
+            js->errorMsg(this, "Variable is not an array");
+            return value;
+          }
+        }
+        else {
+          js->errorMsg(this, "Variable is not an array");
+          return value;
+        }
+      }
     }
   }
   else {
@@ -204,6 +248,6 @@ CJExecAssignExpression::
 print(std::ostream &os) const
 {
   if (lexpr_ && op_ && rexpr_) {
-    os << *lexpr_ << " " << *op_ << " " << *rexpr_;
+    os << *lexpr_ << " " << *op_ << " " << *rexpr_ << ";";
   }
 }

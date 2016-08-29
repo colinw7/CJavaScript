@@ -12,10 +12,10 @@ CJValueP
 CJObjectValue::
 value() const
 {
-  CJValueP val = obj_->getProperty(name_);
+  CJValueP val = obj_->getProperty(js_, name_);
 
   if (! val)
-    val = obj_->valueType()->getProperty(name_);
+    val = obj_->valueType()->getProperty(js_, name_);
 
   return val;
 }
@@ -24,7 +24,7 @@ void
 CJObjectValue::
 setValue(CJValueP value)
 {
-  obj_->setProperty(name_, value);
+  obj_->setProperty(js_, name_, value);
 }
 
 void

@@ -28,9 +28,9 @@ class CQJCanvasFontMetrics : public CQJObject {
  public:
   CQJCanvasFontMetrics(CQJavaScript *js, const QFont &font, const std::string &text);
 
-  CQJavaScript *js() const { return js_; }
+  CQJavaScript *qjs() const { return qjs_; }
 
-  CJValue *dup(CJavaScript *) const override { return new CQJCanvasFontMetrics(js_, font_, text_); }
+  CJValue *dup(CJavaScript *) const override { return new CQJCanvasFontMetrics(qjs_, font_, text_); }
 
   CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values);
 

@@ -250,14 +250,14 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     }
   }
   else if (name == "toLowerCase") {
-    for (size_t i = 0; i < str.size(); ++i)
-      str[i] = tolower(str[i]);
+    for (auto & elem : str)
+      elem = tolower(elem);
 
     return js->createStringValue(str);
   }
   else if (name == "toUpperCase") {
-    for (size_t i = 0; i < str.size(); ++i)
-      str[i] = toupper(str[i]);
+    for (auto & elem : str)
+      elem = toupper(elem);
 
     return js->createStringValue(str);
   }
@@ -272,31 +272,31 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
 CJString::
 CJString(CJavaScript *js, const std::string &text, char c) :
- CJObj(CJStringType::instance(js)), js_(js), text_(text), c_(c)
+ CJObj(js, CJStringType::instance(js)), text_(text), c_(c)
 {
   addPseudoProperty("length");
 }
 
 CJValueP
 CJString::
-getProperty(const std::string &key) const
+getProperty(CJavaScript *js, const std::string &key) const
 {
   if (key == "length")
-    return js_->createNumberValue(length());
+    return js->createNumberValue(length());
 
-  return CJObj::getProperty(key);
+  return CJObj::getProperty(js, key);
 }
 
 void
 CJString::
-setProperty(const std::string &key, CJValueP value)
+setProperty(CJavaScript *js, const std::string &key, CJValueP value)
 {
   if (key == "length") {
     // TODO:
     //return CJValueP();
   }
 
-  CJObj::setProperty(key, value);
+  CJObj::setProperty(js, key, value);
 }
 
 double

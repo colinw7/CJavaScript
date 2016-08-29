@@ -27,6 +27,4 @@ class CJExecQuestion : public CJToken {
   CJExecExpressionP expr2_;
 };
 
-typedef std::shared_ptr<CJExecQuestion> CJExecQuestionP;
-
 #endif

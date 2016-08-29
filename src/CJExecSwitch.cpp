@@ -1,4 +1,6 @@
 #include <CJExecSwitch.h>
+#include <CJExecExpressionList.h>
+#include <CJExecExpression.h>
 #include <CJavaScript.h>
 
 CJExecSwitch::

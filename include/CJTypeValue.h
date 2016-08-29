@@ -15,9 +15,9 @@ class CJTypeValue : public CJLValue {
 
   CJObjTypeP getObjType() const { return objType_; }
 
-  CJValueP value() const;
-
-  void setValue(CJValueP value);
+  // get/set value
+  CJValueP value() const override;
+  void setValue(CJValueP value) override;
 
   bool hasValue() const;
 
@@ -30,9 +30,9 @@ class CJTypeValue : public CJLValue {
   void print(std::ostream &os) const override;
 
  private:
-  CJavaScript*  js_ { 0 };
-  CJObjTypeP objType_;
-  std::string   name_;
+  CJavaScript* js_ { 0 };
+  CJObjTypeP   objType_;
+  std::string  name_;
 };
 
 #endif

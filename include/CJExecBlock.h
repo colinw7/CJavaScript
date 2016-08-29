@@ -53,7 +53,7 @@ class CJExecBlock : public CJToken {
     returnFlag_   = false;
   }
 
-  CJValueP exec(CJavaScript *js);
+  CJValueP exec(CJavaScript *js) override;
 
   void print(std::ostream &os) const override;
 
@@ -68,7 +68,5 @@ class CJExecBlock : public CJToken {
   bool     continueFlag_ { false };
   bool     returnFlag_   { false };
 };
-
-typedef std::shared_ptr<CJExecBlock> CJExecBlockP;
 
 #endif

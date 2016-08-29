@@ -21,6 +21,10 @@ class CJExecTry : public CJToken {
     catchBlock_ = block;
   }
 
+  void setFinallyBlock(CJExecBlockP block) {
+    finallyBlock_ = block;
+  }
+
   CJValueP exec(CJavaScript *js) override;
 
   void print(std::ostream &os) const override;
@@ -29,8 +33,7 @@ class CJExecTry : public CJToken {
   CJExecBlockP       tryBlock_;
   CJExecIdentifiersP catchIdentifiers_;
   CJExecBlockP       catchBlock_;
+  CJExecBlockP       finallyBlock_;
 };
-
-typedef std::shared_ptr<CJExecTry> CJExecTryP;
 
 #endif

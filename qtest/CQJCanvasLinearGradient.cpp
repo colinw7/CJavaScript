@@ -24,7 +24,7 @@ CQJCanvasLinearGradientType(CJavaScript *js) :
 
 CQJCanvasLinearGradient::
 CQJCanvasLinearGradient(CQJavaScript *qjs, double x1, double y1, double x2, double y2) :
- CJObj(CQJCanvasLinearGradientType::instance(qjs->js())), js_(qjs)
+ CJObj(qjs->js(), CQJCanvasLinearGradientType::instance(qjs->js())), qjs_(qjs)
 {
   CJavaScript *js = qjs->js();
 

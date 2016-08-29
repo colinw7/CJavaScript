@@ -1,11 +1,12 @@
 #include <CJExecFunction.h>
 #include <CJExecExpression.h>
 #include <CJExecIdentifiers.h>
+#include <CJExecExpressionList.h>
 #include <CJavaScript.h>
 
 CJExecFunction::
 CJExecFunction() :
- CJToken(CJToken::Type::Function)
+ CJToken(CJToken::Type::ExecFunction)
 {
 }
 
@@ -18,6 +19,7 @@ exec(CJavaScript *js)
   Values values;
 
   CJFunctionP fn;
+  CJObjP      obj;
 
   if (expr_ || evalue_) {
     CJValueP evalue;
@@ -82,19 +84,36 @@ exec(CJavaScript *js)
 
     CJavaScript::ValuePair valuePair = js->lookupObjectProperty(identifiers);
 
+    if (valuePair.first && valuePair.first->isObject())
+      obj = std::static_pointer_cast<CJObj>(valuePair.first);
+
     CJValueP fnValue = valuePair.second;
 
-    if (! fnValue || fnValue->type() != CJToken::Type::Function) {
+    if (! fnValue) {
       std::stringstream ss; ss << *identifiers_;
       js->errorMsg("Function not found : " + ss.str());
       return CJValueP();
     }
 
-    fn = std::static_pointer_cast<CJFunction>(fnValue);
+    if      (fnValue->type() == CJToken::Type::Function) {
+      fn = std::static_pointer_cast<CJFunction>(fnValue);
 
-    if (fn->hasObjectValue())
-      values.push_back(valuePair.first);
+      if (fn->hasObjectValue())
+        values.push_back(valuePair.first);
+    }
+    else if (fnValue->type() == CJToken::Type::UserObject) {
+      CJUserObjectP userObj = std::static_pointer_cast<CJUserObject>(fnValue);
+
+      fn = std::static_pointer_cast<CJFunction>(userObj->userFn());
+    }
+    else {
+      std::stringstream ss; ss << *fnValue;
+      js->errorMsg("Invalid function value : " + ss.str());
+      return CJValueP();
+    }
   }
+
+  //--
 
   CJExecExpressionList::Values values1;
 
@@ -110,7 +129,19 @@ exec(CJavaScript *js)
     return CJValueP();
   }
 
-  CJValueP res = fn->cast<CJFunction>()->exec(js, values);
+  CJValueP res;
+
+  if (obj) {
+    js->pushThis(obj);
+
+    res = fn->cast<CJFunction>()->exec(js, values);
+
+    js->popThis();
+  }
+  else
+    res = fn->cast<CJFunction>()->exec(js, values);
+
+  //--
 
   for (auto &fn : functions_) {
     fn->setEValue(res);

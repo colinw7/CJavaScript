@@ -30,6 +30,4 @@ class CJExecExpressionList : public CJToken {
   Expressions expressions_;
 };
 
-typedef std::shared_ptr<CJExecExpressionList> CJExecExpressionListP;
-
 #endif

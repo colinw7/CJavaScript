@@ -6,7 +6,7 @@
 
 CJObjectTypeFunction::
 CJObjectTypeFunction(CJavaScript *js, const std::string &name, CJObjTypeP type) :
- CJFunction(js, name, CJFunction::Type::Object), type_(type)
+ CJFunction(js, name, CJFunction::Type::Object), type_(std::move(type))
 {
 }
 
@@ -26,15 +26,15 @@ exec(CJavaScript *js, const Values &values)
   if      (ovalue->type() == CJToken::Type::Object) {
     value = ovalue->cast<CJObj>()->execNameFn(js, name(), values);
   }
-  else if (ovalue->type() == CJToken::Type::String) {
-    CJObjTypeP stringType = CJStringType::instance(js);
+  else if (ovalue->isObject()) {
+    CJObj *obj = ovalue->cast<CJObj>();
 
-    value = stringType->exec(js, name(), values);
-  }
-  else if (ovalue->type() == CJToken::Type::Array) {
-    CJObjTypeP arrayType = CJArrayType::instance(js);
+    if (! obj)
+      return value;
 
-    value = arrayType->exec(js, name(), values);
+    CJObjTypeP objType = obj->type();
+
+    value = objType->exec(js, name(), values);
   }
   else {
     js->errorMsg("Invalid object function type");

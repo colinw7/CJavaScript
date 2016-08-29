@@ -12,7 +12,6 @@ CJObjType(CJavaScript *js, const CJToken::Type type, const std::string &name) :
   addPseudoProperty("name");
   addPseudoProperty("arguments");
   addPseudoProperty("caller");
-  addPseudoProperty("prototype");
 }
 
 void
@@ -38,7 +37,7 @@ getTypePropertyNames() const
   Names names1 = CJNameSpace::getPropertyNames(/*pseudo*/false);
 
   for (const auto &n : names1) {
-    CJValueP v = getProperty(n);
+    CJValueP v = getProperty(js_, n);
 
     if (v->type() == CJToken::Type::Function) {
       CJFunctionP fn = std::static_pointer_cast<CJFunction>(v);
@@ -61,32 +60,29 @@ getTypePropertyNames() const
 
 CJValueP
 CJObjType::
-getProperty(const std::string &key) const
+getProperty(CJavaScript *js, const std::string &key) const
 {
   if      (key == "length") {
-    return js_->createNumberValue(1L);
+    return js->createNumberValue(1L);
   }
   else if (key == "name") {
-    return js_->createStringValue(name_);
+    return js->createStringValue(name_);
   }
   else if (key == "arguments") {
-    return js_->createNullValue();
+    return js->createNullValue();
   }
   else if (key == "caller") {
-    return js_->createNullValue();
-  }
-  else if (key == "prototype") {
-    return js_->createNullValue();
+    return js->createNullValue();
   }
 
-  return CJNameSpace::getProperty(key);
+  return CJNameSpace::getProperty(js, key);
 }
 
 //------
 
 CJObj::
-CJObj(CJObjTypeP type) :
- CJValue(type), type_(type)
+CJObj(CJavaScript *js, CJObjTypeP type) :
+ CJDictionary(js, type), type_(type)
 {
 }
 
@@ -101,7 +97,35 @@ void
 CJObj::
 addVariable(CJavaScript *js, const std::string &name)
 {
-  setProperty(name, CJValueP(new CJTypeValue(js, type(), name)));
+  setProperty(js, name, CJValueP(new CJTypeValue(js, type(), name)));
+}
+
+CJValueP
+CJObj::
+getProperty(CJavaScript *js, const std::string &name) const
+{
+  if (CJNameSpace::hasProperty(js, name))
+    return CJNameSpace::getProperty(js, name);
+
+  if (CJNameSpace::hasProperty(js, "prototype")) {
+    CJValueP value = getProperty(js, "prototype");
+
+    if (value && value->type() == CJToken::Type::Dictionary) {
+      CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(value);
+
+      if (dict->hasProperty(js, name))
+        return dict->getProperty(js, name);
+    }
+  }
+
+  return type()->getProperty(js, name);
+}
+
+void
+CJObj::
+setProperty(CJavaScript *js, const std::string &name, CJValueP value)
+{
+  CJNameSpace::setProperty(js, name, value);
 }
 
 CJValueP

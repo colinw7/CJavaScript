@@ -1,4 +1,8 @@
 #include <CJExecFor.h>
+#include <CJExecIdentifiers.h>
+#include <CJExecExpression.h>
+#include <CJExecExpressionList.h>
+#include <CJExecVar.h>
 #include <CJavaScript.h>
 
 CJExecFor::

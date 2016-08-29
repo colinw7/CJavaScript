@@ -26,9 +26,6 @@ class CJDocumentObject : public CJObj {
   CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values) override;
 
   void print(std::ostream &os) const override { os << "document"; }
-
- private:
-  CJavaScript *js_;
 };
 
 #endif

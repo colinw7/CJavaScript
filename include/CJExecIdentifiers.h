@@ -14,6 +14,10 @@ class CJExecIdentifiers : public CJToken {
  public:
   CJExecIdentifiers();
 
+  void setIsThis(bool b) {
+    isThis_ = b;
+  }
+
   void addIdentifier(CJIdentifier *identifier) {
     identifiers_.push_back(identifier);
   }
@@ -27,10 +31,9 @@ class CJExecIdentifiers : public CJToken {
   void print(std::ostream &os) const override;
 
  private:
+  bool        isThis_ { false };
   Identifiers identifiers_;
   CJValueP    evalue_;
 };
-
-typedef std::shared_ptr<CJExecIdentifiers> CJExecIdentifiersP;
 
 #endif

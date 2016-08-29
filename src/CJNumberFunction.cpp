@@ -11,10 +11,10 @@ CJValueP
 CJNumberFunction::
 exec(CJavaScript *js, const Values &values)
 {
-  if (values.size() <= 1)
+  if (values.size() < 1)
     return js->createNumberValue(0L);
   else {
-    double r = values[1]->toReal();
+    double r = values[0]->toReal();
 
     return js->createNumberValue(r);
   }

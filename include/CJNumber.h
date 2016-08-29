@@ -12,7 +12,7 @@ class CJNumberType : public CJObjType {
 
   CJNumberType(CJavaScript *js);
 
-  CJValueP getProperty(const std::string &key) const;
+  CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
@@ -49,8 +49,7 @@ class CJNumber : public CJObj {
   }
 
  private:
-  CJavaScript* js_ { 0 };
-  double       real_;
+  double real_;
 };
 
 typedef std::shared_ptr<CJNumber> CJNumberP;

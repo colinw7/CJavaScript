@@ -8,6 +8,7 @@ class CQJObject;
 class CQJSCanvas;
 class CJavaScript;
 class CQHistoryLineEdit;
+class CQJDialog;
 
 class CQJavaScript : public QFrame {
   Q_OBJECT
@@ -17,6 +18,10 @@ class CQJavaScript : public QFrame {
 
  public:
   CQJavaScript();
+
+  void init();
+
+  void setSize(int s) { size_ = s; }
 
   CQJSCanvas *canvas() const { return canvas_; }
 
@@ -30,16 +35,22 @@ class CQJavaScript : public QFrame {
   void addObject   (CQJObject *obj);
   void removeObject(CQJObject *obj);
 
-  void callEventListeners(const std::string &name, const EventArgs &args=EventArgs());
+  void callEventListeners(const std::string &name, const std::string &prop,
+                          const EventArgs &args=EventArgs());
+
+  QSize sizeHint() const;
 
  private slots:
   void execCmd(const QString &cmd);
 
   void loadFileSlot();
 
+  void showDialogSlot();
+
  private:
   typedef std::set<CQJObject *> Objects;
 
+  int                size_ { 600 };
   CQJSCanvas*        canvas_ { 0 };
   CJavaScript*       js_ { 0 };
   CJValueP           jsWindow_;
@@ -48,6 +59,7 @@ class CQJavaScript : public QFrame {
   CJValueP           jsCanvasContext2D_;
   Objects            objects_;
   CQHistoryLineEdit* input_ { 0 };
+  CQJDialog*         dialog_ { 0 };
 };
 
 #endif

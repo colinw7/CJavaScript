@@ -11,21 +11,21 @@ bool
 CJTypeValue::
 hasValue() const
 {
-  return objType_->hasProperty(name_);
+  return objType_->hasProperty(js_, name_);
 }
 
 CJValueP
 CJTypeValue::
 value() const
 {
-  return objType_->getProperty(name_);
+  return objType_->getProperty(js_, name_);
 }
 
 void
 CJTypeValue::
 setValue(CJValueP value)
 {
-  objType_->setProperty(name_, value);
+  objType_->setProperty(js_, name_, value);
 }
 
 void

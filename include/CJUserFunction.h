@@ -19,7 +19,7 @@ class CJUserFunction : public CJFunction {
 
   bool hasObjectValue() const override { return true; }
 
-  void setScope(CJavaScript *js, const UserFunctions &userFunctions);
+  void setScope(CJavaScript *js, const UserFunctions &userFunctions=UserFunctions());
 
   const Args &args() const { return args_; }
   void setArgs(const Args &v) { args_ = v; }
@@ -30,11 +30,18 @@ class CJUserFunction : public CJFunction {
   const CJDictionaryP &scope() const { return scope_; }
   void setScope(const CJDictionaryP &v) { scope_ = v; }
 
-  void setProperty(const std::string &name, CJValueP value);
+  CJValueP getScopeProperty(const std::string &name) const;
+  void setScopeProperty(const std::string &name, CJValueP value);
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 
   void print(std::ostream &os) const override;
+
+  friend std::ostream &operator<<(std::ostream &os, const CJUserFunction &rhs) {
+    rhs.print(os);
+
+    return os;
+  }
 
  private:
   Args          args_;

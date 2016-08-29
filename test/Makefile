@@ -26,6 +26,7 @@ $(CDEBUG) \
 -I$(INC_DIR) \
 -I../../CReadLine/include \
 -I../../CUtil/include \
+-I../../CRegExp/include \
 
 LFLAGS = \
 $(LDEBUG) \
@@ -33,12 +34,13 @@ $(LDEBUG) \
 -L../../CJavaScript/lib \
 -L../../CReadLine/lib \
 -L../../CFile/lib \
+-L../../CRegExp/lib \
 -L../../CStrUtil/lib \
 -L../../COS/lib \
 
 LIBS = \
--lCJavaScript -lCReadLine -lCFile -lCStrUtil -lCOS \
--lreadline
+-lCJavaScript -lCReadLine -lCFile -lCStrUtil -lCRegExp -lCOS \
+-lreadline -ltre
 
 clean:
 	$(RM) -f $(OBJ_DIR)/*.o

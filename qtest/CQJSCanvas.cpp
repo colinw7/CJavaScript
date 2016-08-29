@@ -1,13 +1,16 @@
 #include <CQJSCanvas.h>
-#include <CQJavaScript.h>
 #include <CQJCanvas.h>
+#include <CQJDocument.h>
+#include <CQJEvent.h>
+#include <CQJavaScript.h>
 #include <QPainter>
 #include <QMouseEvent>
 
 CQJSCanvas::
-CQJSCanvas(CQJavaScript *js) :
- js_(js)
+CQJSCanvas(CQJavaScript *qjs, int size) :
+ qjs_(qjs), size_(size)
 {
+  setFocusPolicy(Qt::StrongFocus);
 }
 
 void
@@ -116,11 +119,20 @@ void
 CQJSCanvas::
 fillText(double x, double y, const std::string &text)
 {
-  setPen();
+  setBrush();
 
-  ip_->setPen(pen_);
+  QFontMetrics fm(font_);
 
-  ip_->drawText(x, y, text.c_str());
+  if      (fontAlign_ == Qt::AlignTop)
+    y += fm.ascent();
+  else if (fontAlign_ == Qt::AlignBottom)
+    y -= fm.descent();
+
+  path_ = QPainterPath();
+
+  path_.addText(QPointF(x, y), font_, text.c_str());
+
+  ip_->fillPath(path_, fillBrush_);
 }
 
 void
@@ -129,9 +141,11 @@ strokeText(double x, double y, const std::string &text)
 {
   setPen();
 
-  ip_->setPen(pen_);
+  path_ = QPainterPath();
 
-  ip_->drawText(x, y, text.c_str());
+  path_.addText(QPointF(x, y), font_, text.c_str());
+
+  ip_->strokePath(path_, pen_);
 }
 
 void
@@ -271,14 +285,23 @@ void
 CQJSCanvas::
 rect(double x, double y, double w, double h)
 {
-  rect_ = QRectF(x, y, w, h);
+  //rect_ = QRectF(x, y, w, h);
+
+  path_.moveTo(x    , y    );
+  path_.lineTo(x + w, y    );
+  path_.lineTo(x + w, y + h);
+  path_.lineTo(x    , y + h);
 }
 
 void
 CQJSCanvas::
 clip()
 {
-  ip_->setClipRect(rect_);
+  // clip from path ?
+  QRectF rect = path_.boundingRect();
+
+  //ip_->setClipRect(rect_);
+  ip_->setClipRect(rect);
 }
 
 void
@@ -365,7 +388,7 @@ resizeEvent(QResizeEvent *)
 
   ip_->setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 
-  js_->jsCanvas()->cast<CQJCanvas>()->updateSize();
+  qjs_->jsCanvas()->cast<CQJCanvas>()->updateSize();
 }
 
 void
@@ -383,7 +406,9 @@ enterEvent(QEvent *)
 {
   CQJObject::EventArgs args;
 
-  js_->jsCanvas()->cast<CQJCanvas>()->callEventListener("mouseover", args);
+  CQJCanvas *canvas = qjs_->jsCanvas()->cast<CQJCanvas>();
+
+  canvas->callEventListener("mouseover", "onmouseover", args);
 }
 
 void
@@ -392,14 +417,16 @@ leaveEvent(QEvent *)
 {
   CQJObject::EventArgs args;
 
-  js_->jsCanvas()->cast<CQJCanvas>()->callEventListener("mouseout", args);
+  CQJCanvas *canvas = qjs_->jsCanvas()->cast<CQJCanvas>();
+
+  canvas->callEventListener("mouseout", "onmouseout", args);
 }
 
 void
 CQJSCanvas::
 mousePressEvent(QMouseEvent *e)
 {
-  CJavaScript *js = js_->js();
+  CJavaScript *js = qjs_->js();
 
   CQJObject::EventArgs  args;
   CQJObject::NameValues nameValues;
@@ -407,14 +434,16 @@ mousePressEvent(QMouseEvent *e)
   nameValues.push_back(CQJObject::NameValue("mouseX", js->createNumberValue(long(e->x()))));
   nameValues.push_back(CQJObject::NameValue("mouseY", js->createNumberValue(long(e->y()))));
 
-  js_->jsCanvas()->cast<CQJCanvas>()->callEventListener("mousedown", args, nameValues);
+  CQJCanvas *canvas = qjs_->jsCanvas()->cast<CQJCanvas>();
+
+  canvas->callEventListener("mousedown", "onmousedown", args, nameValues);
 }
 
 void
 CQJSCanvas::
 mouseMoveEvent(QMouseEvent *e)
 {
-  CJavaScript *js = js_->js();
+  CJavaScript *js = qjs_->js();
 
   CQJObject::EventArgs  args;
   CQJObject::NameValues nameValues;
@@ -422,14 +451,16 @@ mouseMoveEvent(QMouseEvent *e)
   nameValues.push_back(CQJObject::NameValue("mouseX", js->createNumberValue(long(e->x()))));
   nameValues.push_back(CQJObject::NameValue("mouseY", js->createNumberValue(long(e->y()))));
 
-  js_->jsCanvas()->cast<CQJCanvas>()->callEventListener("mousemove", args, nameValues);
+  CQJCanvas *canvas = qjs_->jsCanvas()->cast<CQJCanvas>();
+
+  canvas->callEventListener("mousemove", "onmousemove", args, nameValues);
 }
 
 void
 CQJSCanvas::
 mouseReleaseEvent(QMouseEvent *e)
 {
-  CJavaScript *js = js_->js();
+  CJavaScript *js = qjs_->js();
 
   CQJObject::EventArgs  args;
   CQJObject::NameValues nameValues;
@@ -437,16 +468,18 @@ mouseReleaseEvent(QMouseEvent *e)
   nameValues.push_back(CQJObject::NameValue("mouseX", js->createNumberValue(long(e->x()))));
   nameValues.push_back(CQJObject::NameValue("mouseY", js->createNumberValue(long(e->y()))));
 
-  js_->jsCanvas()->cast<CQJCanvas>()->callEventListener("mouseup", args, nameValues);
+  CQJCanvas *canvas = qjs_->jsCanvas()->cast<CQJCanvas>();
 
-  js_->jsCanvas()->cast<CQJCanvas>()->callEventListener("click", args, nameValues);
+  canvas->callEventListener("mouseup", "onmouseup", args, nameValues);
+
+  canvas->callEventListener("click", "onclick", args, nameValues);
 }
 
 void
 CQJSCanvas::
 mouseDoubleClickEvent(QMouseEvent *e)
 {
-  CJavaScript *js = js_->js();
+  CJavaScript *js = qjs_->js();
 
   CQJObject::EventArgs  args;
   CQJObject::NameValues nameValues;
@@ -454,14 +487,16 @@ mouseDoubleClickEvent(QMouseEvent *e)
   nameValues.push_back(CQJObject::NameValue("mouseX", js->createNumberValue(long(e->x()))));
   nameValues.push_back(CQJObject::NameValue("mouseY", js->createNumberValue(long(e->y()))));
 
-  js_->jsCanvas()->cast<CQJCanvas>()->callEventListener("dblclick", args, nameValues);
+  CQJCanvas *canvas = qjs_->jsCanvas()->cast<CQJCanvas>();
+
+  canvas->callEventListener("dblclick", "ondblclick", args, nameValues);
 }
 
 void
 CQJSCanvas::
 contextMenuEvent(QContextMenuEvent *e)
 {
-  CJavaScript *js = js_->js();
+  CJavaScript *js = qjs_->js();
 
   CQJObject::EventArgs  args;
   CQJObject::NameValues nameValues;
@@ -469,12 +504,51 @@ contextMenuEvent(QContextMenuEvent *e)
   nameValues.push_back(CQJObject::NameValue("mouseX", js->createNumberValue(long(e->x()))));
   nameValues.push_back(CQJObject::NameValue("mouseY", js->createNumberValue(long(e->y()))));
 
-  js_->jsCanvas()->cast<CQJCanvas>()->callEventListener("contextmenu", args, nameValues);
+  CQJCanvas *canvas = qjs_->jsCanvas()->cast<CQJCanvas>();
+
+  canvas->callEventListener("contextmenu", "oncontextmenu", args, nameValues);
+}
+
+void
+CQJSCanvas::
+keyPressEvent(QKeyEvent *e)
+{
+  CJValueP event(new CQJEvent(qjs_, e));
+
+  callEventListener("keydown", "onkeydown", event);
+}
+
+void
+CQJSCanvas::
+keyReleaseEvent(QKeyEvent *e)
+{
+  CJValueP event(new CQJEvent(qjs_, e));
+
+  callEventListener("keyup", "onkeyup", event);
+}
+
+void
+CQJSCanvas::
+callEventListener(const std::string &name, const std::string &prop, CJValueP event)
+{
+  CQJObject::EventArgs  args;
+  CQJObject::NameValues nameValues;
+
+  args.push_back(event);
+
+  CQJCanvas *canvas = qjs_->jsCanvas()->cast<CQJCanvas>();
+
+  if (canvas->callEventListener(name, prop, args, nameValues))
+    return;
+
+  CQJDocument *document = qjs_->jsDocument()->cast<CQJDocument>();
+
+  document->callEventListener(name, prop, args, nameValues);
 }
 
 QSize
 CQJSCanvas::
 sizeHint() const
 {
-  return QSize(600, 600);
+  return QSize(size_, size_);
 }

@@ -1,9 +1,10 @@
 #include <CJExecReturn.h>
+#include <CJExecExpression.h>
 #include <CJavaScript.h>
 
 CJExecReturn::
 CJExecReturn() :
- CJToken(CJToken::Type::Return)
+ CJToken(CJToken::Type::ExecReturn)
 {
 }
 

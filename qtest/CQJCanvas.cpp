@@ -60,10 +60,10 @@ void
 CQJCanvas::
 updateSize()
 {
-  CJavaScript *js = js_->js();
+  CJavaScript *js = qjs_->js();
 
-  setRealProperty(js, "width" , js_->canvas()->width ());
-  setRealProperty(js, "height", js_->canvas()->height());
+  setRealProperty(js, "width" , qjs_->canvas()->width ());
+  setRealProperty(js, "height", qjs_->canvas()->height());
 }
 
 CJValueP
@@ -75,7 +75,7 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
       std::string id = values[1]->toString();
 
       if (id == "2d")
-        return js_->jsCanvasContext2D();
+        return qjs_->jsCanvasContext2D();
     }
 
     return CJValueP();

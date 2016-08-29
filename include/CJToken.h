@@ -19,9 +19,13 @@ class CJToken {
     True,
     False,
     Operator,
+
+    // basic objects
     String,
     Array,
     Object,
+    RegExp,
+    Date,
 
     // extended (interp) tokens
     Variable,
@@ -33,11 +37,13 @@ class CJToken {
     IndexExpression,
     IncrDecrExpression,
     Block,
+    Const,
+    ExecFunction,
     Function,
+    UserObject,
     This,
     For,
     If,
-    While,
     Switch,
     Try,
     Throw,
@@ -45,15 +51,18 @@ class CJToken {
     Var,
     With,
     New,
-    Break,
-    Continue,
-    Return
+    ExecBreak,
+    ExecContinue,
+    ExecDelete,
+    ExecDo,
+    ExecLabel,
+    ExecReturn,
+    ExecVoid,
+    ExecWhile
   };
 
  public:
-  CJToken(Type type) :
-   type_(type) {
-  }
+  CJToken(Type type);
 
   virtual ~CJToken() { }
 

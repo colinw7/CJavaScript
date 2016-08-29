@@ -1,7 +1,7 @@
 #ifndef CJDictionary_H
 #define CJDictionary_H
 
-#include <CJObj.h>
+#include <CJObjType.h>
 #include <CJValue.h>
 #include <CJNameSpace.h>
 #include <sstream>
@@ -25,6 +25,8 @@ class CJDictionaryType : public CJObjType {
 // { <expression_pair> [, <expression_pair>]* }
 class CJDictionary : public CJValue, public CJNameSpace {
  public:
+  CJDictionary(CJavaScript *js, CJObjTypeP type);
+
   CJDictionary(CJavaScript *js, const std::string &name="",
                const KeyValues &keyValues=KeyValues());
 
@@ -52,10 +54,12 @@ class CJDictionary : public CJValue, public CJNameSpace {
 
   double toReal() const override { return toBoolean(); }
 
-  CJValueP indexValue(const std::string &key) const { return CJNameSpace::getProperty(key); }
+  CJValueP indexValue(const std::string &key) const {
+    return CJNameSpace::getProperty(js_, key);
+  }
 
-  void setIndexValue(CJavaScript *, const std::string &key, CJValueP value) {
-    setProperty(key, value);
+  void setIndexValue(CJavaScript *js, const std::string &key, CJValueP value) {
+    setProperty(js, key, value);
   }
 
   void setIndexValue(CJValueP ivalue, CJValueP value) {
@@ -100,9 +104,16 @@ class CJDictionary : public CJValue, public CJNameSpace {
     os << "}";
   }
 
- private:
+  friend std::ostream &operator<<(std::ostream &os, const CJDictionary &dict) {
+    dict.print(os);
+
+    return os;
+  }
+
+ protected:
   typedef std::map<std::string, CJValueP> Properties;
 
+  CJavaScript*  js_ { 0 };
   std::string   name_;
   CJDictionaryP parent_;
 };

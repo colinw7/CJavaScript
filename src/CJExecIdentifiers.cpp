@@ -17,23 +17,28 @@ exec(CJavaScript *js)
 
     const std::string &name1 = identifiers_[0]->name();
 
-    if (evalue_->type() == CJToken::Type::Dictionary) {
+    if      (evalue_->type() == CJToken::Type::Dictionary) {
       CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(evalue_);
 
-      return dict->getProperty(name1);
+      return dict->getProperty(js, name1);
+    }
+    else if (evalue_->type() == CJToken::Type::Function) {
+      CJFunctionP fn = std::static_pointer_cast<CJFunction>(evalue_);
+
+      return fn->getProperty(js, name1);
     }
     else {
       CJObjTypeP valueType = evalue_->valueType();
 
       if (evalue_->type() == CJToken::Type::Object) {
-        CJValueP propVal = evalue_->cast<CJObj>()->getProperty(name1);
+        CJValueP propVal = evalue_->cast<CJObj>()->getProperty(js, name1);
 
         if (propVal)
           return propVal;
       }
 
-      if (valueType->hasProperty(name1)) {
-        CJValueP propVal = valueType->getProperty(name1);
+      if (valueType->hasProperty(js, name1)) {
+        CJValueP propVal = valueType->getProperty(js, name1);
 
         //CJObjType::Values values;
 
@@ -47,7 +52,25 @@ exec(CJavaScript *js)
     }
   }
   else {
-    CJValueP value = js->lookupValue(identifiers_);
+    CJValueP value;
+
+    if (isThis_) {
+      CJDictionaryP scope = js->thisScope();
+
+      if (! identifiers_.empty()) {
+        CJPropertyData data;
+
+        if (! js->lookupPropertyData(scope, identifiers_, data))
+          return CJValueP();
+
+        return data.value;
+      }
+      else
+        return scope;
+    }
+    else if (! identifiers_.empty()) {
+      value = js->lookupValue(identifiers_);
+    }
 
     return value;
   }
@@ -58,6 +81,12 @@ CJExecIdentifiers::
 print(std::ostream &os) const
 {
   int i = 0;
+
+  if (isThis_) {
+    os << "this";
+
+    ++i;
+  }
 
   for (auto &id : identifiers_) {
     if (i > 0)

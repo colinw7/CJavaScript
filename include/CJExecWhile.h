@@ -26,6 +26,4 @@ class CJExecWhile : public CJToken {
   CJExecBlockP          block_;
 };
 
-typedef std::shared_ptr<CJExecWhile> CJExecWhileP;
-
 #endif

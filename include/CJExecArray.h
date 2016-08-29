@@ -24,6 +24,4 @@ class CJExecArray : public CJToken {
   ArrayValues values_;
 };
 
-typedef std::shared_ptr<CJExecArray> CJExecArrayP;
-
 #endif

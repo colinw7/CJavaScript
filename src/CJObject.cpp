@@ -1,5 +1,6 @@
 #include <CJObject.h>
 #include <CJObj.h>
+#include <CJTypeFunction.h>
 #include <CJavaScript.h>
 
 CJObjTypeP CJObjectType::type_;
@@ -108,6 +109,6 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
 CJObject::
 CJObject(CJavaScript *js) :
- CJObj(CJObjectType::instance(js)), js_(js)
+ CJObj(js, CJObjectType::instance(js))
 {
 }

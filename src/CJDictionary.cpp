@@ -32,8 +32,14 @@ exec(CJavaScript *, const std::string &, const Values &)
 //------
 
 CJDictionary::
+CJDictionary(CJavaScript *js, CJObjTypeP type) :
+ CJValue(type), CJNameSpace(), js_(js)
+{
+}
+
+CJDictionary::
 CJDictionary(CJavaScript *js, const std::string &name, const KeyValues &keyValues) :
- CJValue(CJDictionaryType::instance(js)), CJNameSpace(keyValues), name_(name)
+ CJValue(CJDictionaryType::instance(js)), CJNameSpace(keyValues), js_(js), name_(name)
 {
 }
 

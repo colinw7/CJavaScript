@@ -25,6 +25,4 @@ class CJExecWith : public CJToken {
   CJExecBlockP       block_;
 };
 
-typedef std::shared_ptr<CJExecWith> CJExecWithP;
-
 #endif

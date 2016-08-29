@@ -24,6 +24,4 @@ class CJExecNew : public CJToken {
   CJExecExpressionListP exprList_;
 };
 
-typedef std::shared_ptr<CJExecNew> CJExecNewP;
-
 #endif
