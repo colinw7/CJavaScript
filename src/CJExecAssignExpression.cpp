@@ -84,11 +84,13 @@ exec(CJavaScript *js)
   }
   else if (varToken && varToken->type() == CJToken::Type::Identifiers) {
     eidentifiers = varToken->cast<CJExecIdentifiers>();
+  }
 
-    if (! eidentifiers) {
-      js->errorMsg(this, "Missing variable name for assign");
-      return value;
-    }
+  //---
+
+  if (! eidentifiers) {
+    js->errorMsg(this, "Missing variable name for assign");
+    return value;
   }
 
   //---
@@ -188,8 +190,6 @@ exec(CJavaScript *js)
     std::vector<long> inds;
 
     for (auto indexExpr : indices) {
-      
-
       CJValueP ivalue = indexExpr->exec(js);
 
       if (! ivalue) {
@@ -205,33 +205,44 @@ exec(CJavaScript *js)
     for (uint i = 0; i < inds.size(); ++i) {
       int ind = inds[i];
 
+      // last index
       if (i == inds.size() - 1) {
-        if      (varValue->type() == CJToken::Type::String) {
-          CJString *str = varValue->cast<CJString>();
-
-          str->setIndexValue(ind, rvalue);
-        }
-        else if (varValue->hasIndex()) {
+        if      (varValue->hasIndex()) {
           varValue->setIndexValue(ind, rvalue);
         }
+        else if (varValue->hasProperty()) {
+          CJValueP ivalue = js->createNumberValue(long(ind));
+
+          std::string ind = ivalue->toString();
+
+          varValue->setPropertyValue(ind, rvalue);
+        }
         else {
-          js->errorMsg(this, "Variable is not an array");
+          js->errorMsg(this, "Variable is not an array or dictionary");
           return value;
         }
       }
+      // non last index
       else {
-        if (varValue->hasIndex()) {
-          varValue = varValue->indexValue(ind);
+        CJValueP varValue1;
 
-          if (! varValue) {
-            js->errorMsg(this, "Variable is not an array");
-            return value;
-          }
+        if      (varValue->hasIndex()) {
+          varValue1 = varValue->indexValue(ind);
         }
-        else {
-          js->errorMsg(this, "Variable is not an array");
+        else if (varValue->hasProperty()) {
+          CJValueP ivalue = js->createNumberValue(long(ind));
+
+          std::string ind = ivalue->toString();
+
+          varValue1 = varValue->propertyValue(ind);
+        }
+
+        if (! varValue1) {
+          js->errorMsg(this, "Variable is not an array or dictionary");
           return value;
         }
+
+        varValue = varValue1;
       }
     }
   }

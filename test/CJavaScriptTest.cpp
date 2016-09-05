@@ -13,6 +13,7 @@ main(int argc, char **argv)
   bool edebug = false;
   bool xdebug = false;
   bool parse  = false; // just parse
+  bool fast   = false;
   bool prompt = false;
 
   for (int i = 1; i < argc; i++) {
@@ -33,6 +34,8 @@ main(int argc, char **argv)
       }
       else if (strcmp(&argv[i][1], "parse") == 0)
         parse = true;
+      else if (strcmp(&argv[i][1], "f") == 0)
+        fast = true;
       else if (strcmp(&argv[i][1], "i") == 0)
         prompt = true;
       else
@@ -43,6 +46,9 @@ main(int argc, char **argv)
   }
 
   CJavaScript js;
+
+  if (! fast)
+    js.loadStartpFile();
 
   js.setParseDebug (pdebug);
   js.setInterpDebug(idebug);
@@ -79,7 +85,7 @@ main(int argc, char **argv)
       readline.setPrompt(prompt + " ");
 
       if (line != "")
-        line += " ";
+        line += "\n";
 
       line += readline.readLine();
 

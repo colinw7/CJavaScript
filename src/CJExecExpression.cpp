@@ -211,9 +211,15 @@ exec(CJavaScript *js)
     }
     else if (type == CJToken::Type::ExecFunction) {
       if (state.isShortCircuit()) {
-        bool b = state.popValue()->toBoolean();
+        CJValueP value = state.popValue();
+
+#if 0
+        bool b = value->toBoolean();
 
         return CJValueP(js->createBoolValue(b));
+#else
+        return value;
+#endif
       }
 
       //---
@@ -269,9 +275,15 @@ exec(CJavaScript *js)
     }
     else {
       if (state.isShortCircuit()) {
-        bool b = state.popValue()->toBoolean();
+        CJValueP value = state.popValue();
+
+#if 0
+        bool b = value->toBoolean();
 
         return CJValueP(js->createBoolValue(b));
+#else
+        return value;
+#endif
       }
 
       CJValueP value = token->exec(js);

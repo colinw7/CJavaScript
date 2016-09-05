@@ -2,6 +2,7 @@
 #define CJString_H
 
 #include <CJObj.h>
+#include <COptVal.h>
 
 // String Type
 class CJStringType : public CJObjType {
@@ -21,8 +22,9 @@ class CJStringType : public CJObjType {
 // String Value
 class CJString : public CJObj {
  public:
-  static double parseFloat(const std::string &text);
-  static long   parseInt  (const std::string &text);
+  static COptReal parseFloat(const std::string &text, bool extraChars=false);
+  static COptLong parseInt  (const std::string &text, bool extraChars=false);
+  static COptBool parseBool (const std::string &text, bool extraChars=false);
 
  public:
   CJString(CJavaScript *js, const std::string &text="", char c='\"');
@@ -36,17 +38,14 @@ class CJString : public CJObj {
 
   std::string toString() const override { return text_; }
 
-  double toReal() const override;
-
-  long toInteger() const override;
-
-  bool toBoolean() const override;
+  double toReal   () const override;
+  long   toInteger() const override;
+  bool   toBoolean() const override;
 
   bool hasIndex() const override { return true; }
-
-  CJValueP indexValue(int i) const override;
-
-  void setIndexValue(int i, CJValueP value) override;
+  CJValueP indexValue(int ind) const override;
+  void setIndexValue(int ind, CJValueP value) override;
+  bool hasIndexValue(int ind) const override;
 
   long length() const override { return text_.size(); }
 
@@ -59,7 +58,5 @@ class CJString : public CJObj {
   std::string text_;
   char        c_ { '\"' };
 };
-
-typedef std::shared_ptr<CJString> CJStringP;
 
 #endif

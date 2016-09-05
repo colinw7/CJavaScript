@@ -16,6 +16,8 @@ class CJObjType : public CJNameSpace, public std::enable_shared_from_this<CJObjT
 
   const std::string &name() const { return name_; }
 
+  virtual CJObjTypeP parentType() const { return CJObjTypeP(); }
+
   void addTypeFunction(CJavaScript *js, const std::string &name);
   void addObjectFunction(CJavaScript *js, const std::string &name);
 
@@ -26,6 +28,8 @@ class CJObjType : public CJNameSpace, public std::enable_shared_from_this<CJObjT
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
 
   KeyNames getTypePropertyNames() const;
+
+  bool isInstanceOf(CJObjTypeP type) const;
 
   virtual CJValueP exec(CJavaScript *, const std::string &, const Values &) {
     return CJValueP();

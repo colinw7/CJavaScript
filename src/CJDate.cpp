@@ -429,6 +429,9 @@ CJDate::
 dateFromValues(const Values &values)
 {
   if      (values.size() == 1) {
+    if (! values[0])
+      return 0;
+
     if      (values[0]->type() == CJToken::Type::Number) {
       long t = values[0]->toInteger();
 

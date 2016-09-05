@@ -1,9 +1,10 @@
 #include <CJUserFunction.h>
+#include <CJArguments.h>
 #include <CJavaScript.h>
 
 CJUserFunction::
 CJUserFunction(CJavaScript *js, const std::string &name, const Args &args, CJExecBlockP block) :
- CJFunction(js, name, CJFunction::Type::User), args_(args), block_(std::move(block))
+ CJFunction(js, name, CJFunction::Type::User), args_(args), block_(block)
 {
 }
 
@@ -37,6 +38,7 @@ CJValueP
 CJUserFunction::
 exec(CJavaScript *js, const Values &values)
 {
+  // set arguments from values
   int nv = values.size();
   int na = args_ .size();
 
@@ -44,26 +46,54 @@ exec(CJavaScript *js, const Values &values)
   //if (nv > 0)
   //  setScopeProperty("this", values[0]);
 
-  for (int i = 1; i < nv; ++i) {
-    int j = i - 1;
+  CJArgumentsP arguments(new CJArguments(js));
 
-    if (j < na)
-      setScopeProperty(args_[j], values[i]);
+  setScopeProperty("arguments", arguments);
+
+  int nva = std::max(nv - 1, na);
+
+  for (int i = 0; i < nva; ++i) {
+    CJValueP value;
+
+    if (i < nv - 1)
+      value = values[i + 1];
+    else
+      value = js->createUndefinedValue();
+
+    if (i < na)
+      setScopeProperty(args_[i], value);
+
+    arguments->addValue(value);
   }
+
+  //--
 
   CJUserFunctionP fn = std::static_pointer_cast<CJUserFunction>(shared_from_this());
 
+  arguments->setCallee(fn);
+
+  //--
+
+  // call function
   js->startFunctionScope(fn);
 
-  js->startBlock(block_);
+  if (block_) {
+    js->startBlock(block_);
 
-  block_->exec(js);
+    block_->exec(js);
 
-  js->endBlock();
+    js->endBlock();
+  }
 
   js->endFunctionScope();
 
-  return block_->getRetVal();
+  //--
+
+  // set return value
+  if (block_)
+    return block_->getRetVal();
+  else
+    return CJValueP();
 }
 
 void

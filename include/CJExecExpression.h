@@ -55,7 +55,7 @@ class CJExecExpression : public CJToken {
   CJTokenP token(int i) const { return tokens_[i]; }
 
   CJToken::Type lastTokenType() const {
-    if (tokens_.empty())
+    if (tokens_.empty() || ! tokens_.back())
       return CJToken::Type::None;
 
     return tokens_.back()->type();

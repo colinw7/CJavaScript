@@ -11,6 +11,4 @@ class CJMath {
   CJDictionaryP dict_;
 };
 
-typedef std::shared_ptr<CJMath> CJMathP;
-
 #endif

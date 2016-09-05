@@ -99,7 +99,8 @@ exec(CJavaScript *js)
 
       js->popThis();
 
-      value = objValue;
+      //value = objValue;
+      value = fnValue;
     }
     else {
       CJObjTypeP userType = js->getObjectType(typeName_);

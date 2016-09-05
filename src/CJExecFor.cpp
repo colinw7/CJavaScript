@@ -29,18 +29,34 @@ exec(CJavaScript *js)
 
     //---
 
+    // iterate on key values
     CJValueP value = inExpr_->exec(js);
 
-    if (! value->hasIndex()) {
-      js->errorMsg("Non-index value : for in ");
-      return CJValueP();
+    if      (value->hasIndex()) {
+      int len = value->length();
+
+      for (int ind = 0; ind < len; ++ind) {
+        CJValueP value1(js->createNumberValue(long(ind)));
+
+        ivalue->setValue(value1);
+
+        if (block_) {
+          js->startBlock(block_);
+
+          block_->exec(js);
+
+          bool breakFlag = block_->isBreakFlag();
+
+          js->endBlock();
+
+          if (breakFlag)
+            break;
+        }
+      }
     }
-
-    int len = value->length();
-
-    if (value->type() == CJToken::Type::Array) {
-      for (int i = 0; i < len; ++i) {
-        CJValueP value1(js->createNumberValue(long(i)));
+    else if (value->hasProperty()) {
+      for (auto &ind : value->propertyNames()) {
+        CJValueP value1(js->createStringValue(ind));
 
         ivalue->setValue(value1);
 
@@ -59,25 +75,10 @@ exec(CJavaScript *js)
       }
     }
     else {
-      for (int i = 0; i < len; ++i) {
-        CJValueP value1 = value->indexValue(i);
-
-        ivalue->setValue(value1);
-
-        if (block_) {
-          js->startBlock(block_);
-
-          block_->exec(js);
-
-          bool breakFlag = block_->isBreakFlag();
-
-          js->endBlock();
-
-          if (breakFlag)
-            break;
-        }
-      }
+      js->errorMsg("Non-index value : for in ");
+      return CJValueP();
     }
+
   }
   // for (<expr1>; <expr2>; <expr3>)
   // for (var <expr1>; <expr2>; <expr3>)

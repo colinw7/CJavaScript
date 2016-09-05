@@ -51,6 +51,7 @@ class CStrParse;
 
 #include <CJExecBlock.h>
 #include <CJTypeObjectFunction.h>
+#include <CJExecData.h>
 
 //------
 
@@ -76,77 +77,33 @@ class CJavaScript {
   typedef std::vector<CJUserFunctionP>     UserFunctions;
   typedef std::vector<CJValueP>            Values;
 
-  class ExecData {
-   public:
-    ExecData() { }
-
-    bool isBlock() const { return block_; }
-    void setBlock(bool b) { block_ = b; }
-
-    bool eof() const {
-      return (pos_ >= len_);
-    }
-
-    void initExec(Tokens &tokens) {
-      len_    = tokens.size();
-      tokens_ = tokens;
-    }
-
-    void addEToken(CJTokenP etoken) {
-      etokens_.push_back(etoken);
-    }
-
-    int pos() const { return pos_; }
-    void setPos(int i) { pos_ = i; }
-
-    const ETokens &etokens() const { return etokens_; }
-
-    CJValueP unstackEValue(CJavaScript *js) {
-      CJValueP value;
-
-      for (auto &t : etokens_) {
-        value = t->exec(js);
-      }
-
-      etokens_.clear();
-
-      return value;
-    }
-
-    CJTokenP token() const {
-      if (eof()) return 0;
-
-      return tokens_[pos_];
-    }
-
-    void next() {
-      ++pos_;
-    }
-
-   private:
-    int     pos_ { 0 };
-    int     len_ { 0 };
-    Tokens  tokens_;
-    ETokens etokens_;
-    bool    block_ { false };
-  };
-
  public:
   CJavaScript();
 
   virtual ~CJavaScript() { }
 
-  bool isParseDebug() const { return parseDebug_; }
-  void setParseDebug(bool b) { parseDebug_ = b; }
+  //---
 
-  bool isInterpDebug() const { return interpDebug_; }
-  void setInterpDebug(bool b) { interpDebug_ = b; }
+  bool isParseDebug() const { return debugData_.parse; }
+  void setParseDebug(bool b) { debugData_.parse = b; }
 
-  bool isExecDebug() const { return execDebug_; }
-  void setExecDebug(bool b) { execDebug_ = b; }
+  bool isInterpDebug() const { return debugData_.interp; }
+  void setInterpDebug(bool b) { debugData_.interp = b; }
 
-  bool isExprDebug() const { return exprDebug_; }
-  void setExprDebug(bool b) { exprDebug_ = b; }
+  bool isExecDebug() const { return debugData_.exec; }
+  void setExecDebug(bool b) { debugData_.exec = b; }
+
+  bool isExprDebug() const { return debugData_.expr; }
+  void setExprDebug(bool b) { debugData_.expr = b; }
+
+  bool isExceptDebug() const { return debugData_.except; }
+  void setExceptDebug(bool b) { debugData_.except = b; }
+
+  //---
+
+  void loadStartpFile();
+
+  //---
 
   CJObjTypeP addObjectType(const std::string &name, CJObjTypeP type);
   CJObjTypeP getObjectType(const std::string &name) const;
@@ -241,11 +198,11 @@ class CJavaScript {
 
   bool loadSubFile(const std::string &filename);
 
-  void interp(ExecData &execData);
+  void interp(CJExecData &execData);
 
   CJValueP exec();
 
-  int cmp(CJValueP value1, CJValueP value2);
+  COptInt cmp(CJValueP value1, CJValueP value2);
 
   CJValueP execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2);
   CJValueP execUnaryOp (CJOperator::Type op, CJValueP value);
@@ -319,11 +276,22 @@ class CJavaScript {
 
   virtual void clearInterval(int /*timer*/) { }
 
+  //---
+
+  void throwException(CJExceptionType type);
+
+  void throwTypeError  (CJToken *token, const std::string &msg);
+  void throwSyntaxError(CJToken *token, const std::string &msg);
+
   void errorMsg(CJTokenP token, const std::string &msg) const;
   void errorMsg(CJToken *token, const std::string &msg) const;
   void errorMsg(const std::string &msg) const;
 
+  //---
+
  private:
+  void defineObject(const std::string &name, CJTypeFunctionP typeFn);
+
   bool loadText(const std::string &str);
 
   void parseString(const std::string &str);
@@ -348,6 +316,7 @@ class CJavaScript {
   bool canInterpIdentifiers() const;
 
   CJExecArrayP           interpExecArray();
+  CJExecAssertP          interpExecAssert();
   CJExecBlockP           interpExecBlock(CJExecBlock::Type type);
   CJExecBreakP           interpExecBreak();
   CJExecConstP           interpExecConst();
@@ -387,7 +356,7 @@ class CJavaScript {
   int execLineNum() const;
 
  private:
-  typedef std::vector<ExecData *>            ExecDataStack;
+  typedef std::vector<CJExecData *>          ExecDataStack;
   typedef std::vector<CJDictionaryP>         ScopeStack;
   typedef std::vector<ScopeStack>            ScopeStackStack;
   typedef std::vector<CJExecBlockP>          BlockStack;
@@ -396,10 +365,15 @@ class CJavaScript {
   typedef std::map<CJToken::Type,CJObjTypeP> TypeObject;
   typedef std::map<std::string,CJObjTypeP>   NamedType;
 
-  bool            parseDebug_  { false };
-  bool            interpDebug_ { false };
-  bool            execDebug_   { false };
-  bool            exprDebug_   { false };
+  struct DebugData {
+    bool parse  { false };
+    bool interp { false };
+    bool exec   { false };
+    bool expr   { false };
+    bool except { false };
+  };
+
+  DebugData       debugData_;
   std::string     fileName_;
   NamedType       namedType_;
   CJDictionaryP   rootScope_;
@@ -411,7 +385,7 @@ class CJavaScript {
   CJMathP         math_;
   Tokens          tokens_;
   TypeObject      typeObject_;
-  ExecData*       execData_ { 0 };
+  CJExecData*     execData_ { 0 };
   ExecDataStack   execDataStack_;
   CJExecBlockP    block_;
   BlockStack      blockStack_;

@@ -18,5 +18,5 @@ void
 CJDictionaryRef::
 setValue(CJValueP value)
 {
-  dict_->setIndexValue(js_, name_, value);
+  dict_->setProperty(js_, name_, value);
 }

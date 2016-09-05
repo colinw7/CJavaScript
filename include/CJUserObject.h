@@ -50,6 +50,4 @@ class CJUserObject : public CJObj {
   CJFunctionP userFn_;
 };
 
-typedef std::shared_ptr<CJUserObject> CJUserObjectP;
-
 #endif

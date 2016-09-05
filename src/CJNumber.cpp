@@ -77,36 +77,35 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
   }
   else if (name == "parseInt") {
     if (values.size() > 1) {
-      long i = CJString::parseInt(values[1]->toString());
+      COptLong integer = CJString::parseInt(values[1]->toString());
 
-      return js->createNumberValue(i);
+      return js->createNumberValue(integer.getValue(0));
     }
     else
       return CJValueP();
   }
   else if (name == "parseFloat") {
     if (values.size() > 1) {
-      double r = CJString::parseFloat(values[1]->toString());
+      COptReal real = CJString::parseFloat(values[1]->toString());
 
-      return js->createNumberValue(r);
+      return js->createNumberValue(real.getValue(CJUtil::getNaN()));
     }
     else
       return CJValueP();
   }
   // object functions
   else if (name == "toFixed") {
-    if (values.size() > 1) {
-      double r = num->toReal();
-      long   n = std::max(values[1]->toInteger(), 0L);
+    double r = num->toReal();
+    long   n = 0;
 
-      char buffer[256];
+    if (values.size() > 1)
+      n = std::max(values[1]->toInteger(), 0L);
 
-      sprintf(buffer, "%.*f", int(n), r);
+    char buffer[256];
 
-      return CJValueP(js->createStringValue(buffer));
-    }
-    else
-      return CJValueP();
+    sprintf(buffer, "%.*f", int(n), r);
+
+    return CJValueP(js->createStringValue(buffer));
   }
   else
     return CJValueP();

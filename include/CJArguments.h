@@ -1,16 +1,16 @@
-#ifndef CJArray_H
-#define CJArray_H
+#ifndef CJArguments_H
+#define CJArguments_H
 
 #include <CJObj.h>
 #include <deque>
 #include <vector>
 
-// Array Type
-class CJArrayType : public CJObjType {
+// Arguments Type
+class CJArgumentsType : public CJObjType {
  public:
   static CJObjTypeP instance(CJavaScript *js);
 
-  CJArrayType(CJavaScript *js);
+  CJArgumentsType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
@@ -20,25 +20,18 @@ class CJArrayType : public CJObjType {
 
 //-------
 
-// Array Value
-class CJArray : public CJObj {
+// Arguments Value
+class CJArguments : public CJObj {
  public:
   typedef std::deque<CJValueP> Values;
-  typedef std::set<int>        ReadOnly;
 
  public:
-  CJArray(CJavaScript *js, int n=0);
-  CJArray(CJavaScript *js, const Values &values);
-  CJArray(CJavaScript *js, const std::vector<CJValueP> &values);
+  CJArguments(CJavaScript *js, const Values &values=Values());
 
-  CJArray *dup(CJavaScript *js) const override { return new CJArray(js, values_); }
-
-  bool isProtoValue() const override { return true; }
+  CJArguments *dup(CJavaScript *js) const override { return new CJArguments(js, values_); }
 
   Values values() const { return values_; }
   void setValues(const Values &values) { values_ = values; }
-
-  void setValues(const std::vector<CJValueP> &values);
 
   std::string toString() const override {
     std::ostringstream ss; ss << *this;
@@ -50,27 +43,17 @@ class CJArray : public CJObj {
 
   bool toBoolean() const override { return ! values_.empty(); }
 
-  void addValue(CJValueP value);
-
-  CJValueP removeValue();
-
-  void addFrontValue(CJValueP value);
-
-  CJValueP removeFrontValue();
-
   bool hasIndex() const override { return true; }
   CJValueP indexValue(int ind) const override;
   void setIndexValue(int ind, CJValueP value) override;
   bool hasIndexValue(int ind) const override;
 
-  bool isReadOnlyIndex(int ind) const override;
-  void setReadOnlyIndex(int ind, bool b) override;
+  void addValue(CJValueP value);
 
   long length() const override { return values_.size(); }
 
-  void reverse();
-
-  void sort();
+  CJValueP callee() const { return callee_; }
+  void setCallee(CJValueP value) { callee_ = value; }
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
   void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
@@ -79,7 +62,7 @@ class CJArray : public CJObj {
 
  protected:
   Values   values_;
-  ReadOnly readOnly_;
+  CJValueP callee_;
 };
 
 #endif

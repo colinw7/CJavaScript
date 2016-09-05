@@ -17,7 +17,8 @@ exec(CJavaScript *js)
   for (const auto &v : values_) {
     CJValueP value = v.expr->exec(js);
 
-    dict->setProperty(js, v.key->toString(), value);
+    if (v.key)
+      dict->setProperty(js, v.key->toString(), value);
   }
 
   return CJValueP(dict);

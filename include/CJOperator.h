@@ -103,6 +103,4 @@ class CJOperator : public CJToken {
   Ary          ary_          { Ary::Binary };
 };
 
-typedef std::shared_ptr<CJOperator> CJOperatorP;
-
 #endif

@@ -5,10 +5,6 @@
 #include <set>
 #include <algorithm>
 
-class CJObject;
-
-typedef std::shared_ptr<CJObject> CJObjectP;
-
 // Object Type
 class CJObjectType : public CJObjType {
  public:

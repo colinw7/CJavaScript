@@ -31,3 +31,12 @@
  . Add RegExp support
  . Add expression evaluation debug
  . Add requestAnimationFrame
+# 9/5/2016
+ . Add error objects
+ . support throw and catch with try
+ . Improve index/iteration support
+ . Improve math and expression handling of NaN and Inf values
+ . Remove std::move (not sure where they appeared from)
+ . Better prototype definition and variable/function support
+ . Support unbalanced [] is complete line check
+ . Add startup files for and fast start mode

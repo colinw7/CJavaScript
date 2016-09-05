@@ -1,5 +1,6 @@
 #include <CJRealFunction.h>
 #include <CJavaScript.h>
+#include <CJUtil.h>
 
 CJValueP
 CJRealFunction::
@@ -35,6 +36,46 @@ exec(CJavaScript *js, const Values &values)
   double r2 = values[1]->toReal();
 
   double res = (*fn_)(r1, r2);
+
+  return js->createNumberValue(res);
+}
+
+//------
+
+CJValueP
+CJMinFunction::
+exec(CJavaScript *js, const Values &values)
+{
+  if (values.size() == 0)
+    return js->createNumberValue(CJUtil::getPosInf());
+
+  double res = values[0]->toReal();
+
+  for (uint i = 1; i < values.size(); ++i) {
+    double r = values[i]->toReal();
+
+    res = CJUtil::min(res, r);
+  }
+
+  return js->createNumberValue(res);
+}
+
+//------
+
+CJValueP
+CJMaxFunction::
+exec(CJavaScript *js, const Values &values)
+{
+  if (values.size() == 0)
+    return js->createNumberValue(CJUtil::getNegInf());
+
+  double res = values[0]->toReal();
+
+  for (uint i = 1; i < values.size(); ++i) {
+    double r = values[i]->toReal();
+
+    res = CJUtil::max(res, r);
+  }
 
   return js->createNumberValue(res);
 }

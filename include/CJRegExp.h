@@ -45,6 +45,4 @@ class CJRegExp : public CJObj {
   CRegExp     regexp_;
 };
 
-typedef std::shared_ptr<CJRegExp> CJRegExpP;
-
 #endif

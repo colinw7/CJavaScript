@@ -53,6 +53,4 @@ class CJDate : public CJObj {
   long t_ { 0 };
 };
 
-typedef std::shared_ptr<CJDate> CJDateP;
-
 #endif

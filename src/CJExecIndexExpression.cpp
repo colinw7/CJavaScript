@@ -48,49 +48,23 @@ indexValue(CJavaScript *js, CJValueP avalue)
   // index value
   CJValueP res;
 
-  if      (avalue->type() == CJToken::Type::Array) {
-    CJArray *array = avalue->cast<CJArray>();
-
+  if      (avalue->hasIndex()) {
     CJValueP ivalue = iexpr_->exec(js);
 
     long ind = ivalue->toInteger();
-
-    res = array->indexValue(ind);
-  }
-  else if (avalue->type() == CJToken::Type::Dictionary) {
-    CJDictionary *dict = avalue->cast<CJDictionary>();
-
-    CJValueP ivalue = iexpr_->exec(js);
-
-    res = dict->getProperty(js, ivalue->toString());
-  }
-  else if (avalue->type() == CJToken::Type::Function) {
-    CJFunction *fn = avalue->cast<CJFunction>();
-
-    CJValueP ivalue = iexpr_->exec(js);
-
-    res = fn->getProperty(js, ivalue->toString());
-  }
-  else if (avalue->type() == CJToken::Type::String) {
-    CJString *str = avalue->cast<CJString>();
-
-    CJValueP ivalue = iexpr_->exec(js);
-
-    long ind = ivalue->toInteger();
-
-    res = str->indexValue(ind);
-  }
-  else {
-    CJValueP ivalue = iexpr_->exec(js);
-
-    long ind = ivalue->toInteger();
-
-    if (! avalue->hasIndex()) {
-      js->errorMsg("Value not an array for index");
-      return res;
-    }
 
     res = avalue->indexValue(ind);
+  }
+  else if (avalue->hasProperty()) {
+    CJValueP ivalue = iexpr_->exec(js);
+
+    std::string ind = ivalue->toString();
+
+    res = avalue->propertyValue(ind);
+  }
+  else {
+    js->throwTypeError(this, "Value not an array or property for index");
+    return CJValueP();
   }
 
   if (! res)
@@ -107,49 +81,23 @@ setIndexValue(CJavaScript *js, CJValueP avalue, CJValueP rvalue)
     return;
 
   // set index value
-  if      (avalue->type() == CJToken::Type::Array) {
-    CJArray *array = avalue->cast<CJArray>();
-
+  if      (avalue->hasIndex()) {
     CJValueP ivalue = iexpr_->exec(js);
 
     long ind = ivalue->toInteger();
-
-    array->setIndexValue(ind, rvalue);
-  }
-  else if (avalue->type() == CJToken::Type::Dictionary) {
-    CJDictionary *dict = avalue->cast<CJDictionary>();
-
-    CJValueP ivalue = iexpr_->exec(js);
-
-    dict->setProperty(js, ivalue->toString(), rvalue);
-  }
-  else if (avalue->type() == CJToken::Type::Function) {
-    CJFunction *fn = avalue->cast<CJFunction>();
-
-    CJValueP ivalue = iexpr_->exec(js);
-
-    fn->setProperty(js, ivalue->toString(), rvalue);
-  }
-  else if (avalue->type() == CJToken::Type::String) {
-    CJString *str = avalue->cast<CJString>();
-
-    CJValueP ivalue = iexpr_->exec(js);
-
-    long ind = ivalue->toInteger();
-
-    str->setIndexValue(ind, rvalue);
-  }
-  else {
-    CJValueP ivalue = iexpr_->exec(js);
-
-    long ind = ivalue->toInteger();
-
-    if (! avalue->hasIndex()) {
-      js->errorMsg("Value not an array for index");
-      return;
-    }
 
     avalue->setIndexValue(ind, rvalue);
+  }
+  else if (avalue->hasProperty()) {
+    CJValueP ivalue = iexpr_->exec(js);
+
+    std::string ind = ivalue->toString();
+
+    avalue->setPropertyValue(ind, rvalue);
+  }
+  else {
+    js->errorMsg("Value not an array or property for index");
+    return;
   }
 }
 

@@ -3,7 +3,7 @@
 
 CJNameSpaceValue::
 CJNameSpaceValue(CJavaScript *js, CJNameSpaceP scope, const std::string &name) :
- CJLValue(CJDictionaryType::instance(js)), js_(js), scope_(std::move(scope)), name_(name)
+ CJLValue(CJDictionaryType::instance(js)), js_(js), scope_(scope), name_(name)
 {
 }
 

@@ -52,6 +52,4 @@ class CJNumber : public CJObj {
   double real_;
 };
 
-typedef std::shared_ptr<CJNumber> CJNumberP;
-
 #endif

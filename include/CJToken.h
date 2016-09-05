@@ -23,9 +23,20 @@ class CJToken {
     // basic objects
     String,
     Array,
+    Arguments,
     Object,
     RegExp,
     Date,
+
+    // error objects
+    Error,
+    EvalError,
+    InternalError,
+    RangeError,
+    ReferenceError,
+    SyntaxError,
+    TypeError,
+    URIError,
 
     // extended (interp) tokens
     Variable,
@@ -51,6 +62,7 @@ class CJToken {
     Var,
     With,
     New,
+    ExecAssert,
     ExecBreak,
     ExecContinue,
     ExecDelete,

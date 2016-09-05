@@ -25,13 +25,14 @@ CJObjectType(CJavaScript *js) :
  CJObjType(js, CJToken::Type::Object, "object")
 {
   addTypeFunction(js, "getOwnPropertyNames");
+  addTypeFunction(js, "defineProperty");
 }
 
 CJValueP
 CJObjectType::
 exec(CJavaScript *js, const std::string &name, const Values &values)
 {
-  if (name == "getOwnPropertyNames") {
+  if      (name == "getOwnPropertyNames") {
     if (values.size() <= 1) {
       js->errorMsg("Missing value for getOwnPropertyNames");
       return CJValueP();
@@ -100,6 +101,39 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     CJValueP value = std::static_pointer_cast<CJValue>(array);
 
     return value;
+  }
+  else if (name == "defineProperty") {
+    if (values.size() != 4)
+      return CJValueP();
+
+    CJValueP obj   = values[1];
+    CJValueP prop  = values[2];
+    CJValueP desc = values[3];
+
+    if (desc->type() == CJToken::Type::Dictionary) {
+      CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(desc);
+
+      CJValueP value    = dict->getProperty(js, "value");
+      CJValueP writable = dict->getProperty(js, "writable");
+
+      if (obj->type() == CJToken::Type::Array) {
+        int ind = prop->toInteger();
+
+        if (value)
+          obj->setIndexValue(ind, value);
+
+        if (writable)
+          obj->setReadOnlyIndex(ind, writable->toBoolean());
+      }
+      else {
+        js->errorMsg("Invalid object for defineProperty");
+      }
+    }
+    else {
+      js->errorMsg("Invalid descriptor for defineProperty");
+    }
+
+    return CJValueP();
   }
   else
     return CJValueP();

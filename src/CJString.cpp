@@ -1,6 +1,7 @@
 #include <CJString.h>
 #include <CJavaScript.h>
 #include <CJUtil.h>
+#include <cstring>
 
 CJObjTypeP CJStringType::type_;
 
@@ -95,7 +96,10 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       return CJValueP();
     }
 
-    CJString *key = (values[1] ? values[1]->cast<CJString>() : 0);
+    CJString *key = 0;
+
+    if (values[1] && values[1]->type() == CJToken::Type::String)
+      key = values[1]->cast<CJString>();
 
     if (key) {
       auto p = str.find(key->text());
@@ -112,7 +116,10 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       return CJValueP();
     }
 
-    CJString *key = (values[1] ? values[1]->cast<CJString>() : 0);
+    CJString *key = 0;
+
+    if (values[1] && values[1]->type() == CJToken::Type::String)
+      key = values[1]->cast<CJString>();
 
     if (key) {
       auto p = str.rfind(key->text());
@@ -123,13 +130,6 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       return js->createNumberValue(long(p));
     }
   }
-#if 0
-  else if (name == "length") {
-    long len = cstr->length();
-
-    return js->createNumberValue(len);
-  }
-#endif
   else if (name == "replace") {
     if (values.size() != 3) {
       js->errorMsg("Invalid number of arguments for " + name);
@@ -179,17 +179,23 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     std::string sstr = (values[1] ? values[1]->toString() : std::string());
 
-    auto p = str.find(sstr);
+    if (! sstr.empty()) {
+      auto p = str.find(sstr);
 
-    while (p != std::string::npos) {
-      strs.push_back(str.substr(0, p));
+      while (p != std::string::npos) {
+        strs.push_back(str.substr(0, p));
 
-      str = str.substr(p + sstr.size());
+        str = str.substr(p + sstr.size());
 
-      p = str.find(sstr);
+        p = str.find(sstr);
+      }
+
+      strs.push_back(str);
     }
+    else
+      strs.push_back(str);
 
-    strs.push_back(str);
+    //---
 
     CJArrayP array(new CJArray(js));
 
@@ -303,97 +309,34 @@ double
 CJString::
 toReal() const
 {
-  return parseFloat(text_);
+  COptReal real = parseFloat(text_);
+
+  return real.getValue(CJUtil::getNaN());
 }
 
 long
 CJString::
 toInteger() const
 {
-  return parseInt(text_);
-}
+  COptLong integer = parseInt(text_);
 
-double
-CJString::
-parseFloat(const std::string &text)
-{
-  const char *c_str = text.c_str();
-
-  // skip leading space
-  int i = 0;
-
-  while (c_str[i] != 0 && ::isspace(c_str[i]))
-    ++i;
-
-  if (c_str[i] == '\0') {
-    // Empty string is 0
-    return 0;
-  }
-
-  const char *p;
-
-  errno = 0;
-
-  double real = strtod(&c_str[i], (char **) &p);
-
-  if (errno == ERANGE) {
-    return CJUtil::getNaN();
-  }
-
-  while (*p != 0 && ::isspace(*p))
-    ++p;
-
-  if (*p != '\0') {
-    return CJUtil::getNaN();
-  }
-
-  return real;
-}
-
-long
-CJString::
-parseInt(const std::string &text)
-{
-  const char *c_str = text.c_str();
-
-  // skip leading space
-  int i = 0;
-
-  while (c_str[i] != 0 && ::isspace(c_str[i]))
-    ++i;
-
-  if (c_str[i] == '\0') {
-    // Empty string is 0
-    return 0;
-  }
-
-  const char *p;
-
-  errno = 0;
-
-  long integer = strtol(&c_str[i], (char **) &p, 10);
-
-  if (errno == ERANGE) {
-    // TODO: error
-    return 0;
-  }
-
-  while (*p != 0 && ::isspace(*p))
-    ++p;
-
-  if (*p != '\0') {
-    // TODO: error
-    return integer;
-  }
-
-  return integer;
+  return integer.getValue(0);
 }
 
 bool
 CJString::
 toBoolean() const
 {
-  const char *c_str = text_.c_str();
+  COptBool b = parseBool(text_);
+
+  return b.getValue(false);
+}
+
+COptReal
+CJString::
+parseFloat(const std::string &text, bool extraChars)
+{
+  const char *c_str = text.c_str();
 
   // skip leading space
   int i = 0;
@@ -401,53 +344,151 @@ toBoolean() const
   while (c_str[i] != 0 && ::isspace(c_str[i]))
     ++i;
 
-  if (c_str[i] == '\0') {
-    // Empty string is false
-    return false;
-  }
+  // Fail on empty string
+  if (c_str[i] == '\0')
+    return COptReal();
 
-  const char *p;
+  const char *p1 = &c_str[i];
+
+  if (strncmp(p1, "NaN", 3) == 0)
+    return COptReal(CJUtil::getPosInf());
+
+  if (strncmp(p1, "Infinity", 8) == 0)
+    return COptReal(CJUtil::getPosInf());
+
+  if (strncmp(p1, "-Infinity", 9) == 0)
+    return COptReal(CJUtil::getNegInf());
+
+  const char *p2;
 
   errno = 0;
 
-  long integer = strtol(&c_str[i], (char **) &p, 10);
+  double real = strtod(p1, (char **) &p2);
 
-  if (errno == ERANGE) {
-    // TODO: error
-    return true;
+  if (errno == ERANGE)
+    return COptReal();
+
+  if (p1 == p2)
+    return COptReal();
+
+  while (*p2 != 0 && ::isspace(*p2))
+    ++p2;
+
+  if (*p2 != '\0') {
+    if (! extraChars)
+      return COptReal();
   }
 
-  while (*p != 0 && ::isspace(*p))
-    ++p;
+  return COptReal(real);
+}
 
-  if (*p != '\0') {
-    // TODO: error
-    return true;
+COptLong
+CJString::
+parseInt(const std::string &text, bool extraChars)
+{
+  const char *c_str = text.c_str();
+
+  // skip leading space
+  int i = 0;
+
+  while (c_str[i] != 0 && ::isspace(c_str[i]))
+    ++i;
+
+  // Fail on empty string
+  if (c_str[i] == '\0')
+    return COptLong();
+
+  const char *p1 = &c_str[i];
+  const char *p2;
+
+  errno = 0;
+
+  long integer = strtol(p1, (char **) &p2, 10);
+
+  if (errno == ERANGE)
+    return COptLong();
+
+  if (p1 == p2)
+    return COptLong();
+
+  while (*p2 != 0 && ::isspace(*p2))
+    ++p2;
+
+  if (*p2 != '\0') {
+    if (! extraChars)
+      return COptLong();
   }
 
-  return integer;
+  return COptLong(integer);
+}
+
+COptBool
+CJString::
+parseBool(const std::string &text, bool extraChars)
+{
+  const char *c_str = text.c_str();
+
+  // skip leading space
+  int i = 0;
+
+  while (c_str[i] != 0 && ::isspace(c_str[i]))
+    ++i;
+
+  // Fail on empty string
+  if (c_str[i] == '\0')
+    return COptBool();
+
+  const char *p1 = &c_str[i];
+  const char *p2;
+
+  errno = 0;
+
+  long integer = strtol(p1, (char **) &p2, 10);
+
+  if (errno == ERANGE)
+    return COptBool();
+
+  if (p1 == p2)
+    return COptBool();
+
+  while (*p2 != 0 && ::isspace(*p2))
+    ++p2;
+
+  if (*p2 != '\0') {
+    if (! extraChars)
+      return COptBool();
+  }
+
+  return COptBool(bool(integer));
 }
 
 CJValueP
 CJString::
-indexValue(int i) const
+indexValue(int ind) const
 {
-  if (i < 0 || i >= int(text_.length()))
+  if (ind < 0 || ind >= int(text_.length()))
     return CJValueP();
 
-  return CJValueP(new CJString(js_, text_.substr(i, 1)));
+  return CJValueP(new CJString(js_, text_.substr(ind, 1)));
 }
 
 void
 CJString::
-setIndexValue(int i, CJValueP value)
+setIndexValue(int ind, CJValueP value)
 {
-  if (i < 0 || i >= int(text_.length()))
+  if (ind < 0 || ind >= int(text_.length()))
     return;
 
   std::string s = value->toString();
 
-  text_ = text_.substr(0, i - 1) + s + text_.substr(i + 1);
+  text_ = text_.substr(0, ind - 1) + s + text_.substr(ind + 1);
+}
+
+bool
+CJString::
+hasIndexValue(int ind) const
+{
+  return (ind >= 0 && ind < int(text_.length()));
 }
 
 void

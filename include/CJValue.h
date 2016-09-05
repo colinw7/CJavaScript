@@ -2,8 +2,12 @@
 #define CJValue_H
 
 #include <CJToken.h>
+#include <vector>
 
 class CJValue : public CJToken, public std::enable_shared_from_this<CJValue> {
+ public:
+  typedef std::vector<std::string> KeyNames;
+
  public:
   CJValue(CJObjTypeP valueType);
 
@@ -26,10 +30,18 @@ class CJValue : public CJToken, public std::enable_shared_from_this<CJValue> {
   bool isValue() const override { return true; }
 
   virtual bool hasIndex() const { return false; }
-
   virtual CJValueP indexValue(int) const { assert(false); return CJValueP(); }
-
   virtual void setIndexValue(int, CJValueP) { assert(false); }
+  virtual bool hasIndexValue(int) const { return false; }
+
+  virtual bool hasProperty() const { return false; }
+  virtual CJValueP propertyValue(const std::string &) const { assert(false); return CJValueP(); }
+  virtual void setPropertyValue(const std::string &, CJValueP) { assert(false); }
+  virtual bool hasPropertyValue(const std::string &) const { return false; }
+  virtual KeyNames propertyNames() const { return KeyNames(); }
+
+  virtual bool isReadOnlyIndex(int) const { return false; }
+  virtual void setReadOnlyIndex(int, bool =true) { assert(false); }
 
   virtual long length() const { return 0; }
 

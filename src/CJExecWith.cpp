@@ -12,11 +12,14 @@ CJValueP
 CJExecWith::
 exec(CJavaScript *js)
 {
-  CJValueP varValue = js->lookupValue(identifiers_->identifiers());
+  CJValueP varValue;
+
+  if (identifiers_)
+    varValue = js->lookupValue(identifiers_->identifiers());
 
   CJValueP value;
 
-  if (varValue->type() == CJToken::Type::Dictionary) {
+  if (varValue && varValue->type() == CJToken::Type::Dictionary) {
     CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(varValue);
 
     js->startScope(dict);

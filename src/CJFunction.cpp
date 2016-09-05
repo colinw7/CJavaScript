@@ -38,5 +38,7 @@ CJFunction::
 CJFunction(CJavaScript *js, const std::string &name, Type type) :
  CJObj(js, CJFunctionType::instance(js, name)), name_(name), type_(type)
 {
-  setProperty(js, "prototype", CJDictionaryP(new CJDictionary(js)));
+  prototype_ = CJDictionaryP(new CJDictionary(js));
+
+  setProperty(js, "prototype", prototype_);
 }

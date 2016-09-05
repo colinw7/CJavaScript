@@ -6,14 +6,13 @@ CJValueP
 CJGlobalFunction::
 exec(CJavaScript *js, const Values &values)
 {
-
   if      (name_ == "eval") {
     if (values.size() < 1) {
       js->errorMsg("Wrong number of function values");
       return CJValueP();
     }
 
-    std::string str = values[0]->toString();
+    std::string str = (values[0] ? values[0]->toString() : std::string());
 
     CJavaScript js;
 
@@ -27,7 +26,7 @@ exec(CJavaScript *js, const Values &values)
       return CJValueP();
     }
 
-    double r = values[0]->toReal();
+    double r = (values[0] ? values[0]->toReal() : 0.0);
 
     return js->createBoolValue(! CJUtil::isInf(r) && ! CJUtil::isNaN(r));
   }
@@ -37,7 +36,7 @@ exec(CJavaScript *js, const Values &values)
       return CJValueP();
     }
 
-    double r = values[0]->toReal();
+    double r = (values[0] ? values[0]->toReal() : 0.0);
 
     return js->createBoolValue(CJUtil::isNaN(r));
   }
@@ -47,9 +46,14 @@ exec(CJavaScript *js, const Values &values)
       return CJValueP();
     }
 
-    std::string s = values[0]->toString();
+    std::string str = (values[0] ? values[0]->toString() : std::string());
 
-    return js->createNumberValue(CJString::parseInt(s));
+    COptLong integer = CJString::parseInt(str, /*extraChars*/true);
+
+    if (integer.isValid())
+      return js->createNumberValue(integer.getValue());
+    else
+      return js->createNumberValue(CJUtil::getNaN());
   }
   else if (name_ == "parseFloat") {
     if (values.size() < 1) {
@@ -57,9 +61,14 @@ exec(CJavaScript *js, const Values &values)
       return CJValueP();
     }
 
-    std::string s = values[0]->toString();
+    std::string str = (values[0] ? values[0]->toString() : std::string());
 
-    return js->createNumberValue(CJString::parseFloat(s));
+    COptReal real = CJString::parseFloat(str, /*extraChars*/true);
+
+    if (real.isValid())
+      return js->createNumberValue(real.getValue());
+    else
+      return js->createNumberValue(CJUtil::getNaN());
   }
   else
     return CJValueP();

@@ -34,15 +34,12 @@ class CJDictionary : public CJValue, public CJNameSpace {
     return new CJDictionary(js, name_, keyValues_);
   }
 
+  CJavaScript *js() const { return js_; }
+
   const std::string &name() const { return name_; }
 
   CJDictionaryP getParent() const { return parent_; }
   void setParent(CJDictionaryP s) { assert(s.get() != this); parent_ = s; }
-
-//void addScope   (CJDictionaryP scope);
-//void removeScope(const std::string &name);
-
-  //CJDictionaryP lookupScope(const std::string &name);
 
   std::string toString() const override {
     std::ostringstream ss; ss << *this;
@@ -54,14 +51,30 @@ class CJDictionary : public CJValue, public CJNameSpace {
 
   double toReal() const override { return toBoolean(); }
 
-  CJValueP indexValue(const std::string &key) const {
+  //---
+
+  bool hasProperty() const override { return true; }
+
+  CJValueP propertyValue(const std::string &key) const override {
     return CJNameSpace::getProperty(js_, key);
   }
 
-  void setIndexValue(CJavaScript *js, const std::string &key, CJValueP value) {
-    setProperty(js, key, value);
+  void setPropertyValue(const std::string &key, CJValueP value) override {
+    CJNameSpace::setProperty(js_, key, value);
   }
 
+  bool hasPropertyValue(const std::string &key) const override {
+    return CJNameSpace::hasProperty(js_, key);
+  }
+
+  CJValue::KeyNames propertyNames() const override {
+    CJValue::KeyNames names;
+    for (const auto &n : CJNameSpace::keyNames())
+      names.push_back(n);
+    return names;
+  }
+
+#if 0
   void setIndexValue(CJValueP ivalue, CJValueP value) {
     std::string key = ivalue->toString();
 
@@ -72,6 +85,11 @@ class CJDictionary : public CJValue, public CJNameSpace {
       }
     }
   }
+
+  bool hasIndexValue(CJavaScript *js, const std::string &key) const {
+    return CJNameSpace::hasProperty(js, key);
+  }
+#endif
 
   std::vector<std::string> getFunctionNames() const;
   std::vector<std::string> getVariableNames() const;

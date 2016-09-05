@@ -47,4 +47,36 @@ class CJReal2Function : public CJFunction {
   Fn fn_;
 };
 
+// min of values
+class CJMinFunction : public CJFunction {
+ public:
+  CJMinFunction(CJavaScript *js) :
+   CJFunction(js, "min", CJFunction::Type::Min) {
+  }
+
+  CJValue *dup(CJavaScript *js) const override { return new CJMinFunction(js); }
+
+  CJValueP exec(CJavaScript *js, const Values &values) override;
+
+  void print(std::ostream &os) const override {
+    os << "double min(...)";
+  }
+};
+
+// min of values
+class CJMaxFunction : public CJFunction {
+ public:
+  CJMaxFunction(CJavaScript *js) :
+   CJFunction(js, "max", CJFunction::Type::Max) {
+  }
+
+  CJValue *dup(CJavaScript *js) const override { return new CJMaxFunction(js); }
+
+  CJValueP exec(CJavaScript *js, const Values &values) override;
+
+  void print(std::ostream &os) const override {
+    os << "double max(...)";
+  }
+};
+
 #endif

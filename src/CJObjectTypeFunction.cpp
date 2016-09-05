@@ -6,7 +6,7 @@
 
 CJObjectTypeFunction::
 CJObjectTypeFunction(CJavaScript *js, const std::string &name, CJObjTypeP type) :
- CJFunction(js, name, CJFunction::Type::Object), type_(std::move(type))
+ CJFunction(js, name, CJFunction::Type::Object), type_(type)
 {
 }
 

@@ -1,5 +1,6 @@
 #include <CJExecTry.h>
 #include <CJExecIdentifiers.h>
+#include <CJError.h>
 #include <CJavaScript.h>
 
 CJExecTry::
@@ -20,6 +21,25 @@ exec(CJavaScript *js)
   CJValueP value = tryBlock_->exec(js);
 
   js->endBlock();
+
+  if (tryBlock_->hasError()) {
+    if (! catchBlock_)
+      return CJValueP();
+
+    if (catchIdentifiers_) {
+      CJLValueP evar = js->lookupProperty(catchIdentifiers_->identifiers(), /*create*/true);
+
+      CJValueP evalue = std::static_pointer_cast<CJValue>(tryBlock_->error());
+
+      evar->setValue(evalue);
+    }
+
+    js->startBlock(catchBlock_);
+
+    value = catchBlock_->exec(js);
+
+    js->endBlock();
+  }
 
   return value;
 }

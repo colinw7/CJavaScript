@@ -28,6 +28,4 @@ class CJTypeFunction : public CJFunction {
   CJObjTypeP type_;
 };
 
-typedef std::shared_ptr<CJTypeFunction> CJTypeFunctionP;
-
 #endif

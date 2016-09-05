@@ -17,6 +17,7 @@ dirs:
 
 SRC = \
 CJAlertFunction.cpp \
+CJArguments.cpp \
 CJArray.cpp \
 CJArrayFunction.cpp \
 CJavaScript.cpp \
@@ -28,7 +29,10 @@ CJDebug.cpp \
 CJDictionary.cpp \
 CJDictionaryRef.cpp \
 CJDocument.cpp \
+CJError.cpp \
+CJErrorFunction.cpp \
 CJExecArray.cpp \
+CJExecAssert.cpp \
 CJExecAssignExpression.cpp \
 CJExecBlock.cpp \
 CJExecBreak.cpp \
@@ -106,6 +110,7 @@ $(CDEBUG) \
 -I../../CFile/include \
 -I../../CRegExp/include \
 -I../../CStrUtil/include \
+-I../../CUtil/include \
 -I../../COS/include \
 
 clean:

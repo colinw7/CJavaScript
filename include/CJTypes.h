@@ -5,34 +5,70 @@
 
 class CJavaScript;
 
+class CJArray;
+class CJArguments;
+class CJDate;
 class CJDictionary;
 class CJFunction;
+class CJLValue;
 class CJMath;
 class CJNameSpace;
-class CJObjType;
+class CJNumber;
 class CJObj;
 class CJObject;
+class CJObjType;
 class CJOperator;
+class CJRegExp;
+class CJString;
 class CJSystem;
+class CJTypeFunction;
 class CJUserFunction;
+class CJUserObject;
 class CJValue;
 
+class CJErrorBase;
+class CJError;
+class CJTypeError;
+class CJReferenceError;
+class CJEvalError;
+class CJRangeError;
+class CJSyntaxError;
+class CJURIError;
+
+typedef std::shared_ptr<CJArray>        CJArrayP;
+typedef std::shared_ptr<CJArguments>    CJArgumentsP;
+typedef std::shared_ptr<CJDate>         CJDateP;
 typedef std::shared_ptr<CJDictionary>   CJDictionaryP;
 typedef std::shared_ptr<CJFunction>     CJFunctionP;
+typedef std::shared_ptr<CJLValue>       CJLValueP;
 typedef std::shared_ptr<CJMath>         CJMathP;
 typedef std::shared_ptr<CJNameSpace>    CJNameSpaceP;
-typedef std::shared_ptr<CJObjType>      CJObjTypeP;
-typedef std::shared_ptr<CJObject>       CJObjectP;
+typedef std::shared_ptr<CJNumber>       CJNumberP;
 typedef std::shared_ptr<CJObj>          CJObjP;
+typedef std::shared_ptr<CJObject>       CJObjectP;
 typedef std::shared_ptr<CJObjType>      CJObjTypeP;
 typedef std::shared_ptr<CJOperator>     CJOperatorP;
+typedef std::shared_ptr<CJRegExp>       CJRegExpP;
+typedef std::shared_ptr<CJString>       CJStringP;
 typedef std::shared_ptr<CJSystem>       CJSystemP;
+typedef std::shared_ptr<CJTypeFunction> CJTypeFunctionP;
 typedef std::shared_ptr<CJUserFunction> CJUserFunctionP;
+typedef std::shared_ptr<CJUserObject>   CJUserObjectP;
 typedef std::shared_ptr<CJValue>        CJValueP;
+
+typedef std::shared_ptr<CJErrorBase>      CJErrorBaseP;
+typedef std::shared_ptr<CJError>          CJErrorP;
+typedef std::shared_ptr<CJTypeError>      CJTypeErrorP;
+typedef std::shared_ptr<CJReferenceError> CJReferenceErrorP;
+typedef std::shared_ptr<CJEvalError>      CJEvalErrorP;
+typedef std::shared_ptr<CJRangeError>     CJRangeErrorP;
+typedef std::shared_ptr<CJSyntaxError>    CJSyntaxErrorP;
+typedef std::shared_ptr<CJURIError>       CJURIErrorP;
 
 //------
 
 class CJExecArray;
+class CJExecAssert;
 class CJExecAssignExpression;
 class CJExecBlock;
 class CJExecBreak;
@@ -63,6 +99,7 @@ class CJExecWhile;
 class CJExecWith;
 
 typedef std::shared_ptr<CJExecArray>              CJExecArrayP;
+typedef std::shared_ptr<CJExecAssert>             CJExecAssertP;
 typedef std::shared_ptr<CJExecAssignExpression>   CJExecAssignExpressionP;
 typedef std::shared_ptr<CJExecBlock>              CJExecBlockP;
 typedef std::shared_ptr<CJExecBreak>              CJExecBreakP;
@@ -91,5 +128,26 @@ typedef std::shared_ptr<CJExecVar>                CJExecVarP;
 typedef std::shared_ptr<CJExecVoid>               CJExecVoidP;
 typedef std::shared_ptr<CJExecWhile>              CJExecWhileP;
 typedef std::shared_ptr<CJExecWith>               CJExecWithP;
+
+//------
+
+enum class CJExceptionType {
+  NONE,
+  INDEX_SIZE_ERR = 1,
+  DOMSTRING_SIZE_ERR = 2,
+  HIERARCHY_REQUEST_ERR = 3,
+  WRONG_DOCUMENT_ERR = 4,
+  INVALID_CHARACTER_ERR = 5,
+  NO_DATA_ALLOWED_ERR = 6,
+  NO_MODIFICATION_ALLOWED_ERR = 7,
+  NOT_FOUND_ERR = 8,
+  NOT_SUPPORTED_ERR = 9,
+  INUSE_ATTRIBUTE_ERR = 10,
+  INVALID_STATE_ERR = 11,
+  SYNTAX_ERR = 12,
+  INVALID_MODIFICATION_ERR = 13,
+  NAMESPACE_ERR = 14,
+  INVALID_ACCESS_ERR = 15
+};
 
 #endif

@@ -23,6 +23,11 @@ CJArrayType::
 CJArrayType(CJavaScript *js) :
  CJObjType(js, CJToken::Type::Array, "array")
 {
+  // TODO: move to base class
+  addObjectFunction(js, "hasOwnProperty");
+
+  //---
+
   addTypeFunction(js, "isArray");
   addTypeFunction(js, "observe");
   addTypeFunction(js, "unobserve");
@@ -65,13 +70,24 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
   }
   else if (name == "from") {
     if (values.size() > 1) {
-      if (values[1]->hasIndex()) {
+      if      (values[1]->hasIndex()) {
         long len = values[1]->length();
 
         CJArray *array = new CJArray(js);
 
-        for (uint i = 0; i < len; ++i)
-          array->addValue(values[1]->indexValue(i));
+        for (long ind = 0; ind < len; ++ind)
+          array->addValue(values[1]->indexValue(ind));
+
+        return CJValueP(array);
+      }
+      else if (values[1]->hasProperty() > 1) {
+        CJValue::KeyNames names = values[1]->propertyNames();
+
+        CJArray *array = new CJArray(js);
+
+        for (const auto &ind : names) {
+          array->addValue(values[1]->propertyValue(ind));
+        }
 
         return CJValueP(array);
       }
@@ -134,13 +150,6 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     return js->createStringValue(str);
   }
-#if 0
-  else if (name == "length") {
-    long len = array->length();
-
-    return js->createNumberValue(len);
-  }
-#endif
   else if (name == "pop") {
     if (values.size() != 1) {
       js->errorMsg("Invalid number of arguments for " + name);
@@ -208,6 +217,16 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     array->addFrontValue(values[1]);
 
     return values[0];
+  }
+  else if (name == "hasOwnProperty") {
+    if (values.size() != 2) {
+      js->errorMsg("Invalid number of arguments for " + name);
+      return CJValueP();
+    }
+
+    int ind = values[1]->toInteger();
+
+    return js->createBoolValue(array->hasIndexValue(ind));
   }
   else {
     js->errorMsg("Invalid array function " + name);
@@ -297,25 +316,57 @@ removeFrontValue()
 
 CJValueP
 CJArray::
-indexValue(int i) const
+indexValue(int ind) const
 {
-  if (i < 0 || i >= int(values_.size()))
+  if (ind < 0 || ind >= int(values_.size()))
     return CJValueP();
 
-  return values_[i];
+  return values_[ind];
 }
 
 void
 CJArray::
-setIndexValue(int i, CJValueP value)
+setIndexValue(int ind, CJValueP value)
 {
-  if (i < 0)
+  if (ind < 0)
     return;
 
-  while (i >= int(values_.size()))
+  if (isReadOnlyIndex(ind))
+    return;
+
+  while (ind >= int(values_.size()))
     values_.push_back(CJValueP());
 
-  values_[i] = value;
+  values_[ind] = value;
+}
+
+bool
+CJArray::
+hasIndexValue(int ind) const
+{
+  if (ind < 0 || ind >= int(values_.size()))
+    return false;
+
+  return !!values_[ind];
+}
+
+bool
+CJArray::
+isReadOnlyIndex(int ind) const
+{
+  auto p = readOnly_.find(ind);
+
+  return (p != readOnly_.end());
+}
+
+void
+CJArray::
+setReadOnlyIndex(int ind, bool b)
+{
+  if (b)
+    readOnly_.erase(ind);
+  else
+    readOnly_.insert(ind);
 }
 
 void
@@ -334,6 +385,8 @@ sort()
 {
   struct Cmp {
     bool operator()(const CJValueP &v1, const CJValueP &v2) {
+      if (! v2) return false;
+      if (! v1) return true;
       return (v1->cmp(v2.get()) < 0);
     }
   };
@@ -358,11 +411,13 @@ CJArray::
 setProperty(CJavaScript *js, const std::string &key, CJValueP value)
 {
   if (key == "length") {
-    // TODO:
-    //return CJValueP();
-  }
+    uint len = value->toInteger();
 
-  CJObj::setProperty(js, key, value);
+    while (values_.size() > len)
+      values_.pop_back();
+  }
+  else
+    CJObj::setProperty(js, key, value);
 }
 
 void

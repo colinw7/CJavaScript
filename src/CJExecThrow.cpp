@@ -15,9 +15,10 @@ exec(CJavaScript *js)
   if (expr_) {
     CJValueP value = expr_->exec(js);
 
-    std::string msg = value->toString();
-
-    std::cerr << msg << std::endl;
+    if (value)
+      std::cerr << value->toString() << std::endl;
+    else
+      std::cerr << "null" << std::endl;
   }
 
   return CJValueP();

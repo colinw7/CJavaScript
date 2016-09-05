@@ -6,7 +6,7 @@ if ($#argv > 0) then
 
     set res = $file:r.out
 
-    CJavaScriptTest $file > output/$res
+    CJavaScriptTest -f $file > output/$res
 
     if (! -e golden/$res) then
       nodejs $file > golden/$res
@@ -20,7 +20,7 @@ else
 
     set res = $file:r.out
 
-    CJavaScriptTest $file > output/$res
+    CJavaScriptTest -f $file > output/$res
 
     if (! -e golden/$res) then
       nodejs $file > golden/$res

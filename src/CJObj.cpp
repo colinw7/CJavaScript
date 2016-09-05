@@ -58,6 +58,20 @@ getTypePropertyNames() const
   return names;
 }
 
+bool
+CJObjType::
+isInstanceOf(CJObjTypeP type) const
+{
+  // is this an inmstance of type
+  if (this == type.get())
+    return true;
+
+  if (parentType())
+    return parentType()->isInstanceOf(type);
+
+  return false;
+}
+
 CJValueP
 CJObjType::
 getProperty(CJavaScript *js, const std::string &key) const
@@ -113,8 +127,8 @@ getProperty(CJavaScript *js, const std::string &name) const
     if (value && value->type() == CJToken::Type::Dictionary) {
       CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(value);
 
-      if (dict->hasProperty(js, name))
-        return dict->getProperty(js, name);
+      if (dict->hasPropertyValue(name))
+        return dict->propertyValue(name);
     }
   }
 

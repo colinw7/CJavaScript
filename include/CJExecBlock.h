@@ -44,6 +44,11 @@ class CJExecBlock : public CJToken {
   bool isReturnFlag() const { return returnFlag_; }
   void setReturnFlag(bool b) { returnFlag_ = b; }
 
+  bool hasError() const { return !!error_; }
+  CJErrorBaseP error() const { return error_; }
+  void setError(CJErrorBaseP error) { error_ = error; }
+  void resetError() { error_ = CJErrorBaseP(); }
+
   void interp(CJavaScript *js);
 
   void initExec() {
@@ -51,6 +56,7 @@ class CJExecBlock : public CJToken {
     breakFlag_    = false;
     continueFlag_ = false;
     returnFlag_   = false;
+    error_        = CJErrorBaseP();
   }
 
   CJValueP exec(CJavaScript *js) override;
@@ -60,13 +66,14 @@ class CJExecBlock : public CJToken {
  private:
   typedef std::vector<CJTokenP> Tokens;
 
-  Type     type_ { Type::Sequential };
-  Tokens   tokens_;
-  ETokens  etokens_;
-  CJValueP retVal_;
-  bool     breakFlag_    { false };
-  bool     continueFlag_ { false };
-  bool     returnFlag_   { false };
+  Type         type_ { Type::Sequential };
+  Tokens       tokens_;
+  ETokens      etokens_;
+  CJValueP     retVal_;
+  bool         breakFlag_    { false };
+  bool         continueFlag_ { false };
+  bool         returnFlag_   { false };
+  CJErrorBaseP error_;
 };
 
 #endif

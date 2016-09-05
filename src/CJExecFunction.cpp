@@ -29,6 +29,11 @@ exec(CJavaScript *js)
     else
       evalue = evalue_;
 
+    if (! evalue) {
+      js->errorMsg("Missing function name");
+      return CJValueP();
+    }
+
     if      (identifiers_) {
       auto identifiers = identifiers_->identifiers();
 

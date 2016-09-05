@@ -4,7 +4,7 @@
 
 CJExecQuestion::
 CJExecQuestion(CJExecExpressionP bexpr) :
- CJToken(CJToken::Type::Question), bexpr_(std::move(bexpr))
+ CJToken(CJToken::Type::Question), bexpr_(bexpr)
 {
 }
 

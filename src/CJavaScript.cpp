@@ -6,6 +6,7 @@
 #include <CJDocument.h>
 #include <CJConsole.h>
 #include <CJDebug.h>
+#include <CJError.h>
 #include <CJUtil.h>
 
 #include <CJArrayFunction.h>
@@ -15,6 +16,7 @@
 #include <CJObjectTypeFunction.h>
 #include <CJRandFunction.h>
 #include <CJRegExpFunction.h>
+#include <CJErrorFunction.h>
 #include <CJDateFunction.h>
 #include <CJStringFunction.h>
 #include <CJTypeFunction.h>
@@ -24,6 +26,7 @@
 #include <CJRequireFunction.h>
 
 #include <CJExecArray.h>
+#include <CJExecAssert.h>
 #include <CJExecAssignExpression.h>
 #include <CJExecBreak.h>
 #include <CJExecConst.h>
@@ -75,32 +78,34 @@ CJavaScript()
   setProperty("clearInterval", CJValueP(new CJClearInterval  (this)));
   setProperty("require"      , CJValueP(new CJRequireFunction(this)));
 
-  setProperty("undefined", CJValueP(createUndefinedValue()));
-  setProperty("null"     , CJValueP(createNullValue()));
+  setProperty("undefined", createUndefinedValue());
+  setProperty("null"     , createNullValue());
 
   setProperty("NaN"     , CJValueP(new CJNumber(this, CJUtil::getNaN())));
   setProperty("Infinity", CJValueP(new CJNumber(this, CJUtil::getPosInf())));
 
   //------
 
-  setProperty("Object"  , CJValueP(new CJObjectFunction  (this)));
-  setProperty("Function", CJValueP(new CJFunctionFunction(this)));
-  setProperty("Boolean" , CJValueP(new CJBooleanFunction (this)));
-  // Symbol, Error, EvalError, InternalError, RangeError, ReferenceError, SyntaxError,
-  // TypeError, URIError
+  defineObject("String" , CJTypeFunctionP(new CJStringFunction (this)));
+  defineObject("Number" , CJTypeFunctionP(new CJNumberFunction (this)));
+  defineObject("Boolean", CJTypeFunctionP(new CJBooleanFunction(this)));
+  defineObject("Array"  , CJTypeFunctionP(new CJArrayFunction  (this)));
+  defineObject("Object" , CJTypeFunctionP(new CJObjectFunction (this)));
 
-  setProperty("Number"  , CJValueP(new CJNumberFunction  (this)));
+  setProperty("Function", CJValueP(new CJFunctionFunction(this)));
+  // Symbol
 
   // Math Dictionary (Object)
   math_ = CJMathP(new CJMath(this));
+
   // Date
-  setProperty("Date", CJValueP(new CJDateFunction(this)));
+  defineObject("Date", CJTypeFunctionP(new CJDateFunction(this)));
+
   // System
   setProperty("System", CJValueP(new CJSystem(this)));
 
-  setProperty("String", CJValueP(new CJStringFunction(this)));
-  setProperty("RegExp", CJValueP(new CJRegExpFunction(this)));
-  setProperty("Array" , CJValueP(new CJArrayFunction (this)));
+  defineObject("RegExp", CJTypeFunctionP(new CJRegExpFunction(this)));
+
   // Int8Array, Uint8Array, Int8ClampedArray, Int16Array, Uint16Array,
   // Int32Array, Uint32Array, Float32Array, Float64Array
 
@@ -112,7 +117,15 @@ CJavaScript()
 
   // Intl, ...
 
-  // arguments (from called functions)
+  // Error, EvalError, InternalError, RangeError,
+  // ReferenceError, SyntaxError, TypeError, URIError
+  defineObject("Error"         , CJTypeFunctionP(new CJErrorFunction         (this)));
+  defineObject("EvalError"     , CJTypeFunctionP(new CJEvalErrorFunction     (this)));
+  defineObject("RangeError"    , CJTypeFunctionP(new CJRangeErrorFunction    (this)));
+  defineObject("ReferenceError", CJTypeFunctionP(new CJReferenceErrorFunction(this)));
+  defineObject("SyntaxError"   , CJTypeFunctionP(new CJSyntaxErrorFunction   (this)));
+  defineObject("TypeError"     , CJTypeFunctionP(new CJTypeErrorFunction     (this)));
+  defineObject("URIError"      , CJTypeFunctionP(new CJURIErrorFunction      (this)));
 
   //------
 
@@ -132,6 +145,32 @@ CJavaScript()
 
   // debug object
   setProperty("debug", CJValueP(new CJDebugObject(this)));
+}
+
+void
+CJavaScript::
+defineObject(const std::string &name, CJTypeFunctionP typeFn)
+{
+  setProperty(name, typeFn);
+
+  CJDictionaryP prototype = std::static_pointer_cast<CJDictionary>(
+    typeFn->getProperty(this, "prototype"));
+
+  prototype->setProperty(this, "constructor", typeFn);
+}
+
+void
+CJavaScript::
+loadStartpFile()
+{
+  const char *homeDir = getenv("HOME");
+
+  if (! homeDir)
+    return;
+
+  std::string fileName = std::string(homeDir) + "/.CJavaScript";
+
+  (void) loadSubFile(fileName);
 }
 
 CJObjTypeP
@@ -519,7 +558,7 @@ lookupPropertyData(CJNameSpaceP scope, CJValueP svalue, const Identifiers &ident
         return false;
 
 //std::cerr << "Set property '" << name << "' for '" << scope->name() << "'" << std::endl;
-      value = CJValueP(createNullValue());
+      value = createNullValue();
 
       scope->setProperty(this, name, value);
     }
@@ -888,7 +927,10 @@ int
 CJavaScript::
 isCompleteLine(const std::string &str) const
 {
-  int numBraces = 0;
+  // check for complete line (matching {}, []) - returns depth
+
+  int numBraces   = 0;
+  int numSBracket = 0;
 
   CStrParse parse(str);
 
@@ -907,11 +949,21 @@ isCompleteLine(const std::string &str) const
 
       parse.skipChar();
     }
+    else if (parse.isChar('[')) {
+      ++numSBracket;
+
+      parse.skipChar();
+    }
+    else if (parse.isChar(']')) {
+      --numSBracket;
+
+      parse.skipChar();
+    }
     else
       parse.skipChar();
   }
 
-  return numBraces;
+  return (numBraces + numSBracket);
 }
 
 bool
@@ -1031,7 +1083,7 @@ parseString(const std::string &str)
 
       tokens_.push_back(token);
     }
-    else if (parse.isString("-Infinity")) {
+    else if (allowUnary && parse.isString("-Infinity")) {
       parse.skipChars("-Infinity");
 
       CJTokenP token = createNumberValue(CJUtil::getNegInf());
@@ -1091,7 +1143,7 @@ CJValueP
 CJavaScript::
 exec()
 {
-  ExecData execData;
+  CJExecData execData;
 
   execData.initExec(tokens_);
 
@@ -1123,7 +1175,7 @@ interpFunctionBlock(const std::string &str)
 {
   loadText(str);
 
-  ExecData execData;
+  CJExecData execData;
 
   execData.initExec(tokens_);
 
@@ -1151,7 +1203,7 @@ loadSubFile(const std::string &filename)
     return false;
   }
 
-  ExecData execData;
+  CJExecData execData;
 
   execData.initExec(tokens_);
 
@@ -1164,7 +1216,7 @@ loadSubFile(const std::string &filename)
 
 void
 CJavaScript::
-interp(ExecData &execData)
+interp(CJExecData &execData)
 {
   execDataStack_.push_back(execData_);
 
@@ -1439,6 +1491,17 @@ interp(ExecData &execData)
 
         execData_->addEToken(std::static_pointer_cast<CJToken>(evoid));
       }
+      // assert <expression_list>
+      else if (keyword->type() == CJKeyword::Type::Assert) {
+        CJExecAssertP eassert = interpExecAssert();
+
+        if (! eassert) {
+          errorMsg(token, "Interp failed for 'assert'");
+          break;
+        }
+
+        execData_->addEToken(std::static_pointer_cast<CJToken>(eassert));
+      }
       // break [<label>]
       else if (keyword->type() == CJKeyword::Type::Break) {
         CJExecBreakP ebreak = interpExecBreak();
@@ -1552,7 +1615,7 @@ interpFunction()
     func->setExprList(exprList);
 
     if (! interpExecOperator(CJOperator::Type::CloseRBracket)) {
-      errorMsg(func, "Missing close round bracket");
+      errorMsg(exprList, "Missing close round bracket");
       return CJExecFunctionP();
     }
   }
@@ -2365,11 +2428,17 @@ interpExecWith()
 
   CJExecIdentifiersP identifiers = interpIdentifiers();
 
-  if (! identifiers) {
-    return CJExecWithP();
+  if (identifiers) {
+    ewith->setIdentifiers(identifiers);
   }
+  else {
+    CJExecExpressionListP exprList = interpExpressionList();
 
-  ewith->setIdentifiers(identifiers);
+    if (exprList)
+      ewith->setExprList(exprList);
+    else
+      return CJExecWithP();
+  }
 
   if (! interpExecOperator(CJOperator::Type::CloseRBracket)) {
     errorMsg(ewith, "Missing close bracket for with");
@@ -2387,7 +2456,7 @@ interpExecWith()
   //---
 
   if (isInterpDebug())
-    std::cerr << "interpWith: " << *ewith << std::endl;
+    std::cerr << "interpExecWith: " << *ewith << std::endl;
 
   return ewith;
 }
@@ -2657,6 +2726,37 @@ interpExecVoid()
   return evoid;
 }
 
+// assert <expression_list>
+CJExecAssertP
+CJavaScript::
+interpExecAssert()
+{
+  CJExecAssertP eassert(new CJExecAssert);
+
+  eassert->setLineNum(execLineNum());
+
+  //---
+
+  // assert
+  if (! interpExecKeyword(CJKeyword::Type::Assert))
+    return CJExecAssertP();
+
+  // <expression_list>
+  CJExecExpressionListP exprList = interpExpressionList();
+
+  if (! exprList)
+    return CJExecAssertP();
+
+  eassert->setExprList(exprList);
+
+  //---
+
+  if (isInterpDebug())
+    std::cerr << "interpExecAssert: " << *eassert << std::endl;
+
+  return eassert;
+}
+
 // break [<label>]
 CJExecBreakP
 CJavaScript::
@@ -2776,15 +2876,14 @@ interpExecTry()
 
   etry->setTryBlock(block1);
 
-  if (! isExecKeyword(CJKeyword::Type::Catch) && ! isExecKeyword(CJKeyword::Type::Finally)) {
+  if (! isExecKeyword(CJKeyword::Type::Catch) &&
+      ! isExecKeyword(CJKeyword::Type::Finally)) {
     errorMsg(etry, "Missing catch or finally for try");
     return CJExecTryP();
   }
 
   // catch (<parameter>) <block>
-  if (isExecKeyword(CJKeyword::Type::Catch)) {
-    execData_->next();
-
+  if (interpExecKeyword(CJKeyword::Type::Catch)) {
     // (<parameter>)
     if (! interpExecOperator(CJOperator::Type::OpenRBracket)) {
       errorMsg(etry, "Missing open bracket for catch");
@@ -2815,9 +2914,7 @@ interpExecTry()
   }
 
   // finally <block>
-  if (isExecKeyword(CJKeyword::Type::Finally)) {
-    execData_->next();
-
+  if (interpExecKeyword(CJKeyword::Type::Finally)) {
     // <block>
     CJExecBlockP block3 = interpExecBlock(CJExecBlock::Type::Sequential);
 
@@ -2854,9 +2951,8 @@ interpExecThrow()
   // <expression>
   CJExecExpressionP expr = interpExpression();
 
-  if (! expr) {
+  if (! expr)
     return CJExecThrowP();
-  }
 
   ethrow->setExpression(expr);
 
@@ -3102,14 +3198,16 @@ interpExpression()
 
         CJExecIndexExpressionP iexpr1(new CJExecIndexExpression);
 
-        iexpr1->setLineNum(identifiers->lineNum());
-
         if (identifiers) {
+          iexpr1->setLineNum(identifiers->lineNum());
+
           iexpr1->setIdentifiers(identifiers);
 
           identifiers = 0;
         }
         else {
+          iexpr1->setLineNum(iexpr->lineNum());
+
           iexpr1->setExpression(iexpr);
         }
 
@@ -3361,7 +3459,7 @@ interpExpression()
       else if (opType == CJOperator::Type::OpenRBracket) {
         execData_->next();
 
-        CJExecExpressionP expr1 = interpExpression();
+        CJExecExpressionListP expr1 = interpExpressionList();
 
         if (expr1)
           expr->addToken(std::static_pointer_cast<CJToken>(expr1));
@@ -3846,7 +3944,7 @@ execLineNum() const
   return execData_->token()->lineNum();
 }
 
-int
+COptInt
 CJavaScript::
 cmp(CJValueP value1, CJValueP value2)
 {
@@ -3854,81 +3952,90 @@ cmp(CJValueP value1, CJValueP value2)
     std::string s1 = value1->toString();
     std::string s2 = value2->toString();
 
-    if (s1 < s2) return -1;
-    if (s1 > s2) return  1;
+    if (s1 < s2) return COptInt(-1);
+    if (s1 > s2) return COptInt( 1);
 
-    return 0;
+    return COptInt(0);
   }
   else if (value1->type() == CJValue::Type::Number && value2->type() == CJValue::Type::Number) {
     double r1 = value1->toReal();
     double r2 = value2->toReal();
 
-    if (r1 < r2) return -1;
-    if (r1 > r2) return  1;
+    if (CJUtil::isNaN(r1) || CJUtil::isNaN(r2))
+      return COptInt();
 
-    return 0;
+    if (CJUtil::isPosInf(r1) && CJUtil::isPosInf(r2)) return COptInt(0);
+    if (CJUtil::isNegInf(r1) && CJUtil::isNegInf(r2)) return COptInt(0);
+
+    if (CJUtil::isPosInf(r1) || CJUtil::isNegInf(r2)) return COptInt( 1);
+    if (CJUtil::isNegInf(r1) || CJUtil::isPosInf(r2)) return COptInt(-1);
+
+    if (r1 < r2) return COptInt(-1);
+    if (r1 > r2) return COptInt( 1);
+
+    return COptInt(0);
   }
   else if (value1->type() == CJValue::Type::Undefined ||
            value2->type() == CJValue::Type::Undefined) {
     if (value1->type() == value2->type())
-      return 0;
+      return COptInt(0);
 
     if (value1->type() == CJValue::Type::Null || value2->type() == CJValue::Type::Null)
-      return 0;
+      return COptInt(0);
 
-    return -1; // special value for always false
+    return COptInt();
   }
   else if (value1->type() == CJValue::Type::Null ||
            value2->type() == CJValue::Type::Null) {
     if (value1->type() == value2->type())
-      return 0;
+      return COptInt(0);
 
     if (value1->type() == CJValue::Type::Undefined || value2->type() == CJValue::Type::Undefined)
-      return 0;
+      return COptInt(0);
 
-    return -1; // special value for always false
+    return COptInt();
   }
   else if (value1->isBoolType() || value2->isBoolType()) {
     bool b1 = value1->toBoolean();
     bool b2 = value2->toBoolean();
 
-    if (b1 < b2) return -1;
-    if (b1 > b2) return  1;
+    if (b1 < b2) return COptInt(-1);
+    if (b1 > b2) return COptInt( 1);
 
-    return 0;
+    return COptInt(0);
   }
   else if (value1->type() == CJValue::Type::Number || value2->type() == CJValue::Type::Number) {
     double r1 = value1->toReal();
     double r2 = value2->toReal();
 
-    if (r1 < r2) return -1;
-    if (r1 > r2) return  1;
+    if (r1 < r2) return COptInt(-1);
+    if (r1 > r2) return COptInt( 1);
 
-    return 0;
+    return COptInt(0);
   }
   else if (value1->type() == CJValue::Type::String || value2->type() == CJValue::Type::String) {
     std::string s1 = value1->toString();
     std::string s2 = value2->toString();
 
-    if (s1 < s2) return -1;
-    if (s1 > s2) return  1;
+    if (s1 < s2) return COptInt(-1);
+    if (s1 > s2) return COptInt( 1);
 
-    return 0;
+    return COptInt(0);
   }
   else if (value1->type() == CJValue::Type::Object && value2->type() == CJValue::Type::Object) {
     CJObjP obj1 = std::static_pointer_cast<CJObj>(value1);
     CJObjP obj2 = std::static_pointer_cast<CJObj>(value2);
 
-    return obj1->cmp(obj2);
+    return COptInt(obj1->cmp(obj2));
   }
   else {
     double r1 = value1->toReal();
     double r2 = value2->toReal();
 
-    if (r1 < r2) return -1;
-    if (r1 > r2) return  1;
+    if (r1 < r2) return COptInt(-1);
+    if (r1 > r2) return COptInt( 1);
 
-    return 0;
+    return COptInt(0);
   }
 }
 
@@ -3965,7 +4072,7 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
         double r1 = value1->toReal();
         double r2 = value2->toReal();
 
-        return CJValueP(createNumberValue(r1 + r2));
+        return createNumberValue(r1 + r2);
       }
       else if (value1->type() == CJValue::Type::Object ||
                value2->type() == CJValue::Type::Object) {
@@ -3979,7 +4086,7 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
         double r1 = value1->toReal();
         double r2 = value2->toReal();
 
-        return CJValueP(createNumberValue(r1 + r2));
+        return createNumberValue(r1 + r2);
       }
       else {
         std::string s1 = value1->toString();
@@ -3995,7 +4102,21 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
         double r1 = value1->toReal();
         double r2 = value2->toReal();
 
-        return CJValueP(createNumberValue(r1 - r2));
+        if (CJUtil::isNaN(r1) || CJUtil::isNaN(r2))
+          return createNumberValue(CJUtil::getNaN());
+        if (CJUtil::isInf(r1) && CJUtil::isInf(r2))
+          return createNumberValue(CJUtil::getNaN());
+
+        if (CJUtil::isPosInf(r1))
+          return createNumberValue(CJUtil::getPosInf());
+        if (CJUtil::isNegInf(r1))
+          return createNumberValue(CJUtil::getNegInf());
+        if (CJUtil::isPosInf(r2))
+          return createNumberValue(CJUtil::getNegInf());
+        if (CJUtil::isNegInf(r2))
+          return createNumberValue(CJUtil::getPosInf());
+
+        return createNumberValue(r1 - r2);
       }
 
       break;
@@ -4005,7 +4126,7 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
         double r1 = value1->toReal();
         double r2 = value2->toReal();
 
-        return CJValueP(createNumberValue(r1 * r2));
+        return createNumberValue(r1 * r2);
       }
 
       break;
@@ -4015,10 +4136,12 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
         double r1 = value1->toReal();
         double r2 = value2->toReal();
 
-        if (r2 != 0)
-          return CJValueP(createNumberValue(r1 / r2));
+        if      (r2 != 0)
+          return createNumberValue(r1 / r2);
+        else if (r1 >= 0)
+          return createNumberValue(CJUtil::getPosInf());
         else
-          return CJValueP(createNumberValue(CJUtil::getNaN()));
+          return createNumberValue(CJUtil::getNegInf());
       }
 
       break;
@@ -4028,30 +4151,53 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
         double r1 = value1->toReal();
         double r2 = value2->toReal();
 
-        return CJValueP(createNumberValue(CJUtil::realModulus(r1, r2)));
+        return createNumberValue(CJUtil::realModulus(r1, r2));
       }
 
       break;
 
     case CJOperator::Type::Less:
-      return createBoolValue(cmp(value1, value2) <  0);
     case CJOperator::Type::Greater:
-      return createBoolValue(cmp(value1, value2) >  0);
     case CJOperator::Type::LessEqual:
-      return createBoolValue(cmp(value1, value2) <= 0);
     case CJOperator::Type::GreaterEqual:
-      return createBoolValue(cmp(value1, value2) >= 0);
     case CJOperator::Type::Equal:
-      return createBoolValue(cmp(value1, value2) == 0);
-    case CJOperator::Type::NotEqual:
-      return createBoolValue(cmp(value1, value2) != 0);
+    case CJOperator::Type::NotEqual: {
+      COptInt d = cmp(value1, value2);
+
+      if (! d.isValid())
+        return createBoolValue(false);
+
+      if      (op == CJOperator::Type::Less)
+        return createBoolValue(d <  0);
+      else if (op == CJOperator::Type::Greater)
+        return createBoolValue(d >  0);
+      else if (op == CJOperator::Type::LessEqual)
+        return createBoolValue(d <= 0);
+      else if (op == CJOperator::Type::GreaterEqual)
+        return createBoolValue(d >= 0);
+      else if (op == CJOperator::Type::Equal)
+        return createBoolValue(d == 0);
+      else if (op == CJOperator::Type::NotEqual)
+        return createBoolValue(d != 0);
+      else
+        assert(false);
+    }
 
     case CJOperator::Type::StrictEqual:
-      return createBoolValue(value1->type() == value2->type() && cmp(value1, value2) == 0);
-    case CJOperator::Type::StrictNotEqual:
-      return createBoolValue(value1->type() != value2->type() || cmp(value1, value2) != 0);
+    case CJOperator::Type::StrictNotEqual: {
+      COptInt d = cmp(value1, value2);
+
+      if (! d.isValid())
+        return createBoolValue(false);
+
+      if (op == CJOperator::Type::StrictEqual)
+        return createBoolValue(value1->type() == value2->type() && d.getValue() == 0);
+      else
+        return createBoolValue(value1->type() != value2->type() || d.getValue() != 0);
+    }
 
     case CJOperator::Type::LogicalAnd: {
+#if 0
       bool i1 = value1->toBoolean();
 
       bool res = false;
@@ -4062,10 +4208,19 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
         res = (i1 && i2);
       }
 
-      return CJValueP(createBoolValue(res));
+      return createBoolValue(res);
+#else
+      bool i1 = value1->toBoolean();
+
+      if (i1)
+        return value2;
+      else
+        return value1;
+#endif
     }
 
     case CJOperator::Type::LogicalOr: {
+#if 0
       bool i1 = value1->toBoolean();
 
       bool res = true;
@@ -4076,7 +4231,15 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
         res = (i1 || i2);
       }
 
-      return CJValueP(createBoolValue(res));
+      return createBoolValue(res);
+#else
+      bool i1 = value1->toBoolean();
+
+      if (i1)
+        return value1;
+      else
+        return value2;
+#endif
     }
 
     case CJOperator::Type::BitwiseAnd:
@@ -4086,7 +4249,7 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
 
         long res = (i1 & i2);
 
-        return CJValueP(createNumberValue(res));
+        return createNumberValue(res);
       }
 
       break;
@@ -4097,7 +4260,7 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
 
         long res = (i1 | i2);
 
-        return CJValueP(createNumberValue(res));
+        return createNumberValue(res);
       }
 
       break;
@@ -4108,7 +4271,7 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
 
         long res = (i1 ^ i2);
 
-        return CJValueP(createNumberValue(res));
+        return createNumberValue(res);
       }
 
       break;
@@ -4120,7 +4283,7 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
 
         long res = (i1 << i2);
 
-        return CJValueP(createNumberValue(res));
+        return createNumberValue(res);
       }
 
       break;
@@ -4132,7 +4295,7 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
 
         long res = (i1 >> i2);
 
-        return CJValueP(createNumberValue(res));
+        return createNumberValue(res);
       }
 
       break;
@@ -4144,7 +4307,7 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
 
         long res = (i1 >> i2);
 
-        return CJValueP(createNumberValue(res));
+        return createNumberValue(res);
       }
 
       break;
@@ -4181,7 +4344,7 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
       else
         valueType2 = value2->valueType();
 
-      return CJValueP(createBoolValue(valueType1.get() == valueType2.get()));
+      return createBoolValue(valueType1->isInstanceOf(valueType2));
     }
 
     default:
@@ -4201,9 +4364,9 @@ execUnaryOp(CJOperator::Type op, CJValueP value)
 
   if (! value) {
     if      (op == CJOperator::Type::TypeOf)
-      return CJValueP(createStringValue("undefined"));
+      return createStringValue("undefined");
     else if (op == CJOperator::Type::LogicalNot)
-      return CJValueP(createBoolValue(true));
+      return createBoolValue(true);
     else
       return CJValueP();
   }
@@ -4212,19 +4375,19 @@ execUnaryOp(CJOperator::Type op, CJValueP value)
     case CJOperator::Type::UnaryPlus: {
       double r = value->toReal();
 
-      return CJValueP(createNumberValue(r));
+      return createNumberValue(r);
     }
     case CJOperator::Type::UnaryMinus: {
       double r = value->toReal();
 
-      return CJValueP(createNumberValue(-r));
+      return createNumberValue(-r);
     }
 
     case CJOperator::Type::Increment:
       if (value->type() == CJValue::Type::Number) {
         double r = value->cast<CJNumber>()->real();
 
-        return CJValueP(createNumberValue(r + 1));
+        return createNumberValue(r + 1);
       }
 
       break;
@@ -4232,20 +4395,20 @@ execUnaryOp(CJOperator::Type op, CJValueP value)
       if (value->type() == CJValue::Type::Number) {
         double r = value->cast<CJNumber>()->real();
 
-        return CJValueP(createNumberValue(r - 1));
+        return createNumberValue(r - 1);
       }
 
       break;
 
     case CJOperator::Type::LogicalNot: {
       if (value->type() == CJValue::Type::Object)
-        return CJValueP(createBoolValue(false));;
+        return createBoolValue(false);
 
       bool i = value->toBoolean();
 
       bool res = ! i;
 
-      return CJValueP(createBoolValue(res));
+      return createBoolValue(res);
     }
 
     case CJOperator::Type::BitwiseNot:
@@ -4254,7 +4417,7 @@ execUnaryOp(CJOperator::Type op, CJValueP value)
 
         long res = ~ i;
 
-        return CJValueP(createNumberValue(res));
+        return createNumberValue(res);
       }
 
       break;
@@ -4267,7 +4430,7 @@ execUnaryOp(CJOperator::Type op, CJValueP value)
       else
         res = value->valueType()->name();
 
-      return CJValueP(createStringValue(res));
+      return createStringValue(res);
     }
 
     default:
@@ -4314,42 +4477,10 @@ std::pair<bool, CJKeyword::Type>
 CJavaScript::
 isKeyword(const std::string &name) const
 {
-  typedef std::map<std::string,CJKeyword::Type> Keywords;
+  CJKeyword::Type type = CJKeyword::nameToType(name);
 
-  static Keywords keywords;
-
-  if (keywords.empty()) {
-    keywords["break"    ] = CJKeyword::Type::Break;
-    keywords["case"     ] = CJKeyword::Type::Case;
-    keywords["catch"    ] = CJKeyword::Type::Catch;
-    keywords["class"    ] = CJKeyword::Type::Class;
-    keywords["const"    ] = CJKeyword::Type::Const;
-    keywords["continue" ] = CJKeyword::Type::Continue;
-    keywords["default"  ] = CJKeyword::Type::Default;
-    keywords["delete"   ] = CJKeyword::Type::Delete;
-    keywords["do"       ] = CJKeyword::Type::Do;
-    keywords["else"     ] = CJKeyword::Type::Else;
-    keywords["finally"  ] = CJKeyword::Type::Finally;
-    keywords["for"      ] = CJKeyword::Type::For;
-    keywords["function" ] = CJKeyword::Type::Function;
-    keywords["if"       ] = CJKeyword::Type::If;
-    keywords["in"       ] = CJKeyword::Type::In;
-    keywords["new"      ] = CJKeyword::Type::New;
-    keywords["return"   ] = CJKeyword::Type::Return;
-    keywords["switch"   ] = CJKeyword::Type::Switch;
-    keywords["this"     ] = CJKeyword::Type::This;
-    keywords["throw"    ] = CJKeyword::Type::Throw;
-    keywords["try"      ] = CJKeyword::Type::Try;
-    keywords["var"      ] = CJKeyword::Type::Var;
-    keywords["void"     ] = CJKeyword::Type::Void;
-    keywords["while"    ] = CJKeyword::Type::While;
-    keywords["with"     ] = CJKeyword::Type::With;
-  }
-
-  auto p = keywords.find(name);
-
-  if (p != keywords.end())
-    return std::pair<bool, CJKeyword::Type>(true, (*p).second);
+  if (type != CJKeyword::Type::None)
+    return std::pair<bool, CJKeyword::Type>(true, type);
   else
     return std::pair<bool, CJKeyword::Type>(false, CJKeyword::Type::None);
 }
@@ -4879,7 +5010,35 @@ readDoubleString(CStrParse &parse)
             break;
           }
           case 'u': {
-            // TODO - 4 hexadecimal digits
+            // 4 hexadecimal digits
+            // { <hexdigit> ... }
+            int c1 = 0;
+            int c2 = 0;
+            int c3 = 0;
+            int c4 = 0;
+
+            if (! parse.eof() && parse.isXDigit())
+              c1 = CJUtil::hexCharValue(parse.readChar());
+            if (! parse.eof() && parse.isXDigit())
+              c2 = CJUtil::hexCharValue(parse.readChar());
+            if (! parse.eof() && parse.isXDigit())
+              c3 = CJUtil::hexCharValue(parse.readChar());
+            if (! parse.eof() && parse.isXDigit())
+              c4 = CJUtil::hexCharValue(parse.readChar());
+
+            long c = ((c1 & 0xF) << 24) |
+                     ((c2 & 0xF) << 16) |
+                     ((c3 & 0xF) <<  8) |
+                     ((c4 & 0xF) <<  0);
+
+            // TODO: Handle UTF8
+            // No Break Space \b00a0 (2560)
+            // Paragraph Separator \b2029 (33554953)
+            if (c >= 256)
+              str += " ";
+            else
+              str += c;
+
             break;
           }
         }
@@ -4971,6 +5130,50 @@ lastTokenType() const
     return CJToken::Type::None;
 
   return tokens_.back()->type();
+}
+
+void
+CJavaScript::
+throwException(CJExceptionType type)
+{
+  CJError *error = new CJError(this);
+
+  error->setType(type);
+
+  CJErrorBaseP errorP(error);
+
+  block_->setError(errorP);
+
+  if (isExceptDebug())
+    std::cerr << "Exception: " << int(type) << std::endl;
+}
+
+void
+CJavaScript::
+throwTypeError(CJToken *token, const std::string &msg)
+{
+  CJTypeError *error = new CJTypeError(this);
+
+  CJErrorBaseP errorP(error);
+
+  block_->setError(errorP);
+
+  if (isExceptDebug())
+    errorMsg(token, msg);
+}
+
+void
+CJavaScript::
+throwSyntaxError(CJToken *token, const std::string &msg)
+{
+  CJSyntaxError *error = new CJSyntaxError(this);
+
+  CJErrorBaseP errorP(error);
+
+  block_->setError(errorP);
+
+  if (isExceptDebug())
+    errorMsg(token, msg);
 }
 
 void

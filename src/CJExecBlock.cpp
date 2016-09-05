@@ -11,7 +11,7 @@ void
 CJExecBlock::
 interp(CJavaScript *js)
 {
-  CJavaScript::ExecData execData;
+  CJExecData execData;
 
   execData.setBlock(true);
 
@@ -38,6 +38,9 @@ exec(CJavaScript *js)
       value = etoken->exec(js);
 
     if (isBreakFlag() || isContinueFlag() || isReturnFlag())
+      break;
+
+    if (hasError())
       break;
   }
 

@@ -30,7 +30,7 @@ exec(CJavaScript *, const std::string &, const Values &)
 
 CJUserObject::
 CJUserObject(CJavaScript *js, CJObjTypeP userType, CJFunctionP userFn) :
- CJObj(js, CJUserType::instance(js, userType->name())), userType_(userType), userFn_(std::move(userFn))
+ CJObj(js, CJUserType::instance(js, userType->name())), userType_(userType), userFn_(userFn)
 {
 }
 

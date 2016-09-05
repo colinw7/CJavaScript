@@ -16,6 +16,4 @@ class CJLValue : public CJValue {
   virtual void setReadOnly(bool =true) { }
 };
 
-typedef std::shared_ptr<CJLValue> CJLValueP;
-
 #endif

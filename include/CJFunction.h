@@ -33,6 +33,8 @@ class CJFunction : public CJObj {
     Normal,
     Real,
     Real2,
+    Min,
+    Max,
     Random,
     Type,
     ObjectType,
@@ -58,6 +60,8 @@ class CJFunction : public CJObj {
 
   const Type &type() const { return type_; }
 
+  const CJDictionaryP &prototype() const { return prototype_; }
+
   virtual CJValueP exec(CJavaScript *js, const Values &values) = 0;
 
   void print(std::ostream &os) const override {
@@ -65,8 +69,9 @@ class CJFunction : public CJObj {
   }
 
  protected:
-  std::string name_;
-  Type        type_;
+  std::string   name_;
+  Type          type_;
+  CJDictionaryP prototype_;
 };
 
 #endif

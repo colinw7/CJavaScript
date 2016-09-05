@@ -8,6 +8,7 @@ class CJKeyword : public CJToken {
  public:
   enum class Type {
     None,
+    Assert,
     Break,
     Case,
     Catch,
@@ -36,6 +37,8 @@ class CJKeyword : public CJToken {
   };
 
  public:
+  static Type nameToType(const std::string &name);
+
   CJKeyword(const Type &type);
 
   Type type() const { return type_; }

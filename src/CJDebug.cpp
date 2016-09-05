@@ -38,6 +38,7 @@ CJDebugObject::
 CJDebugObject(CJavaScript *js) :
  CJObj(js, CJDebugType::instance(js))
 {
+  setFunctionProperty(js, CJFunctionP(new CJObjFunction(js, "print")));
   setFunctionProperty(js, CJFunctionP(new CJObjFunction(js, "printScopeStack")));
   setFunctionProperty(js, CJFunctionP(new CJObjFunction(js, "printScopeChain")));
   setFunctionProperty(js, CJFunctionP(new CJObjFunction(js, "printUserFunctions")));
@@ -45,9 +46,21 @@ CJDebugObject(CJavaScript *js) :
 
 CJValueP
 CJDebugObject::
-execNameFn(CJavaScript *js, const std::string &name, const Values &)
+execNameFn(CJavaScript *js, const std::string &name, const Values &values)
 {
-  if      (name == "printScopeStack") {
+  if      (name == "print") {
+    for (uint i = 1; i < values.size(); ++i) {
+      if (i > 1) std::cerr << " ";
+
+      if (values[i])
+        values[i]->print(std::cerr);
+      else
+        std::cerr << "null";
+    }
+
+    std::cerr << std::endl;
+  }
+  else if (name == "printScopeStack") {
     js->printScopeStack();
   }
   else if (name == "printScopeChain") {
