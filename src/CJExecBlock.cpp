@@ -26,10 +26,17 @@ CJValueP
 CJExecBlock::
 exec(CJavaScript *js)
 {
+  CJDictionaryP scope = js->currentScope();
+
   CJValueP value;
 
   for (auto &etoken : etokens_) {
-    if (etoken->isValue()) {
+    if      (etoken->type() == CJToken::Type::Function) {
+      CJFunctionP fn = std::static_pointer_cast<CJFunction>(etoken);
+
+      scope->setProperty(js, fn->name(), std::static_pointer_cast<CJValue>(fn));
+    }
+    else if (etoken->isValue()) {
       CJValueP value1 = std::static_pointer_cast<CJValue>(etoken);
 
       value = value1;

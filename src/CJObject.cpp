@@ -116,7 +116,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       CJValueP value    = dict->getProperty(js, "value");
       CJValueP writable = dict->getProperty(js, "writable");
 
-      if (obj->type() == CJToken::Type::Array) {
+      if      (obj->hasIndex()) {
         int ind = prop->toInteger();
 
         if (value)
@@ -124,6 +124,15 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
         if (writable)
           obj->setReadOnlyIndex(ind, writable->toBoolean());
+      }
+      else if (obj->hasProperty()) {
+        std::string ind = prop->toString();
+
+        if (value)
+          obj->setPropertyValue(ind, value);
+
+        if (writable)
+          obj->setReadOnlyProperty(ind, writable->toBoolean());
       }
       else {
         js->errorMsg("Invalid object for defineProperty");

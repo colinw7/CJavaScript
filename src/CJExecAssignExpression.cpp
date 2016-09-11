@@ -140,46 +140,81 @@ exec(CJavaScript *js)
   if (! varValue)
     varValue = js->createNumberValue(long(0));
 
+  //---
+
+  std::vector<CJValueP> ivalues;
+
+  for (auto indexExpr : indices) {
+    CJValueP ivalue = indexExpr->exec(js);
+
+    if (! ivalue) {
+      js->errorMsg(this, "Invalid array index expression '" + indexExpr->toString() + "'");
+      return value;
+    }
+
+    ivalues.push_back(ivalue);
+  }
+
+  //---
+
   CJOperator::Type opType = op_->type();
+
+  CJValueP rvarValue;
+
+  // get current value for +=, -=, ...
+  if (opType != CJOperator::Type::Assign) {
+    if (! ivalues.empty()) {
+      rvarValue = getIndexValue(varValue, ivalues);
+
+      if (! rvarValue) {
+        js->errorMsg(this, "Variable is not an array or dictionary");
+        return CJValueP();
+      }
+    }
+    else
+      rvarValue = varValue;
+  }
+
+  //---
 
   switch (opType) {
     case CJOperator::Type::Assign:
       break;
     case CJOperator::Type::PlusAssign:
-      rvalue = js->execBinaryOp(CJOperator::Type::Plus, varValue, rvalue);
+      rvalue = js->execBinaryOp(CJOperator::Type::Plus, rvarValue, rvalue);
       break;
     case CJOperator::Type::MinusAssign:
-      rvalue = js->execBinaryOp(CJOperator::Type::Minus, varValue, rvalue);
+      rvalue = js->execBinaryOp(CJOperator::Type::Minus, rvarValue, rvalue);
       break;
     case CJOperator::Type::TimesAssign:
-      rvalue = js->execBinaryOp(CJOperator::Type::Times, varValue, rvalue);
+      rvalue = js->execBinaryOp(CJOperator::Type::Times, rvarValue, rvalue);
       break;
     case CJOperator::Type::DivideAssign:
-      rvalue = js->execBinaryOp(CJOperator::Type::Divide, varValue, rvalue);
+      rvalue = js->execBinaryOp(CJOperator::Type::Divide, rvarValue, rvalue);
       break;
     case CJOperator::Type::ModulusAssign:
-      rvalue = js->execBinaryOp(CJOperator::Type::Modulus, varValue, rvalue);
+      rvalue = js->execBinaryOp(CJOperator::Type::Modulus, rvarValue, rvalue);
       break;
     case CJOperator::Type::LeftShiftAssign:
-      rvalue = js->execBinaryOp(CJOperator::Type::LeftShift, varValue, rvalue);
+      rvalue = js->execBinaryOp(CJOperator::Type::LeftShift, rvarValue, rvalue);
       break;
     case CJOperator::Type::RightShiftAssign:
-      rvalue = js->execBinaryOp(CJOperator::Type::RightShift, varValue, rvalue);
+      rvalue = js->execBinaryOp(CJOperator::Type::RightShift, rvarValue, rvalue);
       break;
     case CJOperator::Type::UnsignedRightShiftAssign:
-      rvalue = js->execBinaryOp(CJOperator::Type::UnsignedRightShift, varValue, rvalue);
+      rvalue = js->execBinaryOp(CJOperator::Type::UnsignedRightShift, rvarValue, rvalue);
       break;
     case CJOperator::Type::BitwiseAndAssign:
-      rvalue = js->execBinaryOp(CJOperator::Type::BitwiseAnd, varValue, rvalue);
+      rvalue = js->execBinaryOp(CJOperator::Type::BitwiseAnd, rvarValue, rvalue);
       break;
     case CJOperator::Type::BitwiseOrAssign:
-      rvalue = js->execBinaryOp(CJOperator::Type::BitwiseOr, varValue, rvalue);
+      rvalue = js->execBinaryOp(CJOperator::Type::BitwiseOr, rvarValue, rvalue);
       break;
     case CJOperator::Type::BitwiseNotAssign:
-      rvalue = js->execBinaryOp(CJOperator::Type::BitwiseNot, varValue, rvalue);
+      rvalue = js->execBinaryOp(CJOperator::Type::BitwiseNot, rvarValue, rvalue);
       break;
     case CJOperator::Type::BitwiseXorAssign:
-      rvalue = js->execBinaryOp(CJOperator::Type::BitwiseXor, varValue, rvalue);
+      rvalue = js->execBinaryOp(CJOperator::Type::BitwiseXor, rvarValue, rvalue);
       break;
     default:
       assert(false);
@@ -187,63 +222,9 @@ exec(CJavaScript *js)
   }
 
   if (! indices.empty()) {
-    std::vector<long> inds;
-
-    for (auto indexExpr : indices) {
-      CJValueP ivalue = indexExpr->exec(js);
-
-      if (! ivalue) {
-        js->errorMsg(this, "Invalid array index expression '" + indexExpr->toString() + "'");
-        return value;
-      }
-
-      long ind = ivalue->toInteger();
-
-      inds.push_back(ind);
-    }
-
-    for (uint i = 0; i < inds.size(); ++i) {
-      int ind = inds[i];
-
-      // last index
-      if (i == inds.size() - 1) {
-        if      (varValue->hasIndex()) {
-          varValue->setIndexValue(ind, rvalue);
-        }
-        else if (varValue->hasProperty()) {
-          CJValueP ivalue = js->createNumberValue(long(ind));
-
-          std::string ind = ivalue->toString();
-
-          varValue->setPropertyValue(ind, rvalue);
-        }
-        else {
-          js->errorMsg(this, "Variable is not an array or dictionary");
-          return value;
-        }
-      }
-      // non last index
-      else {
-        CJValueP varValue1;
-
-        if      (varValue->hasIndex()) {
-          varValue1 = varValue->indexValue(ind);
-        }
-        else if (varValue->hasProperty()) {
-          CJValueP ivalue = js->createNumberValue(long(ind));
-
-          std::string ind = ivalue->toString();
-
-          varValue1 = varValue->propertyValue(ind);
-        }
-
-        if (! varValue1) {
-          js->errorMsg(this, "Variable is not an array or dictionary");
-          return value;
-        }
-
-        varValue = varValue1;
-      }
+    if (! setIndexValue(varValue, ivalues, rvalue)) {
+      js->errorMsg(this, "Variable is not an array or dictionary");
+      return CJValueP();
     }
   }
   else {
@@ -252,6 +233,77 @@ exec(CJavaScript *js)
   }
 
   return rvalue;
+}
+
+CJValueP
+CJExecAssignExpression::
+getIndexValue(CJValueP varValue, const std::vector<CJValueP> &ivalues)
+{
+  CJValueP varValue1 = varValue;
+
+  for (uint i = 0; i < ivalues.size(); ++i) {
+    CJValueP ivalue = ivalues[i];
+
+    CJValueP varValue2;
+
+    if      (varValue1->hasIndex()) {
+      long ind = ivalue->toInteger();
+
+      varValue2 = varValue1->indexValue(ind);
+    }
+    else if (varValue1->hasProperty()) {
+      std::string ind = ivalue->toString();
+
+      varValue2 = varValue1->propertyValue(ind);
+    }
+    else {
+      return CJValueP();
+    }
+
+    if (! varValue2)
+      return CJValueP();
+
+    varValue1 = varValue2;
+  }
+
+  return varValue1;
+}
+
+bool
+CJExecAssignExpression::
+setIndexValue(CJValueP varValue, const std::vector<CJValueP> &ivalues, CJValueP rvalue)
+{
+  CJValueP varValue1 = varValue;
+
+  for (uint i = 0; i < ivalues.size(); ++i) {
+    CJValueP ivalue = ivalues[i];
+
+    if      (varValue1->hasIndex()) {
+      long ind = ivalue->toInteger();
+
+      // last index
+      if (i == ivalues.size() - 1)
+        varValue1->setIndexValue(ind, rvalue);
+      // non last index
+      else
+        varValue1 = varValue1->indexValue(ind);
+    }
+    else if (varValue1->hasProperty()) {
+      std::string ind = ivalue->toString();
+
+      // last index
+      if (i == ivalues.size() - 1)
+        varValue1->setPropertyValue(ind, rvalue);
+      // non last index
+      else
+        varValue1 = varValue1->propertyValue(ind);
+    }
+    else {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 void

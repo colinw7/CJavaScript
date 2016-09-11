@@ -6,8 +6,7 @@
 // user defined function
 class CJUserFunction : public CJFunction {
  public:
-  typedef std::vector<std::string>     Args;
-  typedef std::vector<CJUserFunctionP> UserFunctions;
+  typedef std::vector<std::string> Args;
 
  public:
   CJUserFunction(CJavaScript *js, const std::string &name,
@@ -19,7 +18,7 @@ class CJUserFunction : public CJFunction {
 
   bool hasObjectValue() const override { return true; }
 
-  void setScope(CJavaScript *js, const UserFunctions &userFunctions=UserFunctions());
+  void setScope(CJavaScript *js, CJDictionaryP parentScope=CJDictionaryP());
 
   const Args &args() const { return args_; }
   void setArgs(const Args &v) { args_ = v; }

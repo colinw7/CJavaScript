@@ -32,6 +32,7 @@ LFLAGS = \
 $(LDEBUG) \
 -L$(LIB_DIR) \
 -L../../CJavaScript/lib \
+-L../../CJson/lib \
 -L../../CReadLine/lib \
 -L../../CFile/lib \
 -L../../CRegExp/lib \
@@ -39,7 +40,7 @@ $(LDEBUG) \
 -L../../COS/lib \
 
 LIBS = \
--lCJavaScript -lCReadLine -lCFile -lCStrUtil -lCRegExp -lCOS \
+-lCJavaScript -lCJson -lCReadLine -lCFile -lCStrUtil -lCRegExp -lCOS \
 -lreadline -ltre
 
 clean:

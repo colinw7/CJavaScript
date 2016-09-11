@@ -1,6 +1,7 @@
 #include <CJExecThrow.h>
 #include <CJExecExpression.h>
 #include <CJavaScript.h>
+#include <CJError.h>
 
 CJExecThrow::
 CJExecThrow() :
@@ -12,14 +13,21 @@ CJValueP
 CJExecThrow::
 exec(CJavaScript *js)
 {
-  if (expr_) {
-    CJValueP value = expr_->exec(js);
+  CJValueP value;
 
-    if (value)
-      std::cerr << value->toString() << std::endl;
-    else
-      std::cerr << "null" << std::endl;
-  }
+  if (expr_)
+    value = expr_->exec(js);
+
+  std::string msg;
+
+  if (value)
+    msg = value->toString();
+
+  CJError *error = new CJError(js);
+
+  error->setMessage(msg);
+
+  js->throwError(this, CJErrorBaseP(error));
 
   return CJValueP();
 }

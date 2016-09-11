@@ -8,17 +8,22 @@
 // switch ( <expression> ) { [case <expr> : <exprList> ; break; ]* }
 class CJExecSwitch : public CJToken {
  public:
-  struct CaseBlock {
-    CaseBlock(CJExecExpressionP expr1, CJExecBlockP block1) :
-     expr(expr1), block(block1) {
-    }
-
-    CJExecExpressionP expr;
-    CJExecBlockP      block;
+  enum class Type {
+    None,
+    Case,
+    Default
   };
 
-  struct DefaultBlock {
-    CJExecBlockP block;
+  struct SwitchBlock {
+    SwitchBlock() { }
+
+    SwitchBlock(Type type1, CJExecExpressionP expr1, CJExecBlockP block1) :
+     type(type1), expr(expr1), block(block1) {
+    }
+
+    Type              type { Type::None };
+    CJExecExpressionP expr;
+    CJExecBlockP      block;
   };
 
  public:
@@ -29,23 +34,35 @@ class CJExecSwitch : public CJToken {
   }
 
   void addCase(CJExecExpressionP expr, CJExecBlockP block) {
-    caseBlocks_.push_back(CaseBlock(expr, block));
+    caseBlocks_.push_back(SwitchBlock(Type::Case, expr, block));
   }
 
-  void setDefault(CJExecBlockP block) {
-    defaultBlock_.block = block;
+  bool hasDefault() const {
+    return defaultBlock_.type != Type::None;
+  }
+
+  bool addDefault(CJExecBlockP block) {
+    if (hasDefault()) return false;
+
+    defaultBlock_ = SwitchBlock(Type::Default, CJExecExpressionP(), block);
+
+    caseBlocks_.push_back(defaultBlock_);
+
+    return true;
   }
 
   CJValueP exec(CJavaScript *js) override;
 
+  bool execBlock(CJavaScript *js, CJExecBlockP block);
+
   void print(std::ostream &os) const override;
 
  private:
-  typedef std::vector<CaseBlock> CaseBlocks;
+  typedef std::vector<SwitchBlock> CaseBlocks;
 
   CJExecExpressionListP exprList_;
   CaseBlocks            caseBlocks_;
-  DefaultBlock          defaultBlock_;
+  SwitchBlock           defaultBlock_;
 };
 
 #endif

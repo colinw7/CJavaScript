@@ -40,7 +40,9 @@ class CJFunction : public CJObj {
     ObjectType,
     Object,
     User,
-    Global
+    Global,
+    JSONParse,
+    JSONStringify
   };
 
   typedef std::vector<CJValueP> Values;

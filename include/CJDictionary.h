@@ -41,11 +41,7 @@ class CJDictionary : public CJValue, public CJNameSpace {
   CJDictionaryP getParent() const { return parent_; }
   void setParent(CJDictionaryP s) { assert(s.get() != this); parent_ = s; }
 
-  std::string toString() const override {
-    std::ostringstream ss; ss << *this;
-
-    return ss.str();
-  }
+  std::string toString() const override;
 
   bool toBoolean() const override { return ! keyValues_.empty(); }
 
@@ -55,72 +51,21 @@ class CJDictionary : public CJValue, public CJNameSpace {
 
   bool hasProperty() const override { return true; }
 
-  CJValueP propertyValue(const std::string &key) const override {
-    return CJNameSpace::getProperty(js_, key);
-  }
+  CJValueP propertyValue(const std::string &key) const override;
 
-  void setPropertyValue(const std::string &key, CJValueP value) override {
-    CJNameSpace::setProperty(js_, key, value);
-  }
+  void setPropertyValue(const std::string &key, CJValueP value) override;
 
-  bool hasPropertyValue(const std::string &key) const override {
-    return CJNameSpace::hasProperty(js_, key);
-  }
+  bool hasPropertyValue(const std::string &key) const override;
 
-  CJValue::KeyNames propertyNames() const override {
-    CJValue::KeyNames names;
-    for (const auto &n : CJNameSpace::keyNames())
-      names.push_back(n);
-    return names;
-  }
+  bool isReadOnlyProperty(const std::string &ind) const override;
+  void setReadOnlyProperty(const std::string &ind, bool b) override;
 
-#if 0
-  void setIndexValue(CJValueP ivalue, CJValueP value) {
-    std::string key = ivalue->toString();
-
-    for (auto &kv : keyValues_) {
-      if (kv.first == key) {
-        kv.second = value;
-        return;
-      }
-    }
-  }
-
-  bool hasIndexValue(CJavaScript *js, const std::string &key) const {
-    return CJNameSpace::hasProperty(js, key);
-  }
-#endif
+  CJValue::KeyNames propertyNames() const override;
 
   std::vector<std::string> getFunctionNames() const;
   std::vector<std::string> getVariableNames() const;
 
-  void print(std::ostream &os) const override {
-    int i = 0;
-
-    if (name_ != "")
-      os << name_ << " ";
-
-    os << "{";
-
-    for (auto &kv : keyValues()) {
-      if (i > 0)
-        os << ",";
-
-      os << " " << kv.first << ": ";
-
-      if (kv.second)
-        os << *kv.second;
-      else
-        os << "<null>";
-
-      ++i;
-    }
-
-    if (i > 0)
-      os << " ";
-
-    os << "}";
-  }
+  void print(std::ostream &os) const override;
 
   friend std::ostream &operator<<(std::ostream &os, const CJDictionary &dict) {
     dict.print(os);
@@ -130,10 +75,12 @@ class CJDictionary : public CJValue, public CJNameSpace {
 
  protected:
   typedef std::map<std::string, CJValueP> Properties;
+  typedef std::set<std::string>           ReadOnly;
 
   CJavaScript*  js_ { 0 };
   std::string   name_;
   CJDictionaryP parent_;
+  ReadOnly      readOnly_;
 };
 
 #endif

@@ -15,26 +15,27 @@ exec(CJavaScript *js)
     if (identifiers_.empty())
       return CJValueP();
 
-    const std::string &name1 = identifiers_[0]->name();
+    CJValueP evalue = evalue_;
 
-    if      (evalue_->type() == CJToken::Type::Dictionary) {
-      CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(evalue_);
+    for (uint i = 0; i < identifiers_.size(); ++i) {
+      const std::string &name1 = identifiers_[i]->name();
 
-      return dict->getProperty(js, name1);
-    }
-    else if (evalue_->type() == CJToken::Type::Function) {
-      CJFunctionP fn = std::static_pointer_cast<CJFunction>(evalue_);
+      CJObjTypeP valueType = evalue->valueType();
 
-      return fn->getProperty(js, name1);
-    }
-    else {
-      CJObjTypeP valueType = evalue_->valueType();
+      if (evalue->hasProperty()) {
+        if (evalue->hasPropertyValue(name1)) {
+          evalue = evalue->propertyValue(name1);
+          continue;
+        }
+      }
 
-      if (evalue_->type() == CJToken::Type::Object) {
-        CJValueP propVal = evalue_->cast<CJObj>()->getProperty(js, name1);
+      if (evalue->type() == CJToken::Type::Object) {
+        CJValueP propVal = evalue->cast<CJObj>()->getProperty(js, name1);
 
-        if (propVal)
-          return propVal;
+        if (propVal) {
+          evalue = propVal;
+          continue;
+        }
       }
 
       if (valueType->hasProperty(js, name1)) {
@@ -42,14 +43,20 @@ exec(CJavaScript *js)
 
         //CJObjType::Values values;
 
-        //values.push_back(evalue_);
+        //values.push_back(evalue);
 
         //return valueType->exec(js, name1, values);
-        return propVal;
+        evalue = propVal;
+
+        continue;
       }
+
+      js->errorMsg(this, "Invalid value for idenitifer");
 
       return CJValueP();
     }
+
+    return evalue;
   }
   else {
     CJValueP value;
@@ -61,7 +68,7 @@ exec(CJavaScript *js)
         CJPropertyData data;
 
         if (! js->lookupPropertyData(scope, identifiers_, data))
-          return CJValueP();
+          data.value = js->createUndefinedValue();
 
         return data.value;
       }
@@ -70,6 +77,9 @@ exec(CJavaScript *js)
     }
     else if (! identifiers_.empty()) {
       value = js->lookupValue(identifiers_);
+
+      if (! value)
+        value = js->createUndefinedValue();
     }
 
     return value;

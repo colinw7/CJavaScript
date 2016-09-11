@@ -26,6 +26,10 @@ class CJExecAssignExpression : public CJExecExpression {
   void print(std::ostream &os) const override;
 
  private:
+  CJValueP getIndexValue(CJValueP varValue, const std::vector<CJValueP> &ivalues);
+  bool     setIndexValue(CJValueP varValue, const std::vector<CJValueP> &ivalues, CJValueP value);
+
+ private:
   CJExecExpressionP lexpr_;
   CJOperatorP       op_;
   CJExecExpressionP rexpr_;

@@ -59,7 +59,9 @@ class CJOperator : public CJToken {
     Question,
     Colon,
     TypeOf,
-    InstanceOf
+    InstanceOf,
+    Void,
+    In
   };
 
   enum Associativty {

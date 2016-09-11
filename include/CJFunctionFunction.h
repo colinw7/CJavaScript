@@ -15,6 +15,9 @@ class CJFunctionFunction : public CJTypeFunction {
   void print(std::ostream &os) const override {
     os << "[Function: Object]";
   }
+
+ private:
+  bool expandArg(const std::string &arg, std::vector<std::string> &args) const;
 };
 
 typedef std::shared_ptr<CJFunctionFunction> CJFunctionFunctionP;

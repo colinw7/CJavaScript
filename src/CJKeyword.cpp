@@ -25,7 +25,6 @@ nameToType(const std::string &name)
     keywords["for"      ] = Type::For;
     keywords["function" ] = Type::Function;
     keywords["if"       ] = Type::If;
-    keywords["in"       ] = Type::In;
     keywords["new"      ] = Type::New;
     keywords["return"   ] = Type::Return;
     keywords["switch"   ] = Type::Switch;
@@ -33,7 +32,6 @@ nameToType(const std::string &name)
     keywords["throw"    ] = Type::Throw;
     keywords["try"      ] = Type::Try;
     keywords["var"      ] = Type::Var;
-    keywords["void"     ] = Type::Void;
     keywords["while"    ] = Type::While;
     keywords["with"     ] = Type::With;
   }
@@ -73,7 +71,6 @@ name() const
     case Type::For     : return "for";
     case Type::Function: return "function";
     case Type::If      : return "if";
-    case Type::In      : return "in";
     case Type::New     : return "new";
     case Type::Return  : return "return";
     case Type::Switch  : return "switch";
@@ -81,7 +78,6 @@ name() const
     case Type::Throw   : return "throw";
     case Type::Try     : return "try";
     case Type::Var     : return "var";
-    case Type::Void    : return "void";
     case Type::While   : return "while";
     case Type::With    : return "with";
   }

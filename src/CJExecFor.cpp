@@ -32,6 +32,11 @@ exec(CJavaScript *js)
     // iterate on key values
     CJValueP value = inExpr_->exec(js);
 
+    if (! value) {
+      js->errorMsg("Invalid value for for in");
+      return CJValueP();
+    }
+
     if      (value->hasIndex()) {
       int len = value->length();
 
@@ -75,10 +80,8 @@ exec(CJavaScript *js)
       }
     }
     else {
-      js->errorMsg("Non-index value : for in ");
       return CJValueP();
     }
-
   }
   // for (<expr1>; <expr2>; <expr3>)
   // for (var <expr1>; <expr2>; <expr3>)
@@ -92,9 +95,15 @@ exec(CJavaScript *js)
 
     //---
 
-    CJValueP value2 = exprList2_->exec(js);
+    bool flag2 = true;
 
-    while (value2 && value2->toBoolean()) {
+    if (! exprList2_->isEmpty()) {
+      CJValueP value2 = exprList2_->exec(js);
+
+      flag2 = (value2 && value2->toBoolean());
+    }
+
+    while (flag2) {
       if (block_) {
         js->startBlock(block_);
 
@@ -108,9 +117,19 @@ exec(CJavaScript *js)
           break;
       }
 
+      //---
+
       (void) exprList3_->exec(js);
 
-      value2 = exprList2_->exec(js);
+      //---
+
+      flag2 = true;
+
+      if (! exprList2_->isEmpty()) {
+        CJValueP value2 = exprList2_->exec(js);
+
+        flag2 = (value2 && value2->toBoolean());
+      }
     }
   }
 

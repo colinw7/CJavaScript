@@ -2,6 +2,7 @@
 #include <CJGlobalFunction.h>
 #include <CJFunctionFunction.h>
 #include <CJMath.h>
+#include <CJJSON.h>
 #include <CJSystem.h>
 #include <CJDocument.h>
 #include <CJConsole.h>
@@ -58,6 +59,7 @@
 #include <CFile.h>
 #include <CStrUtil.h>
 #include <CStrParse.h>
+#include <CUtf8.h>
 #include <iostream>
 #include <cmath>
 
@@ -92,11 +94,14 @@ CJavaScript()
   defineObject("Array"  , CJTypeFunctionP(new CJArrayFunction  (this)));
   defineObject("Object" , CJTypeFunctionP(new CJObjectFunction (this)));
 
-  setProperty("Function", CJValueP(new CJFunctionFunction(this)));
+  defineObject("Function", CJTypeFunctionP(new CJFunctionFunction(this)));
   // Symbol
 
   // Math Dictionary (Object)
   math_ = CJMathP(new CJMath(this));
+
+  // JSON Dictionary (Object)
+  json_ = CJJSONP(new CJJSON(this));
 
   // Date
   defineObject("Date", CJTypeFunctionP(new CJDateFunction(this)));
@@ -198,11 +203,11 @@ void
 CJavaScript::
 startScope(CJDictionaryP scope)
 {
-  scopeStack_.push_back(currentScope_);
+  scopeStack_.push_back(currentScope());
 
-  scope->setParent(currentScope_);
+  scope->setParent(currentScope());
 
-  currentScope_ = scope;
+  setCurrentScope(scope);
 //printScopeStack("startScope");
 }
 
@@ -210,9 +215,9 @@ CJDictionaryP
 CJavaScript::
 endScope()
 {
-  CJDictionaryP scope = currentScope_;
+  CJDictionaryP scope = currentScope();
 
-  currentScope_ = scopeStack_.back();
+  setCurrentScope(scopeStack_.back());
 
   scopeStack_.pop_back();
 
@@ -233,12 +238,12 @@ startFunctionScope(CJUserFunctionP fn)
   if (getenv("JS_PRINT_FUNCTION_SCOPE"))
     printScopeChain(scope, "startFunctionScope [proc " + scope->name() + "]");
 
-  currentScopeStack_.push_back(currentScope_);
+  currentScopeStack_.push_back(currentScope());
   scopeStackStack_  .push_back(scopeStack_);
 
   initFunctionScope(fn);
 
-  currentScope_ = fn->scope();
+  setCurrentScope(fn->scope());
 
   scopeStack_.clear();
 
@@ -253,10 +258,11 @@ endFunctionScope()
   if (getenv("JS_PRINT_FUNCTION_SCOPE"))
     printScopeStack("endFunctionScope [stack]");
 
-  CJDictionaryP scope = currentScope_;
+  CJDictionaryP scope = currentScope();
 
-  currentScope_ = currentScopeStack_.back();
-  scopeStack_   = scopeStackStack_  .back();
+  setCurrentScope(currentScopeStack_.back());
+
+  scopeStack_ = scopeStackStack_.back();
 
   currentScopeStack_.pop_back();
   scopeStackStack_  .pop_back();
@@ -274,7 +280,7 @@ endFunctionScope()
   }
 
   if (getenv("JS_PRINT_FUNCTION_SCOPE"))
-    printScopeChain(currentScope_, "endFunctionScope [proc " + scope->name() + "]");
+    printScopeChain(currentScope(), "endFunctionScope [proc " + scope->name() + "]");
 
   return fn;
 }
@@ -318,7 +324,7 @@ void
 CJavaScript::
 printScopeStack(const std::string &msg) const
 {
-  std::cout << msg << " " << currentScope_->name();
+  std::cout << msg << " " << currentScope()->name();
 
   for (const auto &s : scopeStack_)
     std::cout << ":" << s->name();
@@ -362,6 +368,18 @@ CJavaScript::
 popUserFunction()
 {
   userFunctions_.pop_back();
+}
+
+CJDictionaryP
+CJavaScript::
+currentUserFunction() const
+{
+  CJDictionaryP scope;
+
+  if (userFunctions_.empty())
+    return CJDictionaryP();
+
+  return userFunctions_.back()->scope();
 }
 
 void
@@ -412,20 +430,43 @@ endBlock()
   blockStack_.pop_back();
 
   if      (block->type() == CJExecBlock::Type::Sequential) {
-    if (block->isBreakFlag())
-      block_->setBreakFlag(true);
+    if (block->isBreakFlag()) {
+      if (block_)
+        block_->setBreakFlag(true);
+    }
 
-    if (block->isContinueFlag())
-      block_->setContinueFlag(true);
+    if (block->isContinueFlag()) {
+      if (block_)
+        block_->setContinueFlag(true);
+    }
 
     if (block->isReturnFlag()) {
-      block_->setReturnFlag(true);
-      block_->setRetVal(block->getRetVal());
+      if (block_) {
+        block_->setReturnFlag(true);
+        block_->setRetVal(block->getRetVal());
+      }
+    }
+  }
+  else if (block->type() == CJExecBlock::Type::Switch) {
+    // no propagate break for switch
+
+    if (block->isContinueFlag()) {
+      if (block_)
+        block_->setContinueFlag(true);
+    }
+
+    if (block->isReturnFlag()) {
+      if (block_) {
+        block_->setReturnFlag(true);
+        block_->setRetVal(block->getRetVal());
+      }
     }
   }
   else if (block->type() == CJExecBlock::Type::Iterative) {
-    if (block->getRetVal())
-      block_->setRetVal(block->getRetVal());
+    if (block->getRetVal()) {
+      if (block_)
+        block_->setRetVal(block->getRetVal());
+    }
   }
 
   return block;
@@ -658,7 +699,7 @@ lookupPropertyData(CJValueP value, const Identifiers &identifiers,
              fn1->type() == CJFunction::Type::ObjectType ||
              fn1->type() == CJFunction::Type::Object) {
       if (ind != len - 1) {
-        errorMsg("Invalid object type identifiers");
+        throwSyntaxError(0, "Invalid object type identifiers");
         return false;
       }
 
@@ -718,7 +759,7 @@ lookupPropertyData(CJValueP value, const Identifiers &identifiers,
   else {
     // value is an object
     if (ind != len - 1) {
-      errorMsg("Invalid object identifiers");
+      throwSyntaxError(0, "Invalid object identifiers");
       return false;
     }
 
@@ -881,7 +922,7 @@ deleteProperty(CJDictionaryP scope, const Identifiers &identifiers)
           }
 
           if (i < len - 1)
-            errorMsg("Invalid value named index");
+            throwSyntaxError(0, "Invalid value named index");
 
           if (dict) {
             dict->deleteProperty(identifiers[i]->name());
@@ -927,10 +968,18 @@ int
 CJavaScript::
 isCompleteLine(const std::string &str) const
 {
+  if (! str.empty()) {
+    if (str[str.size() - 1] == '\\')
+      return 1;
+  }
+
+  //---
+
   // check for complete line (matching {}, []) - returns depth
 
   int numBraces   = 0;
   int numSBracket = 0;
+  int numRBracket = 0;
 
   CStrParse parse(str);
 
@@ -940,30 +989,28 @@ isCompleteLine(const std::string &str) const
     if      (parse.isChar('\"') || parse.isChar('\''))
       parse.skipString();
     else if (parse.isChar('{')) {
-      ++numBraces;
-
-      parse.skipChar();
+      ++numBraces; parse.skipChar();
     }
     else if (parse.isChar('}')) {
-      --numBraces;
-
-      parse.skipChar();
+      --numBraces; parse.skipChar();
     }
     else if (parse.isChar('[')) {
-      ++numSBracket;
-
-      parse.skipChar();
+      ++numSBracket; parse.skipChar();
     }
     else if (parse.isChar(']')) {
-      --numSBracket;
-
-      parse.skipChar();
+      --numSBracket; parse.skipChar();
+    }
+    else if (parse.isChar('(')) {
+      ++numRBracket; parse.skipChar();
+    }
+    else if (parse.isChar(')')) {
+      --numRBracket; parse.skipChar();
     }
     else
       parse.skipChar();
   }
 
-  return (numBraces + numSBracket);
+  return (numBraces + numSBracket + numRBracket);
 }
 
 bool
@@ -1045,7 +1092,9 @@ parseString(const std::string &str)
         allowUnary = true;
     }
 
-    if      (parse.isString("typeof")) {
+    std::string name = getIdentifier(parse, allowUnary);
+
+    if      (name == "typeof") {
       parse.skipChars("typeof");
 
       CJOperatorP op(new CJOperator(CJOperator::Type::TypeOf, 1,
@@ -1055,7 +1104,17 @@ parseString(const std::string &str)
 
       tokens_.push_back(CJTokenP(op));
     }
-    else if (parse.isString("instanceof")) {
+    else if (name == "void") {
+      parse.skipChars("void");
+
+      CJOperatorP op(new CJOperator(CJOperator::Type::Void, 1,
+        CJOperator::Associativty::Right, CJOperator::Ary::Unary));
+
+      op->setLineNum(parse.lineNum());
+
+      tokens_.push_back(CJTokenP(op));
+    }
+    else if (name == "instanceof") {
       parse.skipChars("instanceof");
 
       CJOperatorP op(new CJOperator(CJOperator::Type::InstanceOf, 11,
@@ -1065,7 +1124,17 @@ parseString(const std::string &str)
 
       tokens_.push_back(CJTokenP(op));
     }
-    else if (parse.isString("NaN")) {
+    else if (name == "in") {
+      parse.skipChars("in");
+
+      CJOperatorP op(new CJOperator(CJOperator::Type::In, 11,
+        CJOperator::Associativty::Left, CJOperator::Ary::Binary));
+
+      op->setLineNum(parse.lineNum());
+
+      tokens_.push_back(CJTokenP(op));
+    }
+    else if (name == "NaN") {
       parse.skipChars("NaN");
 
       CJTokenP token = createNumberValue(CJUtil::getNaN());
@@ -1074,7 +1143,7 @@ parseString(const std::string &str)
 
       tokens_.push_back(token);
     }
-    else if (parse.isString("Infinity")) {
+    else if (name == "Infinity") {
       parse.skipChars("Infinity");
 
       CJTokenP token = createNumberValue(CJUtil::getPosInf());
@@ -1083,7 +1152,7 @@ parseString(const std::string &str)
 
       tokens_.push_back(token);
     }
-    else if (allowUnary && parse.isString("-Infinity")) {
+    else if (allowUnary && name == "-Infinity") {
       parse.skipChars("-Infinity");
 
       CJTokenP token = createNumberValue(CJUtil::getNegInf());
@@ -1131,7 +1200,7 @@ parseString(const std::string &str)
       readSingleString(parse);
     }
     else {
-      errorMsg("Invalid text: '" + parse.getAt() + "'");
+      throwSyntaxError(0, "Invalid text: '" + parse.getAt() + "'");
       break;
     }
 
@@ -1173,7 +1242,8 @@ CJExecBlockP
 CJavaScript::
 interpFunctionBlock(const std::string &str)
 {
-  loadText(str);
+  if (! loadText(str))
+    return CJExecBlockP();
 
   CJExecData execData;
 
@@ -1183,13 +1253,45 @@ interpFunctionBlock(const std::string &str)
 
   execData_ = &execData;
 
-  CJExecBlockP block = interpExecBlock(CJExecBlock::Type::Function);
+  //---
+
+  CJExecBlockP block(new CJExecBlock(CJExecBlock::Type::Function));
+
+  block->setLineNum(execLineNum());
+
+  while (! execData_->eof()) {
+    CJTokenP token = execData_->token();
+
+    block->addToken(token);
+
+    execData_->next();
+  }
+
+  //---
+
+  block->interp(this);
+
+  if (isInterpDebug()) {
+    std::cerr << "interpFunctionBlock: " << *block << std::endl;
+  }
+
+  //---
 
   execData_ = execDataStack_.back();
 
   execDataStack_.pop_back();
 
   return block;
+}
+
+CJValueP
+CJavaScript::
+interpString(const std::string &str)
+{
+  if (! loadText(str))
+    return CJValueP();
+
+  return exec();
 }
 
 bool
@@ -1233,7 +1335,7 @@ interp(CJExecData &execData)
 
         if (! label) {
           std::ostringstream ss; ss << *token;
-          errorMsg(token, "Interp failed at token: " + ss.str());
+          throwSyntaxError(token, "Interp failed at token: " + ss.str());
           break;
         }
 
@@ -1244,7 +1346,7 @@ interp(CJExecData &execData)
 
         if (! exprList) {
           std::ostringstream ss; ss << *token;
-          errorMsg(token, "Interp failed at token: " + ss.str());
+          throwSyntaxError(token, "Interp failed at token: " + ss.str());
           break;
         }
 
@@ -1259,7 +1361,7 @@ interp(CJExecData &execData)
       if (opType == CJOperator::Type::Colon) {
         if (! execData_->isBlock()) {
           std::ostringstream ss; ss << *token;
-          errorMsg(token, "Interp failed at operator: " + ss.str());
+          throwSyntaxError(token, "Interp failed at operator: " + ss.str());
           break;
         }
 
@@ -1270,14 +1372,14 @@ interp(CJExecData &execData)
         CJValueP key = execData_->unstackEValue(this);
 
         if (! key) {
-          errorMsg(token, "Left hand side value missing for colon");
+          throwSyntaxError(token, "Left hand side value missing for colon");
           break;
         }
 
         CJExecExpressionP valueExpr = interpExpression();
 
         if (! valueExpr) {
-          errorMsg(token, "Missing expression after colon");
+          throwSyntaxError(token, "Missing expression after colon");
           break;
         }
 
@@ -1297,7 +1399,7 @@ interp(CJExecData &execData)
           CJExecExpressionP keyExpr = interpExpression();
 
           if (! keyExpr) {
-            errorMsg(token, "Missing key expression for dictionary");
+            throwSyntaxError(token, "Missing key expression for dictionary");
             break;
           }
 
@@ -1306,14 +1408,14 @@ interp(CJExecData &execData)
           //---
 
           if (! interpExecOperator(CJOperator::Type::Colon)) {
-            errorMsg(token, "Missing colon after key for dictionary");
+            throwSyntaxError(token, "Missing colon after key for dictionary");
             break;
           }
 
           CJExecExpressionP valueExpr = interpExpression();
 
           if (! valueExpr) {
-            errorMsg(token, "Missing key expression for dictionary");
+            throwSyntaxError(token, "Missing key expression for dictionary");
             break;
           }
 
@@ -1333,7 +1435,7 @@ interp(CJExecData &execData)
           opType == CJOperator::Type::CloseRBracket ||
           opType == CJOperator::Type::CloseSBracket) {
         std::ostringstream ss; ss << *token;
-        errorMsg(token, "Interp failed at operator: " + ss.str());
+        throwSyntaxError(token, "Interp failed at operator: " + ss.str());
         break;
       }
 
@@ -1341,7 +1443,7 @@ interp(CJExecData &execData)
 
       if (! exprList) {
         std::ostringstream ss; ss << *token;
-        errorMsg(token, "Interp failed at token: " + ss.str());
+        throwSyntaxError(token, "Interp failed at token: " + ss.str());
         break;
       }
 
@@ -1354,7 +1456,7 @@ interp(CJExecData &execData)
 
       if (! exprList) {
         std::ostringstream ss; ss << *token;
-        errorMsg(token, "Interp failed at token: " + ss.str());
+        throwSyntaxError(token, "Interp failed at token: " + ss.str());
         break;
       }
 
@@ -1373,7 +1475,7 @@ interp(CJExecData &execData)
         CJExecForP efor = interpExecFor();
 
         if (! efor) {
-          errorMsg(token, "Interp failed for 'for'");
+          throwSyntaxError(token, "Interp failed for 'for'");
           break;
         }
 
@@ -1386,7 +1488,7 @@ interp(CJExecData &execData)
         CJExecIfP eif = interpExecIf();
 
         if (! eif) {
-          errorMsg(token, "Interp failed for 'if'");
+          throwSyntaxError(token, "Interp failed for 'if'");
           break;
         }
 
@@ -1397,7 +1499,7 @@ interp(CJExecData &execData)
         CJExecWhileP ewhile = interpExecWhile();
 
         if (! ewhile) {
-          errorMsg(token, "Interp failed for 'while'");
+          throwSyntaxError(token, "Interp failed for 'while'");
           break;
         }
 
@@ -1408,7 +1510,7 @@ interp(CJExecData &execData)
         CJExecDoP edo = interpExecDo();
 
         if (! edo) {
-          errorMsg(token, "Interp failed for 'do'");
+          throwSyntaxError(token, "Interp failed for 'do'");
           break;
         }
 
@@ -1422,7 +1524,7 @@ interp(CJExecData &execData)
         CJExecSwitchP eswitch = interpExecSwitch();
 
         if (! eswitch) {
-          errorMsg(token, "Interp failed for 'switch'");
+          throwSyntaxError(token, "Interp failed for 'switch'");
           break;
         }
 
@@ -1434,7 +1536,7 @@ interp(CJExecData &execData)
         CJExecVarP evar = interpExecVar();
 
         if (! evar) {
-          errorMsg(token, "Interp failed for 'var'");
+          throwSyntaxError(token, "Interp failed for 'var'");
           break;
         }
 
@@ -1444,7 +1546,7 @@ interp(CJExecData &execData)
         CJExecConstP econst = interpExecConst();
 
         if (! econst) {
-          errorMsg(token, "Interp failed for 'const'");
+          throwSyntaxError(token, "Interp failed for 'const'");
           break;
         }
 
@@ -1455,7 +1557,7 @@ interp(CJExecData &execData)
         CJExecWithP ewith = interpExecWith();
 
         if (! ewith) {
-          errorMsg(token, "Interp failed for 'with'");
+          throwSyntaxError(token, "Interp failed for 'with'");
           break;
         }
 
@@ -1465,7 +1567,7 @@ interp(CJExecData &execData)
         CJExecNewP enew = interpExecNew();
 
         if (! enew) {
-          errorMsg(token, "Interp failed for 'new'");
+          throwSyntaxError(token, "Interp failed for 'new'");
           break;
         }
 
@@ -1475,28 +1577,30 @@ interp(CJExecData &execData)
         CJExecDeleteP edelete = interpExecDelete();
 
         if (! edelete) {
-          errorMsg(token, "Interp failed for 'delete'");
+          throwSyntaxError(token, "Interp failed for 'delete'");
           break;
         }
 
         execData_->addEToken(std::static_pointer_cast<CJToken>(edelete));
       }
+#if 0
       else if (keyword->type() == CJKeyword::Type::Void) {
         CJExecVoidP evoid = interpExecVoid();
 
         if (! evoid) {
-          errorMsg(token, "Interp failed for 'void'");
+          throwSyntaxError(token, "Interp failed for 'void'");
           break;
         }
 
         execData_->addEToken(std::static_pointer_cast<CJToken>(evoid));
       }
+#endif
       // assert <expression_list>
       else if (keyword->type() == CJKeyword::Type::Assert) {
         CJExecAssertP eassert = interpExecAssert();
 
         if (! eassert) {
-          errorMsg(token, "Interp failed for 'assert'");
+          throwSyntaxError(token, "Interp failed for 'assert'");
           break;
         }
 
@@ -1507,7 +1611,7 @@ interp(CJExecData &execData)
         CJExecBreakP ebreak = interpExecBreak();
 
         if (! ebreak) {
-          errorMsg(token, "Interp failed for 'break'");
+          throwSyntaxError(token, "Interp failed for 'break'");
           break;
         }
 
@@ -1518,7 +1622,7 @@ interp(CJExecData &execData)
         CJExecContinueP econt = interpExecContinue();
 
         if (! econt) {
-          errorMsg(token, "Interp failed for 'continue'");
+          throwSyntaxError(token, "Interp failed for 'continue'");
           break;
         }
 
@@ -1529,7 +1633,7 @@ interp(CJExecData &execData)
         CJExecReturnP eret = interpExecReturn();
 
         if (! eret) {
-          errorMsg(token, "Interp failed for 'return'");
+          throwSyntaxError(token, "Interp failed for 'return'");
           break;
         }
 
@@ -1540,25 +1644,27 @@ interp(CJExecData &execData)
         CJUserFunctionP efunction = interpUserFunction(/*named*/true);
 
         if (! efunction) {
-          errorMsg(token, "Interp failed for 'function'");
+          throwSyntaxError(token, "Interp failed for 'function'");
           break;
         }
 
-        CJDictionaryP scope;
+        CJDictionaryP scope = currentUserFunction();
 
-        if (! userFunctions_.empty())
-          scope = userFunctions_.back()->scope();
-        else
-          scope = currentScope();
+        if (! scope) {
+          CJDictionaryP scope = currentScope();
 
-        scope->setProperty(this, efunction->name(), std::static_pointer_cast<CJValue>(efunction));
+          scope->setProperty(this, efunction->name(), std::static_pointer_cast<CJValue>(efunction));
+        }
+        else {
+          execData_->addEToken(std::static_pointer_cast<CJToken>(efunction));
+        }
       }
       // try <block> [catch (<parameter>) <block>] [finally <block>]
       else if (keyword->type() == CJKeyword::Type::Try) {
         CJExecTryP etry = interpExecTry();
 
         if (! etry) {
-          errorMsg(token, "Interp failed for 'try'");
+          throwSyntaxError(token, "Interp failed for 'try'");
           break;
         }
 
@@ -1569,20 +1675,20 @@ interp(CJExecData &execData)
         CJExecThrowP ethrow = interpExecThrow();
 
         if (! ethrow) {
-          errorMsg(token, "Interp failed for 'throw'");
+          throwSyntaxError(token, "Interp failed for 'throw'");
           break;
         }
 
         execData_->addEToken(std::static_pointer_cast<CJToken>(ethrow));
       }
       else {
-        errorMsg(token, "Interp failed at keyword: " + keyword->name());
+        throwSyntaxError(token, "Interp failed at keyword: " + keyword->name());
         break;
       }
     }
     else {
       std::stringstream ss; ss << *token;
-      errorMsg(token, "Interp failed at token: " + ss.str());
+      throwSyntaxError(token, "Interp failed at token: " + ss.str());
       break;
     }
   }
@@ -1601,7 +1707,7 @@ interpFunction()
   //---
 
   if (! interpExecOperator(CJOperator::Type::OpenRBracket)) {
-    errorMsg(func, "Missing open round bracket");
+    throwSyntaxError(func, "Missing open round bracket");
     return CJExecFunctionP();
   }
 
@@ -1615,7 +1721,7 @@ interpFunction()
     func->setExprList(exprList);
 
     if (! interpExecOperator(CJOperator::Type::CloseRBracket)) {
-      errorMsg(exprList, "Missing close round bracket");
+      throwSyntaxError(exprList, "Missing close round bracket");
       return CJExecFunctionP();
     }
   }
@@ -1644,7 +1750,7 @@ interpExecFor()
 
   // <<LexicalDeclaration>
   if (! interpExecOperator(CJOperator::Type::OpenRBracket)) {
-    errorMsg(efor, "Missing open round bracket");
+    throwSyntaxError(efor, "Missing open round bracket");
     return CJExecForP();
   }
 
@@ -1659,7 +1765,7 @@ interpExecFor()
       CJExecIdentifiersP identifiers = interpIdentifiers();
 
       if (! identifiers) {
-        errorMsg(efor, "Missing variable names for for in");
+        throwSyntaxError(efor, "Missing variable names for for in");
         return CJExecForP();
       }
 
@@ -1672,7 +1778,7 @@ interpExecFor()
       CJExecVarP evar = interpExecVar();
 
       if (! evar) {
-        errorMsg(efor, "Interp failed for 'var'");
+        throwSyntaxError(efor, "Interp failed for 'var'");
         return CJExecForP();
       }
 
@@ -1685,7 +1791,7 @@ interpExecFor()
       CJExecIdentifiersP identifiers = interpIdentifiers();
 
       if (! identifiers) {
-        errorMsg(efor, "Missing variable names for for in");
+        throwSyntaxError(efor, "Missing variable names for for in");
         return CJExecForP();
       }
 
@@ -1707,8 +1813,8 @@ interpExecFor()
 
   // in <expression>
   if (isIn) {
-    if (! interpExecKeyword(CJKeyword::Type::In)) {
-      errorMsg(efor, "Missing in for for in");
+    if (! interpExecOperator(CJOperator::Type::In)) {
+      throwSyntaxError(efor, "Missing in for for in");
       return CJExecForP();
     }
 
@@ -1740,13 +1846,13 @@ interpExecFor()
   }
 
   if (! interpExecOperator(CJOperator::Type::CloseRBracket)) {
-    errorMsg(efor, "Missing close round bracket for for");
+    throwSyntaxError(efor, "Missing close round bracket for for");
     return CJExecForP();
   }
 
   // { <statement> }
   if (! isExecOperator(CJOperator::Type::OpenBrace)) {
-    errorMsg(efor, "Missing open brace for for");
+    throwSyntaxError(efor, "Missing open brace for for");
     return CJExecForP();
   }
 
@@ -1779,7 +1885,7 @@ isInterpForIn() const
 
   execData_->next();
 
-  if (! isExecKeyword(CJKeyword::Type::In)) {
+  if (! isExecOperator(CJOperator::Type::In)) {
     execData_->setPos(pos);
     return false;
   }
@@ -1808,7 +1914,7 @@ interpExecQuestion(CJExecExpressionP bexpr)
   equestion->setExpr1(expr1);
 
   if (! interpExecOperator(CJOperator::Type::Colon)) {
-    errorMsg(equestion, "Missing colon for ?:");
+    throwSyntaxError(equestion, "Missing colon for ?:");
     return CJExecQuestionP();
   }
 
@@ -1846,7 +1952,7 @@ interpExecIf()
 
   // ( <expression> )
   if (! interpExecOperator(CJOperator::Type::OpenRBracket)) {
-    errorMsg(eif, "Missing open bracket for if");
+    throwSyntaxError(eif, "Missing open bracket for if");
     return CJExecIfP();
   }
 
@@ -1857,7 +1963,7 @@ interpExecIf()
   }
 
   if (! interpExecOperator(CJOperator::Type::CloseRBracket)) {
-    errorMsg(eif, "Missing close bracket for if");
+    throwSyntaxError(eif, "Missing close bracket for if");
     return CJExecIfP();
   }
 
@@ -1885,7 +1991,7 @@ interpExecIf()
 
       // ( <expression> )
       if (! interpExecOperator(CJOperator::Type::OpenRBracket)) {
-        errorMsg(eif, "Missing open bracket for else if");
+        throwSyntaxError(eif, "Missing open bracket for else if");
         return CJExecIfP();
       }
 
@@ -1896,7 +2002,7 @@ interpExecIf()
       }
 
       if (! interpExecOperator(CJOperator::Type::CloseRBracket)) {
-        errorMsg(eif, "Missing close bracket for else if");
+        throwSyntaxError(eif, "Missing close bracket for else if");
         return CJExecIfP();
       }
 
@@ -1949,7 +2055,7 @@ interpExecWhile()
 
   // ( <expression> )
   if (! interpExecOperator(CJOperator::Type::OpenRBracket)) {
-    errorMsg(ewhile, "Missing open bracket for while");
+    throwSyntaxError(ewhile, "Missing open bracket for while");
     return CJExecWhileP();
   }
 
@@ -1961,7 +2067,7 @@ interpExecWhile()
   ewhile->setExprList(exprList);
 
   if (! interpExecOperator(CJOperator::Type::CloseRBracket)) {
-    errorMsg(ewhile, "Missing close bracket for while");
+    throwSyntaxError(ewhile, "Missing close bracket for while");
     return CJExecWhileP();
   }
 
@@ -2012,7 +2118,7 @@ interpExecDo()
 
   // ( <expression> )
   if (! interpExecOperator(CJOperator::Type::OpenRBracket)) {
-    errorMsg(edo, "Missing open bracket for do");
+    throwSyntaxError(edo, "Missing open bracket for do");
     return CJExecDoP();
   }
 
@@ -2025,7 +2131,7 @@ interpExecDo()
   edo->setExprList(exprList);
 
   if (! interpExecOperator(CJOperator::Type::CloseRBracket)) {
-    errorMsg(edo, "Missing close bracket for do");
+    throwSyntaxError(edo, "Missing close bracket for do");
     return CJExecDoP();
   }
 
@@ -2058,7 +2164,7 @@ interpExecSwitch()
 
   // ( <expression> )
   if (! interpExecOperator(CJOperator::Type::OpenRBracket)) {
-    errorMsg(eswitch, "Missing open bracket for switch");
+    throwSyntaxError(eswitch, "Missing open bracket for switch");
     return CJExecSwitchP();
   }
 
@@ -2071,13 +2177,13 @@ interpExecSwitch()
   eswitch->setExprList(exprList);
 
   if (! interpExecOperator(CJOperator::Type::CloseRBracket)) {
-    errorMsg(eswitch, "Missing close bracket for switch");
+    throwSyntaxError(eswitch, "Missing close bracket for switch");
     return CJExecSwitchP();
   }
 
   // {
   if (! interpExecOperator(CJOperator::Type::OpenBrace)) {
-    errorMsg(eswitch, "Missing open brace");
+    throwSyntaxError(eswitch, "Missing open brace");
     return CJExecSwitchP();
   }
 
@@ -2121,7 +2227,11 @@ interpExecSwitch()
           else if (defBlock) {
             defBlock->interp(this);
 
-            eswitch->setDefault(defBlock);
+            if (! eswitch->addDefault(defBlock)) {
+              throwSyntaxError(eswitch, "Multiple switch default");
+              return CJExecSwitchP();
+            }
+
 
             defBlock = CJExecBlockP();
           }
@@ -2132,23 +2242,23 @@ interpExecSwitch()
             caseExpr = interpExpression();
 
             if (! caseExpr) {
-              errorMsg(eswitch, "Invalid case value");
+              throwSyntaxError(eswitch, "Invalid switch case value");
               return CJExecSwitchP();
             }
           }
 
           if (! interpExecOperator(CJOperator::Type::Colon)) {
-            errorMsg(eswitch, "Missing colon for case expression");
+            throwSyntaxError(eswitch, "Missing colon for case expression");
             return CJExecSwitchP();
           }
 
           if (keyword->type() == CJKeyword::Type::Case) {
-            caseBlock = CJExecBlockP(new CJExecBlock(CJExecBlock::Type::Sequential));
+            caseBlock = CJExecBlockP(new CJExecBlock(CJExecBlock::Type::Switch));
 
             caseBlock->setLineNum(keyword->lineNum());
           }
           else {
-            defBlock = CJExecBlockP(new CJExecBlock(CJExecBlock::Type::Sequential));
+            defBlock = CJExecBlockP(new CJExecBlock(CJExecBlock::Type::Switch));
 
             defBlock->setLineNum(keyword->lineNum());
           }
@@ -2157,7 +2267,14 @@ interpExecSwitch()
         }
         // break
         else if (keyword->type() == CJKeyword::Type::Break) {
+          if      (caseBlock)
+            caseBlock->addToken(token);
+          else if (defBlock)
+            defBlock->addToken(token);
+
           execData_->next();
+
+          //---
 
           if      (caseExpr && caseBlock) {
             caseBlock->interp(this);
@@ -2170,7 +2287,10 @@ interpExecSwitch()
           else if (defBlock) {
             defBlock->interp(this);
 
-            eswitch->setDefault(defBlock);
+            if (! eswitch->addDefault(defBlock)) {
+              throwSyntaxError(eswitch, "Multiple switch default");
+              return CJExecSwitchP();
+            }
 
             defBlock = CJExecBlockP();
           }
@@ -2188,7 +2308,7 @@ interpExecSwitch()
     else if (defBlock)
       defBlock->addToken(token);
     else {
-      errorMsg(eswitch, "Missing colon for case expression");
+      throwSyntaxError(eswitch, "Missing colon for case expression");
       return CJExecSwitchP();
     }
 
@@ -2197,7 +2317,7 @@ interpExecSwitch()
 
   // }
   if (! interpExecOperator(CJOperator::Type::CloseBrace)) {
-    errorMsg(eswitch, "Missing close brace");
+    throwSyntaxError(eswitch, "Missing close brace");
     return CJExecSwitchP();
   }
 
@@ -2214,7 +2334,10 @@ interpExecSwitch()
   else if (defBlock) {
     defBlock->interp(this);
 
-    eswitch->setDefault(defBlock);
+    if (! eswitch->addDefault(defBlock)) {
+      throwSyntaxError(eswitch, "Multiple switch default");
+      return CJExecSwitchP();
+    }
 
     defBlock = CJExecBlockP();
   }
@@ -2241,7 +2364,7 @@ interpExecVar()
   while (! execData_->eof()) {
     // variable name
     if (! canInterpIdentifiers()) {
-      errorMsg(var, "Missing identifier");
+      throwSyntaxError(var, "Missing identifier");
       return CJExecVarP();
     }
 
@@ -2332,7 +2455,7 @@ interpExecConst()
   while (! execData_->eof()) {
     // variable name
     if (! canInterpIdentifiers()) {
-      errorMsg(econst, "Missing identifier");
+      throwSyntaxError(econst, "Missing identifier");
       return CJExecConstP();
     }
 
@@ -2422,7 +2545,7 @@ interpExecWith()
 
   // ( <expression> )
   if (! interpExecOperator(CJOperator::Type::OpenRBracket)) {
-    errorMsg(ewith, "Missing open bracket for with");
+    throwSyntaxError(ewith, "Missing open bracket for with");
     return CJExecWithP();
   }
 
@@ -2441,7 +2564,7 @@ interpExecWith()
   }
 
   if (! interpExecOperator(CJOperator::Type::CloseRBracket)) {
-    errorMsg(ewith, "Missing close bracket for with");
+    throwSyntaxError(ewith, "Missing close bracket for with");
     return CJExecWithP();
   }
 
@@ -2527,8 +2650,13 @@ isInterpDictionary() const
 
   CJTokenP token = execData_->token();
 
+  // a:<value>
   if      (token->type() == CJToken::Type::Identifier)
     execData_->next();
+  // "a":<value>
+  else if (token->type() == CJToken::Type::String)
+    execData_->next();
+  // 1:<value>
   else if (token->type() == CJToken::Type::Number)
     execData_->next();
   else {
@@ -2569,24 +2697,26 @@ interpExecDictionary()
 
       if      (token->type() == CJToken::Type::Identifier)
         key = createStringValue(token->cast<CJIdentifier>()->name());
+      else if (token->type() == CJToken::Type::String)
+        key = createStringValue(token->cast<CJString>()->text());
       else if (token->type() == CJToken::Type::Number)
         key = std::static_pointer_cast<CJValue>(token);
       else {
-        errorMsg(dict, "Invalid key value type");
+        throwSyntaxError(dict, "Invalid key value type");
         return CJExecDictionaryP();
       }
 
       execData_->next();
 
       if (! interpExecOperator(CJOperator::Type::Colon)) {
-        errorMsg(dict, "Missing colon for key value");
+        throwSyntaxError(dict, "Missing colon for key value");
         return CJExecDictionaryP();
       }
 
       CJExecExpressionP expr = interpExpression();
 
       if (! expr) {
-        errorMsg(dict, "Invalid key value");
+        throwSyntaxError(dict, "Invalid key value");
         return CJExecDictionaryP();
       }
 
@@ -2599,7 +2729,7 @@ interpExecDictionary()
     }
 
     if (! interpExecOperator(CJOperator::Type::CloseBrace)) {
-      errorMsg(dict, "Missing close brace for dictionary");
+      throwSyntaxError(dict, "Missing close brace for dictionary");
       return CJExecDictionaryP();
     }
   }
@@ -2628,7 +2758,7 @@ interpExecNew()
   CJTokenP token = execData_->token();
 
   if (token->type() != CJToken::Type::Identifier) {
-    errorMsg(enew, "Missing identifier");
+    throwSyntaxError(enew, "Missing identifier");
     return CJExecNewP();
   }
 
@@ -2651,7 +2781,7 @@ interpExecNew()
     }
 
     if (! interpExecOperator(CJOperator::Type::CloseRBracket)) {
-      errorMsg(enew, "Missing close bracket for new");
+      throwSyntaxError(enew, "Missing close bracket for new");
       return CJExecNewP();
     }
   }
@@ -2695,6 +2825,7 @@ interpExecDelete()
   return edelete;
 }
 
+#if 0
 CJExecVoidP
 CJavaScript::
 interpExecVoid()
@@ -2725,6 +2856,7 @@ interpExecVoid()
 
   return evoid;
 }
+#endif
 
 // assert <expression_list>
 CJExecAssertP
@@ -2878,7 +3010,7 @@ interpExecTry()
 
   if (! isExecKeyword(CJKeyword::Type::Catch) &&
       ! isExecKeyword(CJKeyword::Type::Finally)) {
-    errorMsg(etry, "Missing catch or finally for try");
+    throwSyntaxError(etry, "Missing catch or finally for try");
     return CJExecTryP();
   }
 
@@ -2886,7 +3018,7 @@ interpExecTry()
   if (interpExecKeyword(CJKeyword::Type::Catch)) {
     // (<parameter>)
     if (! interpExecOperator(CJOperator::Type::OpenRBracket)) {
-      errorMsg(etry, "Missing open bracket for catch");
+      throwSyntaxError(etry, "Missing open bracket for catch");
       return CJExecTryP();
     }
 
@@ -2899,7 +3031,7 @@ interpExecTry()
     etry->setCatchIdentifiers(identifiers);
 
     if (! interpExecOperator(CJOperator::Type::CloseRBracket)) {
-      errorMsg(etry, "Missing close bracket for catch");
+      throwSyntaxError(etry, "Missing close bracket for catch");
       return CJExecTryP();
     }
 
@@ -2985,7 +3117,7 @@ interpUserFunction(bool named)
   }
   else {
     if (named) {
-      errorMsg(token, "Missing identifier");
+      throwSyntaxError(token, "Missing identifier");
       return CJUserFunctionP();
     }
   }
@@ -2996,7 +3128,7 @@ interpUserFunction(bool named)
 
   // ( <parameters> )
   if (! interpExecOperator(CJOperator::Type::OpenRBracket)) {
-    errorMsg(token, "Missing open bracket for function");
+    throwSyntaxError(token, "Missing open bracket for function");
     return CJUserFunctionP();
   }
 
@@ -3015,20 +3147,20 @@ interpUserFunction(bool named)
       break;
 
     if (! interpExecOperator(CJOperator::Type::Comma)) {
-      errorMsg(token, "Missing comma for function args");
+      throwSyntaxError(token, "Missing comma for function args");
       return CJUserFunctionP();
     }
 
     token = execData_->token();
 
     if (token->type() != CJToken::Type::Identifier) {
-      errorMsg(token, "Missing arg after comma for function args");
+      throwSyntaxError(token, "Missing arg after comma for function args");
       return CJUserFunctionP();
     }
   }
 
   if (! interpExecOperator(CJOperator::Type::CloseRBracket)) {
-    errorMsg(token, "Missing close bracket for function");
+    throwSyntaxError(token, "Missing close bracket for function");
     return CJUserFunctionP();
   }
 
@@ -3037,15 +3169,15 @@ interpUserFunction(bool named)
   //---
 
 //printUserFunctions("interpUserFunction");
-  userFn->setScope(this, userFunctions());
-
-  pushUserFunction(userFn);
+  userFn->setScope(this, currentUserFunction());
 
   // { <block> }
   if (! isExecOperator(CJOperator::Type::OpenBrace)) {
-    errorMsg(userFn, "Missing open brace for function");
+    throwSyntaxError(userFn, "Missing open brace for function");
     return CJUserFunctionP();
   }
+
+  pushUserFunction(userFn);
 
   CJExecBlockP block = interpExecBlock(CJExecBlock::Type::Function);
 
@@ -3183,7 +3315,7 @@ interpExpression()
 
       if (lastType == CJToken::Type::Identifiers) {
         std::stringstream ss; ss << *token;
-        errorMsg(execData_->token(), "Syntax error at identifier '" + ss.str() + "'");
+        throwSyntaxError(execData_->token(), "Syntax error at identifier '" + ss.str() + "'");
         return CJExecExpressionP();
       }
 
@@ -3221,7 +3353,7 @@ interpExpression()
           iexpr->setIndexExpression(expr1);
 
         if (! interpExecOperator(CJOperator::Type::CloseSBracket)) {
-          errorMsg(execData_->token(), "Missing close square bracket");
+          throwSyntaxError(execData_->token(), "Missing close square bracket");
           return CJExecExpressionP();
         }
       }
@@ -3334,7 +3466,7 @@ interpExpression()
 
       if (lastType == CJToken::Type::Number) {
         std::stringstream ss; ss << *token;
-        errorMsg(execData_->token(), "Syntax error at value '" + ss.str() + "'");
+        throwSyntaxError(execData_->token(), "Syntax error at value '" + ss.str() + "'");
         return CJExecExpressionP();
       }
 
@@ -3391,7 +3523,7 @@ interpExpression()
         CJExecExpressionP expr1 = interpExpression();
 
         if (! expr1) {
-          errorMsg(expr, "invalid assignment rhs expression");
+          throwSyntaxError(expr, "invalid assignment rhs expression");
           return CJExecExpressionP();
         }
 
@@ -3427,7 +3559,7 @@ interpExpression()
         }
 #endif
         else {
-          errorMsg(expr, "invalid increment/decrement rhs");
+          throwSyntaxError(expr, "invalid increment/decrement rhs");
           return CJExecExpressionP();
         }
       }
@@ -3437,7 +3569,7 @@ interpExpression()
         CJExecQuestionP equestion = interpExecQuestion(expr);
 
         if (! equestion) {
-          errorMsg(expr, "Interp failed for '?'");
+          throwSyntaxError(expr, "Interp failed for '?'");
           break;
         }
 
@@ -3465,7 +3597,7 @@ interpExpression()
           expr->addToken(std::static_pointer_cast<CJToken>(expr1));
 
         if (! interpExecOperator(CJOperator::Type::CloseRBracket)) {
-          errorMsg(expr, "Missing close round bracket");
+          throwSyntaxError(expr, "Missing close round bracket");
           return CJExecExpressionP();
         }
       }
@@ -3603,7 +3735,7 @@ interpExpression()
         CJExecNewP enew = interpExecNew();
 
         if (! enew) {
-          errorMsg(expr, "Interp failed for 'new'");
+          throwSyntaxError(expr, "Interp failed for 'new'");
           break;
         }
 
@@ -3613,7 +3745,7 @@ interpExpression()
         CJUserFunctionP efunction = interpUserFunction(/*named*/false);
 
         if (! efunction) {
-          errorMsg(expr, "Interp failed for 'function'");
+          throwSyntaxError(expr, "Interp failed for 'function'");
           break;
         }
 
@@ -3624,13 +3756,13 @@ interpExpression()
         expr->addToken(value);
       }
       else {
-        errorMsg(expr, "Interp failed at keyword: " + keyword->name());
+        throwSyntaxError(expr, "Interp failed at keyword: " + keyword->name());
         break;
       }
     }
     else {
       std::stringstream ss; ss << *token;
-      errorMsg(expr, "Interp failed at token: " + ss.str());
+      throwSyntaxError(expr, "Interp failed at token: " + ss.str());
       return CJExecExpressionP();
     }
   }
@@ -3648,7 +3780,7 @@ CJavaScript::
 interpExecThis()
 {
   if (! interpExecKeyword(CJKeyword::Type::This)) {
-    errorMsg(execData_->token(), "Missing keyword this");
+    throwSyntaxError(execData_->token(), "Missing keyword this");
     return CJExecThisP();
   }
 
@@ -3677,7 +3809,7 @@ interpExecThis()
     CJExecExpressionP expr = interpExpression();
 
     if (! expr) {
-      errorMsg(execData_->token(), "Missing expression for assign");
+      throwSyntaxError(execData_->token(), "Missing expression for assign");
       return CJExecThisP();
     }
 
@@ -3707,7 +3839,7 @@ CJavaScript::
 interpIndexExpression()
 {
   if (! interpExecOperator(CJOperator::Type::OpenSBracket)) {
-    errorMsg(execData_->token(), "Missing open square bracket");
+    throwSyntaxError(execData_->token(), "Missing open square bracket");
     return CJExecIndexExpressionP();
   }
 
@@ -3723,7 +3855,7 @@ interpIndexExpression()
     iexpr->setIndexExpression(expr);
 
   if (! interpExecOperator(CJOperator::Type::CloseSBracket)) {
-    errorMsg(execData_->token(), "Missing close square bracket");
+    throwSyntaxError(execData_->token(), "Missing close square bracket");
     return CJExecIndexExpressionP();
   }
 
@@ -3828,7 +3960,7 @@ interpExecBlock(CJExecBlock::Type type)
     }
 
     if (! interpExecOperator(CJOperator::Type::CloseBrace)) {
-      errorMsg(block, "Missing close brace");
+      throwSyntaxError(block, "Missing close brace");
       return CJExecBlockP();
     }
   }
@@ -3942,6 +4074,32 @@ execLineNum() const
     return -1;
 
   return execData_->token()->lineNum();
+}
+
+CJFunctionP
+CJavaScript::
+valueToFunction(CJValueP value) const
+{
+  CJFunctionP fn;
+
+  if      (value->type() == CJToken::Type::Function) {
+    fn = std::static_pointer_cast<CJFunction>(value);
+  }
+  else if (value->type() == CJToken::Type::UserObject) {
+    CJUserObjectP userObj = std::static_pointer_cast<CJUserObject>(value);
+
+    fn = std::static_pointer_cast<CJFunction>(userObj->userFn());
+  }
+  else if (value->type() == CJToken::Type::Dictionary) {
+    CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(value);
+
+    CJValueP cvalue = dict->getProperty(const_cast<CJavaScript *>(this), "constructor");
+
+    if (cvalue)
+      fn = valueToFunction(cvalue);
+  }
+
+  return fn;
 }
 
 COptInt
@@ -4347,6 +4505,26 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
       return createBoolValue(valueType1->isInstanceOf(valueType2));
     }
 
+    case CJOperator::Type::In: {
+      if      (value2->type() == CJToken::Type::Array) {
+        CJArrayP array2 = std::static_pointer_cast<CJArray>(value2);
+
+        return createBoolValue(array2->hasValue(value1));
+      }
+      else if (value2->hasIndex()) {
+        long ind = value1->toInteger();
+
+        return createBoolValue(value2->hasIndexValue(ind));
+      }
+      else if (value2->hasProperty()) {
+        std::string ind = value1->toString();
+
+        return createBoolValue(value2->hasPropertyValue(ind));
+      }
+      else
+        return createFalseValue();
+    }
+
     default:
       assert(false);
       break;
@@ -4364,7 +4542,9 @@ execUnaryOp(CJOperator::Type op, CJValueP value)
 
   if (! value) {
     if      (op == CJOperator::Type::TypeOf)
-      return createStringValue("undefined");
+      return createUndefinedValue();
+    if      (op == CJOperator::Type::Void)
+      return createUndefinedValue();
     else if (op == CJOperator::Type::LogicalNot)
       return createBoolValue(true);
     else
@@ -4425,12 +4605,31 @@ execUnaryOp(CJOperator::Type op, CJValueP value)
     case CJOperator::Type::TypeOf: {
       std::string res;
 
-      if (value->valueType()->type() == CJToken::Type::Function)
+      if      (value->valueType()->type() == CJToken::Type::Function)
         res = "function";
+      else if (value->valueType()->type() == CJToken::Type::Dictionary)
+        res = "object";
+      else if (value->valueType()->type() == CJToken::Type::Array)
+        res = "object";
+      else if (value->valueType()->type() == CJToken::Type::Number)
+        res = "number";
+      else if (value->valueType()->type() == CJToken::Type::String)
+        res = "string";
+      else if (value->valueType()->type() == CJToken::Type::True ||
+               value->valueType()->type() == CJToken::Type::False)
+        res = "boolean";
+      else if (value->valueType()->type() == CJToken::Type::Null)
+        res = "object";
+      else if (value->valueType()->type() == CJToken::Type::Undefined)
+        res = "undefined";
       else
         res = value->valueType()->name();
 
       return createStringValue(res);
+    }
+
+    case CJOperator::Type::Void: {
+      return createUndefinedValue();
     }
 
     default:
@@ -4439,6 +4638,26 @@ execUnaryOp(CJOperator::Type op, CJValueP value)
   }
 
   return CJValueP();
+}
+
+std::string
+CJavaScript::
+getIdentifier(CStrParse &parse, bool allowUnary) const
+{
+  int pos = parse.getPos();
+
+  std::string name;
+
+  if (allowUnary && parse.isChar('-'))
+    name += parse.readChar();
+
+  while (! parse.eof() && (parse.isAlnum() || parse.isOneOf("_$"))) {
+    name += parse.readChar();
+  }
+
+  parse.setPos(pos);
+
+  return name;
 }
 
 void
@@ -4459,6 +4678,8 @@ readIdentifier(CStrParse &parse)
     token = CJTokenP(createTrueValue());
   else if (name == "false")
     token = CJTokenP(createFalseValue());
+  else if (name == "undefined")
+    token = CJTokenP(createUndefinedValue());
   else {
     auto k = isKeyword(name);
 
@@ -4976,8 +5197,8 @@ readDoubleString(CStrParse &parse)
 
   parse.skipChar();
 
-  while (! parse.eof() && ! parse.isChar('"')) {
-    if (parse.isChar('\\')) {
+  while (! parse.eof()) {
+    if      (parse.isChar('\\')) {
       char c = parse.readChar();
 
       if (! parse.eof()) {
@@ -4985,15 +5206,18 @@ readDoubleString(CStrParse &parse)
 
         switch (c) {
           default : str += '\\'; str += c; break;
-          case 'b': str += '\b'; break;
-          case 'f': str += '\f'; break;
-          case 'n': str += '\n'; break;
-          case 'r': str += '\r'; break;
-          case 't': str += '\t'; break;
-          case 'v': str += '\v'; break;
+
+          case '\n': break;
+          case 'b' : str += '\b'; break;
+          case 'f' : str += '\f'; break;
+          case 'n' : str += '\n'; break;
+          case 'r' : str += '\r'; break;
+          case 't' : str += '\t'; break;
+          case 'v' : str += '\v'; break;
           case '\"': str += '\"'; break;
           case '\'': str += '\''; break;
           case '\\': str += '\\'; break;
+
           case '0': case '1': case '2': case '3':
           case '4': case '5': case '6': case '7': {
             int octal = c - '0';
@@ -5026,18 +5250,28 @@ readDoubleString(CStrParse &parse)
             if (! parse.eof() && parse.isXDigit())
               c4 = CJUtil::hexCharValue(parse.readChar());
 
-            long c = ((c1 & 0xF) << 24) |
-                     ((c2 & 0xF) << 16) |
-                     ((c3 & 0xF) <<  8) |
+            long c = ((c1 & 0xF) << 12) |
+                     ((c2 & 0xF) <<  8) |
+                     ((c3 & 0xF) <<  4) |
                      ((c4 & 0xF) <<  0);
 
-            // TODO: Handle UTF8
-            // No Break Space \b00a0 (2560)
-            // Paragraph Separator \b2029 (33554953)
-            if (c >= 256)
-              str += " ";
-            else
-              str += c;
+            CUtf8::append(str, c);
+
+            break;
+          }
+          case 'x': {
+            //2 hexadecimal digits
+            int c1 = 0;
+            int c2 = 0;
+
+            if (! parse.eof() && parse.isXDigit())
+              c1 = CJUtil::hexCharValue(parse.readChar());
+            if (! parse.eof() && parse.isXDigit())
+              c2 = CJUtil::hexCharValue(parse.readChar());
+
+            long c = ((c1 & 0xF) << 4) | (c2 & 0xF);
+
+            CUtf8::append(str, c);
 
             break;
           }
@@ -5048,8 +5282,14 @@ readDoubleString(CStrParse &parse)
     }
     else if (parse.isChar('"'))
       break;
-    else
-      str += parse.readChar();
+    else {
+      ulong l;
+
+      if (! parse.readUtf8Char(&l))
+        break;
+
+      CUtf8::append(str, l);
+    }
   }
 
   if (parse.isChar('"'))
@@ -5070,8 +5310,100 @@ readSingleString(CStrParse &parse)
 
   parse.skipChar();
 
-  while (! parse.eof() && ! parse.isChar('\''))
-    str += parse.readChar();
+  while (! parse.eof() && ! parse.isChar('\'')) {
+    if      (parse.isChar('\\')) {
+      char c = parse.readChar();
+
+      if (! parse.eof()) {
+        c = parse.readChar();
+
+        switch (c) {
+          default : str += '\\'; str += c; break;
+
+          case '\n': break;
+          case 'b' : str += '\b'; break;
+          case 'f' : str += '\f'; break;
+          case 'n' : str += '\n'; break;
+          case 'r' : str += '\r'; break;
+          case 't' : str += '\t'; break;
+          case 'v' : str += '\v'; break;
+          case '\"': str += '\"'; break;
+          case '\'': str += '\''; break;
+          case '\\': str += '\\'; break;
+
+          case '0': case '1': case '2': case '3':
+          case '4': case '5': case '6': case '7': {
+            int octal = c - '0';
+
+            if (! parse.eof() && parse.isODigit()) {
+              octal = octal*8 + (parse.readChar() - '0');
+
+              if (! parse.eof() && parse.isODigit())
+                octal = octal*8 + (parse.readChar() - '0');
+            }
+
+            str += char(octal);
+
+            break;
+          }
+          case 'u': {
+            // 4 hexadecimal digits
+            // { <hexdigit> ... }
+            int c1 = 0;
+            int c2 = 0;
+            int c3 = 0;
+            int c4 = 0;
+
+            if (! parse.eof() && parse.isXDigit())
+              c1 = CJUtil::hexCharValue(parse.readChar());
+            if (! parse.eof() && parse.isXDigit())
+              c2 = CJUtil::hexCharValue(parse.readChar());
+            if (! parse.eof() && parse.isXDigit())
+              c3 = CJUtil::hexCharValue(parse.readChar());
+            if (! parse.eof() && parse.isXDigit())
+              c4 = CJUtil::hexCharValue(parse.readChar());
+
+            long c = ((c1 & 0xF) << 12) |
+                     ((c2 & 0xF) <<  8) |
+                     ((c3 & 0xF) <<  4) |
+                     ((c4 & 0xF) <<  0);
+
+            CUtf8::append(str, c);
+
+            break;
+          }
+          case 'x': {
+            //2 hexadecimal digits
+            int c1 = 0;
+            int c2 = 0;
+
+            if (! parse.eof() && parse.isXDigit())
+              c1 = CJUtil::hexCharValue(parse.readChar());
+            if (! parse.eof() && parse.isXDigit())
+              c2 = CJUtil::hexCharValue(parse.readChar());
+
+            long c = ((c1 & 0xF) << 4) | (c2 & 0xF);
+
+            CUtf8::append(str, c);
+
+            break;
+          }
+        }
+      }
+      else
+        str += c;
+    }
+    else if (parse.isChar('\''))
+      break;
+    else {
+      ulong l;
+
+      if (! parse.readUtf8Char(&l))
+        break;
+
+      CUtf8::append(str, l);
+    }
+  }
 
   if (parse.isChar('\''))
     parse.skipChar();
@@ -5140,12 +5472,7 @@ throwException(CJExceptionType type)
 
   error->setType(type);
 
-  CJErrorBaseP errorP(error);
-
-  block_->setError(errorP);
-
-  if (isExceptDebug())
-    std::cerr << "Exception: " << int(type) << std::endl;
+  throwError(0, CJErrorBaseP(error));
 }
 
 void
@@ -5154,12 +5481,16 @@ throwTypeError(CJToken *token, const std::string &msg)
 {
   CJTypeError *error = new CJTypeError(this);
 
-  CJErrorBaseP errorP(error);
+  error->setMessage(msg);
 
-  block_->setError(errorP);
+  throwError(token, CJErrorBaseP(error));
+}
 
-  if (isExceptDebug())
-    errorMsg(token, msg);
+void
+CJavaScript::
+throwSyntaxError(CJTokenP token, const std::string &msg)
+{
+  throwSyntaxError(token.get(), msg);
 }
 
 void
@@ -5168,12 +5499,20 @@ throwSyntaxError(CJToken *token, const std::string &msg)
 {
   CJSyntaxError *error = new CJSyntaxError(this);
 
-  CJErrorBaseP errorP(error);
+  error->setMessage(msg);
 
-  block_->setError(errorP);
+  throwError(token, CJErrorBaseP(error));
+}
+
+void
+CJavaScript::
+throwError(CJToken *token, CJErrorBaseP error)
+{
+  if (getCurrentBlock())
+    getCurrentBlock()->setError(error);
 
   if (isExceptDebug())
-    errorMsg(token, msg);
+    errorMsg(token, error->message());
 }
 
 void
@@ -5187,10 +5526,12 @@ void
 CJavaScript::
 errorMsg(CJToken *token, const std::string &msg) const
 {
+  int lineNum = (token ? token->lineNum() : -1);
+
   if (fileName_ != "")
-    std::cerr << fileName_ << "@" << token->lineNum() << ": ";
+    std::cerr << fileName_ << "@" << lineNum << ": ";
   else
-    std::cerr << token->lineNum() << ": ";
+    std::cerr << lineNum << ": ";
 
   std::cerr << msg << std::endl;
 }

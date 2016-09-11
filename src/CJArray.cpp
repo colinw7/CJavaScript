@@ -420,6 +420,18 @@ setProperty(CJavaScript *js, const std::string &key, CJValueP value)
     CJObj::setProperty(js, key, value);
 }
 
+bool
+CJArray::
+hasValue(CJValueP value) const
+{
+  for (const auto &v : values_) {
+    if (js_->cmp(v, value) == 0)
+      return true;
+  }
+
+  return false;
+}
+
 void
 CJArray::
 print(std::ostream &os) const

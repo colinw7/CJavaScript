@@ -1,6 +1,7 @@
 #include <CJFunctionFunction.h>
 #include <CJUserFunction.h>
 #include <CJavaScript.h>
+#include <CStrParse.h>
 
 CJFunctionFunction::
 CJFunctionFunction(CJavaScript *js) :
@@ -8,28 +9,96 @@ CJFunctionFunction(CJavaScript *js) :
 {
 }
 
+// new Function([args, ...], body);
 CJValueP
 CJFunctionFunction::
 exec(CJavaScript *js, const Values &values)
 {
-  std::string          name; // anonymous function
+  assert(values.size() >= 1);
+
+  std::string name;
+  // no name (anonymous function)
+
+  // values[0] is CJUserObjectP
+
+  // args are values[1]->values[values.size() - 2]
   CJUserFunction::Args args;
-  CJExecBlockP         block;
 
-  if (values.size() > 1) {
-    for (uint i = 0; i < values.size() - 1; ++i)
-      args.push_back(values[i]->toString());
+  if (values.size() > 2) {
+    for (uint i = 1; i < values.size() - 1; ++i) {
+      std::string arg = values[i]->toString();
 
-    if (values.size() > 2) {
-      std::string body = values[values.size() - 1]->toString();
+      std::vector<std::string> args1;
 
-      block = js->interpFunctionBlock(body);
+      if (! expandArg(arg, args1)) {
+        js->throwSyntaxError(this, "Invalid function arguments");
+        return CJValueP();
+      }
+
+      for (const auto &arg1 : args1)
+        args.push_back(arg1);
     }
   }
 
-  CJUserFunction *fn = new CJUserFunction(js, name, args, block);
+  // create function this global scope and return
+  CJUserFunctionP userFn(new CJUserFunction(js, name, args));
 
-  fn->setScope(js);
+  userFn->setScope(js, js->currentUserFunction());
 
-  return CJValueP(fn);
+  // body is values[values.size() - 1]
+  CJExecBlockP block;
+
+  if (values.size() > 1) {
+    std::string body = values[values.size() - 1]->toString();
+
+    js->pushUserFunction(userFn);
+
+    //js->startScope(userFn->scope());
+
+    block = js->interpFunctionBlock(body);
+
+    //js->endScope();
+
+    userFn->setBlock(block);
+
+    js->popUserFunction();
+  }
+
+  return userFn;
+}
+
+bool
+CJFunctionFunction::
+expandArg(const std::string &arg, std::vector<std::string> &args) const
+{
+  CStrParse parse(arg);
+
+  while (! parse.eof()) {
+    parse.skipSpace();
+
+    if (parse.isAlpha() || parse.isOneOf("_$")) {
+      std::string arg1;
+
+      while (! parse.eof() && (parse.isAlnum() || parse.isOneOf("_$"))) {
+        arg1 += parse.readChar();
+      }
+
+      assert(arg1 != "");
+
+      args.push_back(arg1);
+
+      parse.skipSpace();
+    }
+    else
+      return false;
+
+    if (! parse.isChar(','))
+      break;
+
+    parse.skipChar();
+  }
+
+  parse.skipSpace();
+
+  return parse.eof();
 }

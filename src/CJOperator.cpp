@@ -78,6 +78,7 @@ isAllowUnary(Type type)
     case Type::Colon:
     case Type::TypeOf:
     case Type::InstanceOf:
+    case Type::In:
       return true;
     default:
       return false;
@@ -150,6 +151,8 @@ typeName(Type type)
     case Type::Colon                   : return ":";
     case Type::TypeOf                  : return "typeof";
     case Type::InstanceOf              : return "instanceof";
+    case Type::In                      : return "in";
+    case Type::Void                    : return "void";
     default                            : assert(false);
   }
 

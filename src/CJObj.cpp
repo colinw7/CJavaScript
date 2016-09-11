@@ -116,6 +116,20 @@ addVariable(CJavaScript *js, const std::string &name)
 
 CJValueP
 CJObj::
+propertyValue(const std::string &key) const
+{
+  return getProperty(js_, key);
+}
+
+void
+CJObj::
+setPropertyValue(const std::string &key, CJValueP value)
+{
+  setProperty(js_, key, value);
+}
+
+CJValueP
+CJObj::
 getProperty(CJavaScript *js, const std::string &name) const
 {
   if (CJNameSpace::hasProperty(js, name))

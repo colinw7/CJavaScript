@@ -109,7 +109,9 @@ class CJavaScript {
   CJObjTypeP getObjectType(const std::string &name) const;
 
   CJDictionaryP rootScope() const { return rootScope_; }
+
   CJDictionaryP currentScope() const { return currentScope_; }
+  void setCurrentScope(CJDictionaryP scope) { currentScope_ = scope; }
 
   CJDictionaryP thisScope() const;
 
@@ -184,6 +186,8 @@ class CJavaScript {
 
   const UserFunctions &userFunctions() const { return userFunctions_; }
 
+  CJDictionaryP currentUserFunction() const;
+
   void printUserFunctions(const std::string &msg="") const;
 
   //---
@@ -196,11 +200,15 @@ class CJavaScript {
 
   CJExecBlockP interpFunctionBlock(const std::string &str);
 
+  CJValueP interpString(const std::string &str);
+
   bool loadSubFile(const std::string &filename);
 
   void interp(CJExecData &execData);
 
   CJValueP exec();
+
+  CJFunctionP valueToFunction(CJValueP value) const;
 
   COptInt cmp(CJValueP value1, CJValueP value2);
 
@@ -281,7 +289,10 @@ class CJavaScript {
   void throwException(CJExceptionType type);
 
   void throwTypeError  (CJToken *token, const std::string &msg);
+  void throwSyntaxError(CJTokenP token, const std::string &msg);
   void throwSyntaxError(CJToken *token, const std::string &msg);
+
+  void throwError(CJToken *token, CJErrorBaseP error);
 
   void errorMsg(CJTokenP token, const std::string &msg) const;
   void errorMsg(CJToken *token, const std::string &msg) const;
@@ -297,6 +308,8 @@ class CJavaScript {
   void parseString(const std::string &str);
 
   void skipSpace(CStrParse &parse);
+
+  std::string getIdentifier(CStrParse &parse, bool allowUnary) const;
 
   void readIdentifier(CStrParse &parse);
   void readNumber(CStrParse &parse);
@@ -340,7 +353,7 @@ class CJavaScript {
   CJExecThrowP           interpExecThrow();
   CJExecTryP             interpExecTry();
   CJExecVarP             interpExecVar();
-  CJExecVoidP            interpExecVoid();
+//CJExecVoidP            interpExecVoid();
   CJExecWhileP           interpExecWhile();
   CJExecWithP            interpExecWith();
   CJUserFunctionP        interpUserFunction(bool named);
@@ -383,6 +396,7 @@ class CJavaScript {
   ScopeStackStack scopeStackStack_;
   ScopeStack      thisStack_;
   CJMathP         math_;
+  CJJSONP         json_;
   Tokens          tokens_;
   TypeObject      typeObject_;
   CJExecData*     execData_ { 0 };

@@ -67,6 +67,7 @@ CJFunctionFunction.cpp \
 CJGlobalFunction.cpp \
 CJIdentifier.cpp \
 CJIntervalFunction.cpp \
+CJJSON.cpp \
 CJKeyword.cpp \
 CJLValue.cpp \
 CJMath.cpp \
@@ -107,6 +108,7 @@ CPPFLAGS = \
 $(CDEBUG) \
 -I. \
 -I$(INC_DIR) \
+-I../../CJson/include \
 -I../../CFile/include \
 -I../../CRegExp/include \
 -I../../CStrUtil/include \

@@ -66,6 +66,8 @@ class CJArray : public CJObj {
   bool isReadOnlyIndex(int ind) const override;
   void setReadOnlyIndex(int ind, bool b) override;
 
+  bool hasValue(CJValueP value) const;
+
   long length() const override { return values_.size(); }
 
   void reverse();

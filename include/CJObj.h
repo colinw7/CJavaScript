@@ -40,6 +40,9 @@ class CJObj : public CJDictionary {
 
   void addVariable(CJavaScript *js, const std::string &name);
 
+  CJValueP propertyValue(const std::string &key) const override;
+  void setPropertyValue(const std::string &key, CJValueP value) override;
+
   CJValueP getProperty(CJavaScript *js, const std::string &name) const override;
   void setProperty(CJavaScript *js, const std::string &name, CJValueP value) override;
 

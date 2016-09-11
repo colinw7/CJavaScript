@@ -1,6 +1,7 @@
 #include <CJString.h>
 #include <CJavaScript.h>
 #include <CJUtil.h>
+#include <CUtf8.h>
 #include <cstring>
 
 CJObjTypeP CJStringType::type_;
@@ -59,10 +60,26 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
   // type functions
   if      (name == "fromCharCode") {
-    return CJValueP();
+    std::string str;
+
+    for (uint i = 1; i < values.size(); ++i) {
+      long code = values[i]->toInteger();
+
+      CUtf8::append(str, code);
+    }
+
+    return js->createStringValue(str);
   }
   else if (name == "fromCodePoint") {
-    return CJValueP();
+    std::string str;
+
+    for (uint i = 1; i < values.size(); ++i) {
+      long code = values[i]->toInteger();
+
+      CUtf8::append(str, code);
+    }
+
+    return js->createStringValue(str);
   }
   else if (name == "raw") {
     return CJValueP();
@@ -495,5 +512,58 @@ void
 CJString::
 print(std::ostream &os) const
 {
-  os << "\'" << text_ << "\'";
+  static char buffer[16];
+
+  os << "\'";
+
+  int  i   = 0;
+  uint len = text_.size();
+
+  while (i < int(len)) {
+    ulong c = CUtf8::readNextChar(text_, i, len);
+
+    if (c <= 0x7f) {
+      if (c <= 0x1f) {
+        if      (c == '\b')
+          os << "\\b";
+        else if (c == '\f')
+          os << "\\f";
+        else if (c == '\n')
+          os << "\\n";
+        else if (c == '\r')
+          os << "\\r";
+        else if (c == '\t')
+          os << "\\t";
+        else if (c == '\v')
+          os << "\\v";
+        else {
+          int i = (c & 0xff);
+
+          ::sprintf(buffer, "%02x", i);
+
+          os << "\\x" << buffer;
+        }
+      }
+      else {
+        os << char(c);
+      }
+    }
+    else {
+      int i1 = (c >> 12) & 0xF;
+      int i2 = (c >> 8 ) & 0xF;
+      int i3 = (c >> 4 ) & 0xF;
+      int i4 =  c        & 0xF;
+
+      std::string str2;
+
+      ::sprintf(buffer, "%x", i1); str2 += buffer;
+      ::sprintf(buffer, "%x", i2); str2 += buffer;
+      ::sprintf(buffer, "%x", i3); str2 += buffer;
+      ::sprintf(buffer, "%x", i4); str2 += buffer;
+
+      os << "\\u" << str2;
+    }
+  }
+
+  os << "\'";
 }

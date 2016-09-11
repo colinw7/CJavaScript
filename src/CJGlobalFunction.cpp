@@ -7,18 +7,17 @@ CJGlobalFunction::
 exec(CJavaScript *js, const Values &values)
 {
   if      (name_ == "eval") {
-    if (values.size() < 1) {
-      js->errorMsg("Wrong number of function values");
-      return CJValueP();
+    if (values.size() >= 1) {
+      if (values[0] && values[0]->type() == CJToken::Type::String) {
+        std::string str = values[0]->toString();
+
+        return js->interpString(str);
+      }
+      else
+        return values[0];
     }
-
-    std::string str = (values[0] ? values[0]->toString() : std::string());
-
-    CJavaScript js;
-
-    js.loadString(str);
-
-    return js.exec();
+    else
+      return js->createUndefinedValue();
   }
   else if (name_ == "isFinite") {
     if (values.size() < 1) {

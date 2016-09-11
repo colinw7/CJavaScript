@@ -70,7 +70,10 @@ class CJExecExpression : public CJToken {
       if (i > 0)
         os << " ";
 
-      os << *t;
+      if (t)
+        os << *t;
+      else
+        os << "null";
 
       ++i;
     }

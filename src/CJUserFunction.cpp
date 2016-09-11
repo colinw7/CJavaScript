@@ -10,12 +10,12 @@ CJUserFunction(CJavaScript *js, const std::string &name, const Args &args, CJExe
 
 void
 CJUserFunction::
-setScope(CJavaScript *js, const CJavaScript::UserFunctions &userFunctions)
+setScope(CJavaScript *js, CJDictionaryP parentScope)
 {
   scope_ = CJDictionaryP(new CJDictionary(js, name_));
 
-  if (! userFunctions.empty())
-    scope_->setParent(userFunctions.back()->scope());
+  if (parentScope)
+    scope_->setParent(parentScope);
 
 //js->printScopeChain(scope_, "proc " + name_);
 }
@@ -90,30 +90,37 @@ exec(CJavaScript *js, const Values &values)
   //--
 
   // set return value
+  CJValueP retVal;
+
   if (block_)
-    return block_->getRetVal();
-  else
-    return CJValueP();
+    retVal = block_->getRetVal();
+
+  if (! retVal)
+    retVal = js->createUndefinedValue();
+
+  return retVal;
 }
 
 void
 CJUserFunction::
 print(std::ostream &os) const
 {
+  os << "function " << name() << "(";
+
+  int i = 0;
+
+  for (const auto &arg : args_) {
+    if (i > 0)
+      os << ", ";
+
+    os << arg;
+
+    ++i;
+  }
+
+  os << ")";
+
   if (block_) {
-    os << "function " << name() << "(";
-
-    int i = 0;
-
-    for (const auto &arg : args_) {
-      if (i > 0)
-        os << ", ";
-
-      os << arg;
-
-      ++i;
-    }
-
-    os << ") " << *block_;
+    os << " " << *block_;
   }
 }

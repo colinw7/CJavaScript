@@ -40,3 +40,12 @@
  . Better prototype definition and variable/function support
  . Support unbalanced [] is complete line check
  . Add startup files for and fast start mode
+# 9/11/2016
+ . More throw handling
+ . Fix switch with no break
+ . Improve support for functions defined and returned from functions
+ . Supprt comma separated args in Function constructor
+ . Improve 'in' operator support
+ . Improve 'void' operator support
+ . Add JSON class
+ . Support UTF* encoding/decoding for strings

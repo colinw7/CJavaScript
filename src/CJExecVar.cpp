@@ -15,8 +15,6 @@ CJValueP
 CJExecVar::
 exec(CJavaScript *js)
 {
-  CJValueP value;
-
   for (const auto &varValue : varValues_) {
     auto identifiers1 = varValue.identifiers->identifiers();
 
@@ -24,6 +22,8 @@ exec(CJavaScript *js)
 
     if (! idValue)
       idValue = js->lookupProperty(identifiers1, /*create*/true);
+
+    CJValueP value;
 
     if      (varValue.expr)
       value = varValue.expr->exec(js);
@@ -44,7 +44,7 @@ exec(CJavaScript *js)
     }
   }
 
-  return value;
+  return js->createUndefinedValue();
 }
 
 void

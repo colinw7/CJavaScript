@@ -11,6 +11,7 @@ class CJExecBlock : public CJToken {
   enum class Type {
     Sequential,
     Iterative,
+    Switch,
     Function
   };
 

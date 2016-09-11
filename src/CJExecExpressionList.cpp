@@ -41,6 +41,13 @@ getValues(CJavaScript *js) const
   return values;
 }
 
+bool
+CJExecExpressionList::
+isEmpty() const
+{
+  return (expressions_.empty() || (expressions_.size() == 1 && ! expressions_[0]->hasTokens()));
+}
+
 CJValueP
 CJExecExpressionList::
 exec(CJavaScript *js)

@@ -22,6 +22,8 @@ class CJExecExpressionList : public CJToken {
 
   Values getValues(CJavaScript *js) const;
 
+  bool isEmpty() const;
+
   CJValueP exec(CJavaScript *js) override;
 
   void print(std::ostream &os) const override;

@@ -23,7 +23,6 @@ class CJKeyword : public CJToken {
     For,
     Function,
     If,
-    In,
     New,
     Return,
     Switch,
@@ -31,7 +30,6 @@ class CJKeyword : public CJToken {
     Throw,
     Try,
     Var,
-    Void,
     While,
     With
   };

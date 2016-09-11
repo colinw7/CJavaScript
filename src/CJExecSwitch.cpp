@@ -18,41 +18,66 @@ exec(CJavaScript *js)
 
   CJValueP value = exprList_->exec(js);
 
-  CJValueP value1;
+  //---
 
-  bool found = false;
+  // find index of first block which matches switch expression
+  int match = -1;
 
-  for (const auto &c : caseBlocks_) {
-    if (c.expr) {
-      CJValueP v = c.expr->exec(js);
+  for (uint i = 0; i < caseBlocks_.size(); ++i) {
+    const SwitchBlock &block = caseBlocks_[i];
 
-      if (js->cmp(v, value) == 0) {
-        if (c.block) {
-          js->startBlock(c.block);
+    if (! block.expr)
+      continue;
 
-          c.block->exec(js);
+    CJValueP v = block.expr->exec(js);
 
-          js->endBlock();
-        }
-
-        found = true;
-
-        break;
-      }
+    if (js->cmp(v, value) == 0) {
+      match = i;
+      break;
     }
   }
 
-  if (! found) {
-    if (defaultBlock_.block) {
-      js->startBlock(defaultBlock_.block);
+  //---
 
-      defaultBlock_.block->exec(js);
+  // if no match then just exec default
+  if (match == -1) {
+    const SwitchBlock &block = defaultBlock_;
 
-      js->endBlock();
-    }
+    (void) execBlock(js, block.block);
+
+    return CJValueP();
+  }
+
+  //---
+
+  // if match then run each block until we hit a break
+  for (uint i = match; i < caseBlocks_.size(); ++i) {
+    const SwitchBlock &block = caseBlocks_[i];
+
+    bool done = execBlock(js, block.block);
+
+    if (done)
+      break;
   }
 
   return CJValueP();
+}
+
+bool
+CJExecSwitch::
+execBlock(CJavaScript *js, CJExecBlockP block)
+{
+  if (! block) return false;
+
+  js->startBlock(block);
+
+  block->exec(js);
+
+  bool done = block->isBreakFlag();
+
+  js->endBlock();
+
+  return done;
 }
 
 void
