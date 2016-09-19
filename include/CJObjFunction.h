@@ -1,13 +1,13 @@
 #ifndef CJObjFunction_H
 #define CJObjFunction_H
 
-#include <CJFunction.h>
+#include <CJFunctionBase.h>
 
 // object function
-class CJObjFunction : public CJFunction {
+class CJObjFunction : public CJFunctionBase {
  public:
   CJObjFunction(CJavaScript *js, const std::string &name) :
-   CJFunction(js, name, CJFunction::Type::Object) {
+   CJFunctionBase(js, name, CJFunctionBase::Type::Object) {
   }
 
   CJValue *dup(CJavaScript *js) const override { return new CJObjFunction(js, name_); }

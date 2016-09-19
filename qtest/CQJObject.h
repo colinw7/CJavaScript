@@ -20,7 +20,7 @@ class CQJObject : public QObject, public CJObj {
 
   CQJavaScript *qjs() const { return qjs_; }
 
-  CJValue *dup(CJavaScript *) const override { return new CQJObject(qjs_, type()); }
+  CJValue *dup(CJavaScript *) const override { return new CQJObject(qjs_, objType()); }
 
   std::string toString() const override {
     std::ostringstream ss; ss << *this;

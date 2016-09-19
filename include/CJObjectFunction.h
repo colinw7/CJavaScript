@@ -1,10 +1,10 @@
 #ifndef CJObjectFunction_H
 #define CJObjectFunction_H
 
-#include <CJTypeFunction.h>
+#include <CJObjTypeFunction.h>
 
 // Object constructor function
-class CJObjectFunction : public CJTypeFunction {
+class CJObjectFunction : public CJObjTypeFunction {
  public:
   CJObjectFunction(CJavaScript *js);
 

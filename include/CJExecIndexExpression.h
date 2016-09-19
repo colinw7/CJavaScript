@@ -31,6 +31,10 @@ class CJExecIndexExpression : public CJExecExpression {
   bool decodeExpressions(CJExecIdentifiersP &identifiers,
                          std::vector<CJExecExpressionP> &indices) const;
 
+  CJExecIndexExpressionP lindexExpression() const;
+
+  CJValueP indValue(CJavaScript *js);
+
   void print(std::ostream &os) const override;
 
  private:

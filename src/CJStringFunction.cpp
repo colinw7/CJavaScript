@@ -4,7 +4,7 @@
 
 CJStringFunction::
 CJStringFunction(CJavaScript *js) :
- CJTypeFunction(js, "String", CJStringType::instance(js))
+ CJObjTypeFunction(js, "String", CJStringType::instance(js))
 {
 }
 
@@ -12,10 +12,17 @@ CJValueP
 CJStringFunction::
 exec(CJavaScript *js, const Values &values)
 {
-  if (values.size() < 1)
-    return js->createStringValue("");
+  CJString *str;
 
-  std::string s = values[0]->toString();
+  if (values.size() <= 1)
+    str = new CJString(js, "");
+  else {
+    std::string s = values[1]->toString();
 
-  return js->createStringValue(s);
+    str = new CJString(js, s);
+  }
+
+  str->setIsBasic(false);
+
+  return CJValueP(str);
 }

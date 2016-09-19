@@ -1,5 +1,6 @@
 #include <CJExecNew.h>
 #include <CJExecExpressionList.h>
+#include <CJFunction.h>
 #include <CJavaScript.h>
 
 CJExecNew::
@@ -12,119 +13,123 @@ CJValueP
 CJExecNew::
 exec(CJavaScript *js)
 {
-  CJValueP value;
-
+  // get call arguments
   CJExecExpressionList::Values values;
 
   if (exprList_)
     values = exprList_->getValues(js);
 
-  // TODO: use named functions
-  if      (typeName_ == "String") {
-    CJStringP str(new CJString(js));
+  //---
 
-    CJValueP value1 = exprList_->exec(js);
+  // get type value for type name
+  CJDictionaryP scope = js->currentScope();
 
-    if (value1)
-      str->setText(value1->toString());
+  CJValueP typeValue = scope->getProperty(js, typeName_);
 
-    value = std::static_pointer_cast<CJValue>(str);
+  while (! typeValue && scope->getParent()) {
+    scope = scope->getParent();
+
+    typeValue = scope->getProperty(js, typeName_);
   }
-  else if (typeName_ == "Number") {
-    CJNumberP num(new CJNumber(js));
 
-    CJValueP value1 = exprList_->exec(js);
+  //---
 
-    if (value1)
-      num->setReal(value1->toReal());
-
-    value = std::static_pointer_cast<CJValue>(num);
+  if (! typeValue) {
+    js->errorMsg("No type name '" + typeName_ + "'");
+    return CJValueP();
   }
-  else if (typeName_ == "Boolean") {
-    CJValueP value1 = exprList_->exec(js);
 
-    bool b = (value1 && value1->toBoolean());
+  CJFunctionBaseP fn, typeFn;
 
-    value = js->createBoolValue(b);
-  }
-  else if (typeName_ == "Array") {
-    CJArrayP array;
+  if (typeValue->isFunction()) {
+    typeFn = std::static_pointer_cast<CJFunctionBase>(typeValue);
 
-    if (values.size() == 1 && values[0] && values[0]->type() == CJValue::Type::Number) {
-      long n = values[0]->toInteger();
+    CJValueP protoValue = typeFn->getProperty(js, "prototype");
 
-      array = CJArrayP(new CJArray(js, n));
+    if (! protoValue) {
+      js->errorMsg("No prototype for type name '" + typeName_ + "'");
+      return CJValueP();
     }
-    else
-      array = CJArrayP(new CJArray(js, values));
 
-    value = std::static_pointer_cast<CJValue>(array);
+    if (protoValue->type() == CJToken::Type::Dictionary) {
+      CJDictionaryP protoDict = std::static_pointer_cast<CJDictionary>(protoValue);
+
+      CJValueP constructor = protoDict->getProperty(js, "constructor");
+
+      if (constructor && constructor->isFunction())
+        fn = std::static_pointer_cast<CJFunctionBase>(constructor);
+    }
   }
-  else if (typeName_ == "Date") {
-    value = js->createDateValue(values);
+
+  if (! fn)
+    fn = typeFn;
+
+  if (! fn) {
+    js->errorMsg("No constructor for type name '" + typeName_ + "'");
+    return CJValueP();
+  }
+
+  //---
+
+  CJObjTypeP userType = js->getObjectType(typeName_);
+
+  if (! userType)
+    userType = js->addObjectType(typeName_, CJObjTypeP(new CJUserType(js, typeName_)));
+
+  //---
+
+  CJValueP newValue;
+
+  if (typeFn && typeFn->type() == CJFunctionBase::Type::ObjType) {
+    CJFunction::Values values;
+
+    //CJUserObjectP userObj(new CJUserObject(js, userType, typeFn));
+
+    values.push_back(0);
+
+    newValue = typeFn->exec(js, values);
   }
   else {
-    CJDictionaryP scope = js->currentScope();
+    CJObject *obj = new CJObject(js);
 
-    CJValueP typeValue = scope->getProperty(js, typeName_);
+    obj->setTypeName(typeName_);
 
-    while (! typeValue && scope->getParent()) {
-      scope = scope->getParent();
-
-      typeValue = scope->getProperty(js, typeName_);
-    }
-
-    if (typeValue && typeValue->type() == CJToken::Type::Function) {
-      CJFunctionP fn = std::static_pointer_cast<CJFunction>(typeValue);
-
-      CJObjTypeP userType = js->getObjectType(typeName_);
-
-      if (! userType)
-        userType = js->addObjectType(typeName_, CJObjTypeP(new CJUserType(js, typeName_)));
-
-      CJUserObjectP userObj(new CJUserObject(js, userType, fn));
-
-      CJValueP objValue = std::static_pointer_cast<CJValue>(userObj);
-
-      CJObjType::Values fnValues;
-
-      fnValues.push_back(objValue);
-
-      for (auto &v : values)
-        fnValues.push_back(v);
-
-      js->pushThis(fn);
-
-      CJValueP fnValue = fn->exec(js, fnValues);
-
-      js->popThis();
-
-      //value = objValue;
-      value = fnValue;
-    }
-    else {
-      CJObjTypeP userType = js->getObjectType(typeName_);
-
-      if (! userType) {
-        js->errorMsg("Invalid type name '" + typeName_ + "'");
-        return CJValueP();
-      }
-
-      if (! userType->hasConstructor()) {
-        js->errorMsg("No constructor for type name '" + typeName_ + "'");
-        return CJValueP();
-      }
-
-      CJObjType::Values fnValues;
-
-      for (auto &v : values)
-        fnValues.push_back(v);
-
-      value = userType->construct(js, fnValues);
-    }
+    newValue = CJValueP(obj);
   }
 
-  return value;
+  assert(newValue->isDictionary());
+
+  CJDictionaryP newObj = std::static_pointer_cast<CJDictionary>(newValue);
+
+  //---
+
+  // set user object (argv[0])
+  CJUserObjectP userObj(new CJUserObject(js, userType, fn));
+
+  CJValueP objValue = std::static_pointer_cast<CJValue>(userObj);
+
+  //---
+
+  // set function values
+  CJObjType::Values fnValues;
+
+  //fnValues.push_back(objValue);
+  fnValues.push_back(newValue);
+
+  for (auto &v : values)
+    fnValues.push_back(v);
+
+  // call function
+  js->pushThis(newObj);
+
+  CJValueP fnValue = fn->exec(js, fnValues);
+
+  js->popThis();
+
+  if (! fnValue)
+    fnValue = newObj;
+
+  return fnValue;
 }
 
 void

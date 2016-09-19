@@ -67,7 +67,8 @@ main(int argc, char **argv)
       filename = argv[i];
   }
 
-  qjs->setSize(size);
+  if (size > 0)
+    qjs->setSize(size);
 
   qjs->init();
 

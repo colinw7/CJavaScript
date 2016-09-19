@@ -58,6 +58,7 @@ class CJOperator : public CJToken {
     SemiColon,
     Question,
     Colon,
+    Delete,
     TypeOf,
     InstanceOf,
     Void,

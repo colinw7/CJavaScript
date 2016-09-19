@@ -1,6 +1,9 @@
 #ifndef CJExecData_H
 #define CJExecData_H
 
+#include <CJToken.h>
+#include <vector>
+
 class CJExecData {
  public:
   typedef std::vector<CJTokenP> Tokens;
@@ -42,15 +45,20 @@ class CJExecData {
     return value;
   }
 
-  CJTokenP token() const {
-    if (eof()) return 0;
+  CJTokenP token(int n=0) const {
+    if (pos_ + n >= len_)
+      return CJTokenP();
 
-    return tokens_[pos_];
+    return tokens_[pos_ + n];
   }
 
-  void next() {
-    ++pos_;
+  void next(int n=1) {
+    assert(pos_ + n <= len_);
+
+    pos_ += n;
   }
+
+  void print(std::iostream &os) const;
 
  private:
   int     pos_ { 0 };

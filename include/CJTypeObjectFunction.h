@@ -1,9 +1,9 @@
 #ifndef CJTypeObjectFunction_H
 #define CJTypeObjectFunction_H
 
-#include <CJFunction.h>
+#include <CJFunctionBase.h>
 
-class CJTypeObjectFunction : public CJFunction {
+class CJTypeObjectFunction : public CJFunctionBase {
  public:
   CJTypeObjectFunction(CJavaScript *js, CJObjTypeP obj, const std::string &name);
 

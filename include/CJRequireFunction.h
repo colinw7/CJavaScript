@@ -1,9 +1,9 @@
 #ifndef CJRequireFunction_H
 #define CJRequireFunction_H
 
-#include <CJFunction.h>
+#include <CJFunctionBase.h>
 
-class CJRequireFunction : public CJFunction {
+class CJRequireFunction : public CJFunctionBase {
  public:
   CJRequireFunction(CJavaScript *js);
 

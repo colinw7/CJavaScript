@@ -31,18 +31,22 @@ class CJErrorBase : public CJObj {
   const std::string &message() const { return message_; }
   void setMessage(const std::string &s) { message_ = s; }
 
-  CJExceptionType type() const { return type_; }
-  void setType(CJExceptionType type) { type_ = type; }
+  CJExceptionType exceptionType() const { return exceptionType_; }
+  void setExceptionType(CJExceptionType type) { exceptionType_ = type; }
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
   void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
+
+  bool isError() const override { return true; }
+
+  std::string toString() const override;
 
   void print(std::ostream &os) const override;
 
  protected:
   std::string     name_;
   std::string     message_;
-  CJExceptionType type_ { CJExceptionType::NONE };
+  CJExceptionType exceptionType_ { CJExceptionType::NONE };
 };
 
 //-------
@@ -71,6 +75,12 @@ class CJError : public CJErrorBase {
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
   void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
+
+  CJValueP value() const { return value_; }
+  void setValue(CJValueP value) { value_ = value; }
+
+ private:
+  CJValueP value_;
 };
 
 //------

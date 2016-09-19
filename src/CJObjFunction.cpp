@@ -1,5 +1,4 @@
 #include <CJObjFunction.h>
-#include <CJObject.h>
 #include <CJavaScript.h>
 
 CJValueP

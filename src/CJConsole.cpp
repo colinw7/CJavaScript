@@ -37,7 +37,7 @@ CJConsoleObject::
 CJConsoleObject(CJavaScript *js) :
  CJObj(js, CJConsoleType::instance(js))
 {
-  setFunctionProperty(js, CJFunctionP(new CJObjFunction(js, "log")));
+  setFunctionProperty(js, CJFunctionBaseP(new CJObjFunction(js, "log")));
 }
 
 CJValueP

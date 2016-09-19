@@ -1,11 +1,38 @@
 #include <CJExecDictionary.h>
 #include <CJDictionary.h>
+#include <CJGetterSetter.h>
 #include <CJExecExpression.h>
 
 CJExecDictionary::
 CJExecDictionary() :
  CJToken(CJToken::Type::Dictionary)
 {
+}
+
+void
+CJExecDictionary::
+addDictionaryValue(const CJValueP &key, CJExecExpressionP expr)
+{
+  values_.push_back(DictionaryValue(key, expr));
+}
+
+CJGetterSetterP
+CJExecDictionary::
+getGetterSetter(const std::string &name)
+{
+  auto p = gsMap_.find(name);
+
+  if (p != gsMap_.end())
+    return (*p).second;
+
+  return CJGetterSetterP();
+}
+
+void
+CJExecDictionary::
+setGetterSetter(const std::string &name, CJGetterSetterP gs)
+{
+  gsMap_[name] = gs;
 }
 
 CJValueP
@@ -19,6 +46,10 @@ exec(CJavaScript *js)
 
     if (v.key)
       dict->setProperty(js, v.key->toString(), value);
+  }
+
+  for (const auto &gs : gsMap_) {
+    dict->setProperty(js, gs.first, gs.second);
   }
 
   return CJValueP(dict);

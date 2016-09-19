@@ -41,6 +41,8 @@ class CJDictionary : public CJValue, public CJNameSpace {
   CJDictionaryP getParent() const { return parent_; }
   void setParent(CJDictionaryP s) { assert(s.get() != this); parent_ = s; }
 
+  bool isDictionary() const override { return true; }
+
   std::string toString() const override;
 
   bool toBoolean() const override { return ! keyValues_.empty(); }
@@ -49,21 +51,29 @@ class CJDictionary : public CJValue, public CJNameSpace {
 
   //---
 
+  CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
+  void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
+
+  //---
+
   bool hasProperty() const override { return true; }
 
-  CJValueP propertyValue(const std::string &key) const override;
-
-  void setPropertyValue(const std::string &key, CJValueP value) override;
-
   bool hasPropertyValue(const std::string &key) const override;
+  CJValueP propertyValue(const std::string &key) const override;
+  void setPropertyValue(const std::string &key, CJValueP value) override;
+  void deletePropertyValue(const std::string &key) override;
 
   bool isReadOnlyProperty(const std::string &ind) const override;
   void setReadOnlyProperty(const std::string &ind, bool b) override;
 
   CJValue::KeyNames propertyNames() const override;
 
+  //---
+
   std::vector<std::string> getFunctionNames() const;
   std::vector<std::string> getVariableNames() const;
+
+  //---
 
   void print(std::ostream &os) const override;
 

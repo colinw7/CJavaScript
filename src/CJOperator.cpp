@@ -149,6 +149,7 @@ typeName(Type type)
     case Type::SemiColon               : return ";";
     case Type::Question                : return "?";
     case Type::Colon                   : return ":";
+    case Type::Delete                  : return "delete";
     case Type::TypeOf                  : return "typeof";
     case Type::InstanceOf              : return "instanceof";
     case Type::In                      : return "in";

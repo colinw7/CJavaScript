@@ -3,7 +3,7 @@
 
 CJNumberFunction::
 CJNumberFunction(CJavaScript *js) :
- CJTypeFunction(js, "Number", CJNumberType::instance(js))
+ CJObjTypeFunction(js, "Number", CJNumberType::instance(js))
 {
 }
 
@@ -11,11 +11,17 @@ CJValueP
 CJNumberFunction::
 exec(CJavaScript *js, const Values &values)
 {
-  if (values.size() < 1)
-    return js->createNumberValue(0L);
-  else {
-    double r = values[0]->toReal();
+  CJNumber *number;
 
-    return js->createNumberValue(r);
+  if (values.size() <= 1)
+    number = new CJNumber(js, 0L);
+  else {
+    double r = values[1]->toReal();
+
+    number = new CJNumber(js, r);
   }
+
+  number->setIsBasic(false);
+
+  return CJValueP(number);
 }

@@ -35,7 +35,7 @@ CJDocumentObject::
 CJDocumentObject(CJavaScript *js) :
  CJObj(js, CJDocumentType::instance(js))
 {
-  type_->addObjectFunction(js, "write");
+  objType_->addObjectFunction(js, "write");
 }
 
 CJValueP

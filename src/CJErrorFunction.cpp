@@ -2,10 +2,10 @@
 #include <CJavaScript.h>
 #include <CJError.h>
 
-class CJErrorToStringFunction : public CJFunction {
+class CJErrorToStringFunction : public CJFunctionBase {
  public:
   CJErrorToStringFunction(CJErrorFunctionBase *base) :
-   CJFunction(base->js(), "toString"), base_(base) {
+   CJFunctionBase(base->js(), "toString"), base_(base) {
   }
 
   CJValue *dup(CJavaScript *) const override { return new CJErrorToStringFunction(base_); }
@@ -22,7 +22,7 @@ class CJErrorToStringFunction : public CJFunction {
 
 CJErrorFunctionBase::
 CJErrorFunctionBase(CJavaScript *js, const std::string &name, CJObjTypeP type) :
- CJTypeFunction(js, name, type)
+ CJObjTypeFunction(js, name, type)
 {
   prototype()->setStringProperty(js, "name", name);
   prototype()->setStringProperty(js, "message", "");

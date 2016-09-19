@@ -23,17 +23,14 @@ CJArrayType::
 CJArrayType(CJavaScript *js) :
  CJObjType(js, CJToken::Type::Array, "array")
 {
-  // TODO: move to base class
-  addObjectFunction(js, "hasOwnProperty");
-
-  //---
-
-  addTypeFunction(js, "isArray");
-  addTypeFunction(js, "observe");
-  addTypeFunction(js, "unobserve");
   addTypeFunction(js, "from");
+  addTypeFunction(js, "isArray");
+  addTypeFunction(js, "observe"); // obsolete
   addTypeFunction(js, "of");
+  addTypeFunction(js, "unobserve"); // obsolete
+  addTypeFunction(js, "toString");
 
+  addObjectFunction(js, "hasOwnProperty"); // TODO: move to base class
   addObjectFunction(js, "toString");
   addObjectFunction(js, "concat");
   addObjectFunction(js, "join");
@@ -43,6 +40,83 @@ CJArrayType(CJavaScript *js) :
   addObjectFunction(js, "shift");
   addObjectFunction(js, "sort");
   addObjectFunction(js, "unshift");
+}
+
+CJValueP
+CJArrayType::
+execType(CJavaScript *js, const std::string &name, const Values &values)
+{
+  if (values.size() < 1) {
+    js->errorMsg("Invalid number of arguments for " + name);
+    return CJValueP();
+  }
+
+  // values[0] is CJArrayFunction
+
+  //---
+
+  // type functions
+  if      (name == "from") {
+    CJValueP value1;
+
+    if (values.size() > 1)
+      value1 = values[1];
+
+    if (value1 && value1->type() != CJToken::Type::Null &&
+                  value1->type() != CJToken::Type::Undefined) {
+      CJArray *array = new CJArray(js);
+
+      if      (value1->hasIndex()) {
+        long len = value1->length();
+
+        for (long ind = 0; ind < len; ++ind)
+          array->addValue(value1->indexValue(ind));
+
+        return CJValueP(array);
+      }
+      else if (value1->hasProperty()) {
+        CJValue::KeyNames names = value1->propertyNames();
+
+        for (const auto &ind : names) {
+          array->addValue(value1->propertyValue(ind));
+        }
+      }
+
+      return CJValueP(array);
+    }
+    else {
+      js->throwTypeError(value1, "Cannot convert undefined or null to object");
+      return CJValueP();
+    }
+  }
+  else if (name == "isArray") {
+    bool b = false;
+
+    if (values.size() > 1)
+      b = (values[1]->type() == CJToken::Type::Array);
+
+    return js->createBoolValue(b);
+  }
+  else if (name == "observe") {
+  }
+  else if (name == "of") {
+    CJArray *array = new CJArray(js);
+
+    for (uint i = 1; i < values.size(); ++i)
+      array->addValue(values[i]);
+
+    return CJValueP(array);
+  }
+  else if (name == "unobserve") {
+  }
+  else if (name == "toString") {
+    return js->createStringValue("function Array() { }");
+  }
+  else {
+    js->errorMsg("Invalid array type function " + name);
+  }
+
+  return CJValueP();
 }
 
 CJValueP
@@ -57,56 +131,8 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
   CJArray *array = values[0]->cast<CJArray>();
   assert(array);
 
-  // type functions
-  if      (name == "isArray") {
-    if (values.size() > 1)
-      return js->createBoolValue(values[1]->type() == CJToken::Type::Array);
-    else
-      return CJValueP();
-  }
-  else if (name == "observe") {
-  }
-  else if (name == "unobserve") {
-  }
-  else if (name == "from") {
-    if (values.size() > 1) {
-      if      (values[1]->hasIndex()) {
-        long len = values[1]->length();
-
-        CJArray *array = new CJArray(js);
-
-        for (long ind = 0; ind < len; ++ind)
-          array->addValue(values[1]->indexValue(ind));
-
-        return CJValueP(array);
-      }
-      else if (values[1]->hasProperty() > 1) {
-        CJValue::KeyNames names = values[1]->propertyNames();
-
-        CJArray *array = new CJArray(js);
-
-        for (const auto &ind : names) {
-          array->addValue(values[1]->propertyValue(ind));
-        }
-
-        return CJValueP(array);
-      }
-      else
-        return CJValueP();
-    }
-    else
-      return CJValueP();
-  }
-  else if (name == "of") {
-    CJArray *array = new CJArray(js);
-
-    for (uint i = 1; i < values.size(); ++i)
-      array->addValue(values[i]);
-
-    return CJValueP(array);
-  }
   // object functions
-  else if (name == "toString") {
+  if      (name == "toString") {
     return js->createStringValue(array->toString());
   }
   else if (name == "concat") {
@@ -229,7 +255,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return js->createBoolValue(array->hasIndexValue(ind));
   }
   else {
-    js->errorMsg("Invalid array function " + name);
+    js->errorMsg("Invalid array object function " + name);
   }
 
   return CJValueP();
@@ -314,6 +340,16 @@ removeFrontValue()
   return value;
 }
 
+bool
+CJArray::
+hasIndexValue(int ind) const
+{
+  if (ind < 0 || ind >= int(values_.size()))
+    return false;
+
+  return !!values_[ind];
+}
+
 CJValueP
 CJArray::
 indexValue(int ind) const
@@ -340,14 +376,11 @@ setIndexValue(int ind, CJValueP value)
   values_[ind] = value;
 }
 
-bool
+void
 CJArray::
-hasIndexValue(int ind) const
+deleteIndexValue(int ind)
 {
-  if (ind < 0 || ind >= int(values_.size()))
-    return false;
-
-  return !!values_[ind];
+  setIndexValue(ind, CJValueP());
 }
 
 bool

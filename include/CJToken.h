@@ -23,10 +23,12 @@ class CJToken {
     // basic objects
     String,
     Array,
+    Boolean,
     Arguments,
     Object,
     RegExp,
     Date,
+    Function,
 
     // error objects
     Error,
@@ -44,13 +46,14 @@ class CJToken {
     Expression,
     ExpressionList,
     Dictionary,
+    TokenValue,
     AssignExpression,
     IndexExpression,
     IncrDecrExpression,
     Block,
     Const,
     ExecFunction,
-    Function,
+    FunctionBase,
     UserObject,
     This,
     For,
@@ -62,14 +65,13 @@ class CJToken {
     Var,
     With,
     New,
+    GetterSetter,
     ExecAssert,
     ExecBreak,
     ExecContinue,
-    ExecDelete,
     ExecDo,
     ExecLabel,
     ExecReturn,
-    ExecVoid,
     ExecWhile
   };
 

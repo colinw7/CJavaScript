@@ -47,13 +47,13 @@ main(int argc, char **argv)
 
   CJavaScript js;
 
-  if (! fast)
-    js.loadStartpFile();
-
   js.setParseDebug (pdebug);
   js.setInterpDebug(idebug);
   js.setExecDebug  (edebug);
   js.setExprDebug  (xdebug);
+
+  if (! fast)
+    js.loadStartpFile();
 
   if (! filename.empty()) {
     js.loadFile(filename);

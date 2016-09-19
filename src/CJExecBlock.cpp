@@ -31,8 +31,8 @@ exec(CJavaScript *js)
   CJValueP value;
 
   for (auto &etoken : etokens_) {
-    if      (etoken->type() == CJToken::Type::Function) {
-      CJFunctionP fn = std::static_pointer_cast<CJFunction>(etoken);
+    if      (etoken->type() == CJToken::Type::FunctionBase) {
+      CJFunctionBaseP fn = std::static_pointer_cast<CJFunctionBase>(etoken);
 
       scope->setProperty(js, fn->name(), std::static_pointer_cast<CJValue>(fn));
     }
@@ -44,7 +44,10 @@ exec(CJavaScript *js)
     else
       value = etoken->exec(js);
 
-    if (isBreakFlag() || isContinueFlag() || isReturnFlag())
+    CJExecBlockP cblock = js->getCurrentBlock();
+
+    if (cblock &&
+        (cblock->isBreakFlag() || cblock->isContinueFlag() || cblock->isReturnFlag()))
       break;
 
     if (hasError())

@@ -61,26 +61,24 @@ exec(CJavaScript *js)
   else {
     CJValueP value;
 
-    if (isThis_) {
+    if      (isThis_) {
       CJDictionaryP scope = js->thisScope();
 
       if (! identifiers_.empty()) {
-        CJPropertyData data;
+        CJPropertyData data(js);
 
-        if (! js->lookupPropertyData(scope, identifiers_, data))
-          data.value = js->createUndefinedValue();
-
-        return data.value;
+        if (js->lookupScopePropertyData(scope, identifiers_, data))
+          value = data.value();
       }
       else
         return scope;
     }
     else if (! identifiers_.empty()) {
       value = js->lookupValue(identifiers_);
-
-      if (! value)
-        value = js->createUndefinedValue();
     }
+
+    //if (! value)
+    //  value = js->createUndefinedValue();
 
     return value;
   }

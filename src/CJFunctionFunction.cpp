@@ -1,11 +1,11 @@
 #include <CJFunctionFunction.h>
-#include <CJUserFunction.h>
+#include <CJFunction.h>
 #include <CJavaScript.h>
 #include <CStrParse.h>
 
 CJFunctionFunction::
 CJFunctionFunction(CJavaScript *js) :
- CJTypeFunction(js, "Function", CJFunctionType::instance(js, "Function"))
+ CJObjTypeFunction(js, "Function", CJFunctionType::instance(js))
 {
 }
 
@@ -22,7 +22,7 @@ exec(CJavaScript *js, const Values &values)
   // values[0] is CJUserObjectP
 
   // args are values[1]->values[values.size() - 2]
-  CJUserFunction::Args args;
+  CJFunction::Args args;
 
   if (values.size() > 2) {
     for (uint i = 1; i < values.size() - 1; ++i) {
@@ -41,7 +41,7 @@ exec(CJavaScript *js, const Values &values)
   }
 
   // create function this global scope and return
-  CJUserFunctionP userFn(new CJUserFunction(js, name, args));
+  CJFunctionP userFn(new CJFunction(js, name, args));
 
   userFn->setScope(js, js->currentUserFunction());
 

@@ -3,10 +3,10 @@
 #include <CJUtil.h>
 
 // function calling API with signature: double result = fn(double r);
-class CJSystemExecFunction : public CJFunction {
+class CJSystemExecFunction : public CJFunctionBase {
  public:
   CJSystemExecFunction(CJavaScript *js) :
-   CJFunction(js, "exec", CJFunction::Type::User) {
+   CJFunctionBase(js, "exec", CJFunctionBase::Type::System) {
   }
 
   CJValue *dup(CJavaScript *js) const override { return new CJSystemExecFunction(js); }
@@ -24,7 +24,7 @@ CJSystem::
 CJSystem(CJavaScript *js) :
  CJDictionary(js)
 {
-  setProperty(js, "exec", CJFunctionP(new CJSystemExecFunction(js)));
+  setFunctionProperty(js, CJFunctionBaseP(new CJSystemExecFunction(js)));
 }
 
 //---

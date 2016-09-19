@@ -3,7 +3,7 @@
 
 CJRequireFunction::
 CJRequireFunction(CJavaScript *js) :
- CJFunction(js, "require")
+ CJFunctionBase(js, "require")
 {
 }
 
@@ -11,10 +11,10 @@ CJValueP
 CJRequireFunction::
 exec(CJavaScript *js, const Values &values)
 {
-  if (values.size() < 1)
+  if (values.size() <= 1)
     return CJValueP();
 
-  std::string filename = values[0]->toString();
+  std::string filename = values[1]->toString();
 
   bool rc = js->loadSubFile(filename);
 

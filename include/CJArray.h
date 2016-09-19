@@ -12,6 +12,8 @@ class CJArrayType : public CJObjType {
 
   CJArrayType(CJavaScript *js);
 
+  CJValueP execType(CJavaScript *js, const std::string &name, const Values &values) override;
+
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
@@ -59,9 +61,10 @@ class CJArray : public CJObj {
   CJValueP removeFrontValue();
 
   bool hasIndex() const override { return true; }
+  bool hasIndexValue(int ind) const override;
   CJValueP indexValue(int ind) const override;
   void setIndexValue(int ind, CJValueP value) override;
-  bool hasIndexValue(int ind) const override;
+  void deleteIndexValue(int ind) override;
 
   bool isReadOnlyIndex(int ind) const override;
   void setReadOnlyIndex(int ind, bool b) override;

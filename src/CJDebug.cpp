@@ -1,6 +1,6 @@
 #include <CJDebug.h>
 #include <CJObjFunction.h>
-#include <CJUserFunction.h>
+#include <CJFunction.h>
 #include <CJTypes.h>
 #include <CJavaScript.h>
 
@@ -38,10 +38,10 @@ CJDebugObject::
 CJDebugObject(CJavaScript *js) :
  CJObj(js, CJDebugType::instance(js))
 {
-  setFunctionProperty(js, CJFunctionP(new CJObjFunction(js, "print")));
-  setFunctionProperty(js, CJFunctionP(new CJObjFunction(js, "printScopeStack")));
-  setFunctionProperty(js, CJFunctionP(new CJObjFunction(js, "printScopeChain")));
-  setFunctionProperty(js, CJFunctionP(new CJObjFunction(js, "printUserFunctions")));
+  setFunctionProperty(js, CJFunctionBaseP(new CJObjFunction(js, "print")));
+  setFunctionProperty(js, CJFunctionBaseP(new CJObjFunction(js, "printScopeStack")));
+  setFunctionProperty(js, CJFunctionBaseP(new CJObjFunction(js, "printScopeChain")));
+  setFunctionProperty(js, CJFunctionBaseP(new CJObjFunction(js, "printUserFunctions")));
 }
 
 CJValueP
@@ -64,7 +64,7 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
     js->printScopeStack();
   }
   else if (name == "printScopeChain") {
-    CJUserFunctionP fn = js->currentFunction();
+    CJFunctionP fn = js->currentFunction();
 
     if (fn)
       js->printScopeChain(fn->scope());

@@ -79,6 +79,12 @@ setIndexValue(int ind, CJValueP value)
   values_[ind] = value;
 }
 
+void
+CJArguments::
+deleteIndexValue(int /*ind*/)
+{
+}
+
 bool
 CJArguments::
 hasIndexValue(int ind) const

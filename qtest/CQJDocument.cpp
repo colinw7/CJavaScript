@@ -31,14 +31,25 @@ CQJDocument(CQJavaScript *qjs) :
 {
   CJavaScript *js = qjs->js();
 
-  type_->addObjectFunction(js, "getElementById");
+  objType_->addObjectFunction(js, "getElementById");
+  objType_->addObjectFunction(js, "querySelector");
 }
 
 CJValueP
 CQJDocument::
 execNameFn(CJavaScript *js, const std::string &name, const Values &values)
 {
-  if (name == "getElementById") {
+  if      (name == "getElementById") {
+    if (values.size() == 2) {
+      std::string id = values[1]->toString();
+
+      if (id == "canvas")
+        return qjs_->jsCanvas();
+    }
+
+    return CJValueP();
+  }
+  else if (name == "querySelector") {
     if (values.size() == 2) {
       std::string id = values[1]->toString();
 

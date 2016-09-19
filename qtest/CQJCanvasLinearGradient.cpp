@@ -28,7 +28,7 @@ CQJCanvasLinearGradient(CQJavaScript *qjs, double x1, double y1, double x2, doub
 {
   CJavaScript *js = qjs->js();
 
-  type_->addObjectFunction(js, "addColorStop");
+  objType_->addObjectFunction(js, "addColorStop");
 
   lg_ = QLinearGradient(x1, y1, x2, y2);
 }

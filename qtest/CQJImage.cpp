@@ -70,7 +70,7 @@ setProperty(CJavaScript *js, const std::string &name, CJValueP value)
   }
   else if (name == "onload") {
     if (value->type() == CJToken::Type::Function) {
-      CJFunctionP fn = std::static_pointer_cast<CJFunction>(value);
+      CJFunctionBaseP fn = std::static_pointer_cast<CJFunctionBase>(value);
 
       CJObjType::Values values;
 

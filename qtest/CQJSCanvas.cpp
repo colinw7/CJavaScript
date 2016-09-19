@@ -101,7 +101,13 @@ void
 CQJSCanvas::
 clearRect(double x, double y, double w, double h)
 {
-  ip_->eraseRect(QRectF(x, y, w, h));
+  ip_->setCompositionMode(QPainter::CompositionMode_SourceOver);
+
+  ip_->fillRect(QRectF(x, y, w, h), QColor(0,0,0,255));
+
+  //ip_->eraseRect(QRectF(x, y, w, h));
+
+  ip_->setCompositionMode(QPainter::CompositionMode_Plus);
 }
 
 void
@@ -385,6 +391,8 @@ resizeEvent(QResizeEvent *)
   qimage_.fill(0);
 
   ip_ = new QPainter(&qimage_);
+
+  ip_->setCompositionMode(QPainter::CompositionMode_Plus);
 
   ip_->setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 

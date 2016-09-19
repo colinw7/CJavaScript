@@ -7,6 +7,9 @@
 // <identifiers> <assign_op> <expression>
 class CJExecAssignExpression : public CJExecExpression {
  public:
+  typedef std::vector<CJValueP> Values;
+
+ public:
   CJExecAssignExpression();
 
   void setLExpression(CJExecExpressionP lexpr) {
@@ -26,8 +29,8 @@ class CJExecAssignExpression : public CJExecExpression {
   void print(std::ostream &os) const override;
 
  private:
-  CJValueP getIndexValue(CJValueP varValue, const std::vector<CJValueP> &ivalues);
-  bool     setIndexValue(CJValueP varValue, const std::vector<CJValueP> &ivalues, CJValueP value);
+  CJValueP getIndexValue(CJavaScript *js, CJValueP varValue, const Values &ivalues);
+  bool     setIndexValue(CJavaScript *js, CJValueP varValue, const Values &ivalues, CJValueP value);
 
  private:
   CJExecExpressionP lexpr_;

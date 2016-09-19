@@ -13,21 +13,28 @@ CJValueP
 CJExecThrow::
 exec(CJavaScript *js)
 {
+  // evaluate expression
   CJValueP value;
 
   if (expr_)
     value = expr_->exec(js);
 
-  std::string msg;
+  // create error object (if not one already)
+  CJErrorBaseP perror;
 
-  if (value)
-    msg = value->toString();
+  if (value && value->isError()) {
+    perror = std::static_pointer_cast<CJErrorBase>(value);
+  }
+  else {
+    CJError *error = new CJError(js);
 
-  CJError *error = new CJError(js);
+    error->setValue(value);
 
-  error->setMessage(msg);
+    perror = CJErrorBaseP(error);
+  }
 
-  js->throwError(this, CJErrorBaseP(error));
+  // throw error
+  js->throwError(this, perror);
 
   return CJValueP();
 }

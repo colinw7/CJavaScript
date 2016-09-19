@@ -1,10 +1,10 @@
 #ifndef CJStringFunction_H
 #define CJStringFunction_H
 
-#include <CJTypeFunction.h>
+#include <CJObjTypeFunction.h>
 
 // string function
-class CJStringFunction : public CJTypeFunction {
+class CJStringFunction : public CJObjTypeFunction {
  public:
   CJStringFunction(CJavaScript *js);
 

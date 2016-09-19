@@ -11,6 +11,8 @@ class CJStringType : public CJObjType {
 
   CJStringType(CJavaScript *js);
 
+  CJValueP execType(CJavaScript *js, const std::string &name, const Values &values) override;
+
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
@@ -31,21 +33,25 @@ class CJString : public CJObj {
 
   CJString *dup(CJavaScript *js) const override { return new CJString(js, text_, c_); }
 
+  bool isBasic() const { return isBasic_; }
+  void setIsBasic(bool b) { isBasic_ = b; }
+
   bool isProtoValue() const override { return true; }
 
   const std::string &text() const { return text_; }
   void setText(const std::string &str) { text_ = str; }
 
-  std::string toString() const override { return text_; }
+  std::string toString() const override;
 
   double toReal   () const override;
   long   toInteger() const override;
   bool   toBoolean() const override;
 
   bool hasIndex() const override { return true; }
+  bool hasIndexValue(int ind) const override;
   CJValueP indexValue(int ind) const override;
   void setIndexValue(int ind, CJValueP value) override;
-  bool hasIndexValue(int ind) const override;
+  void deleteIndexValue(int ind) override;
 
   long length() const override { return text_.size(); }
 
@@ -57,6 +63,7 @@ class CJString : public CJObj {
  private:
   std::string text_;
   char        c_ { '\"' };
+  bool        isBasic_ { true };
 };
 
 #endif

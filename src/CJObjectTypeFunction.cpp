@@ -1,15 +1,15 @@
 #include <CJObjectTypeFunction.h>
 #include <CJavaScript.h>
-#include <CJObject.h>
 #include <CJString.h>
 #include <CJArray.h>
 
 CJObjectTypeFunction::
 CJObjectTypeFunction(CJavaScript *js, const std::string &name, CJObjTypeP type) :
- CJFunction(js, name, CJFunction::Type::Object), type_(type)
+ CJFunctionBase(js, name, CJFunctionBase::Type::Object), type_(type)
 {
 }
 
+// call type function for object
 CJValueP
 CJObjectTypeFunction::
 exec(CJavaScript *js, const Values &values)
@@ -32,7 +32,7 @@ exec(CJavaScript *js, const Values &values)
     if (! obj)
       return value;
 
-    CJObjTypeP objType = obj->type();
+    CJObjTypeP objType = obj->objType();
 
     value = objType->exec(js, name(), values);
   }

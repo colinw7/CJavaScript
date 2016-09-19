@@ -100,23 +100,23 @@ exec(CJavaScript *js)
   CJLValueP lvalue = js->lookupLValue(identifiers);
 
   if (llvalue) {
-    CJPropertyData data;
+    CJPropertyData data(js);
 
-    data.modifiable = true;
+    data.setModifiable(true);
 
-    if (! js->lookupPropertyData(llvalue, identifiers, data)) {
+    if (! js->lookupValuePropertyData(llvalue, identifiers, data)) {
       js->errorMsg(this, "No property " + eidentifiers->toString() + " for value " +
                    llvalue->toString());
       return value;
     }
 
-    if (! data.lvalue) {
+    lvalue = data.lvalue();
+
+    if (! lvalue) {
       js->errorMsg(this, "Property " + eidentifiers->toString() + " for value " +
                    llvalue->toString() + " is not an lvalue");
       return value;
     }
-
-    lvalue = data.lvalue;
   }
   else {
     lvalue = js->lookupLValue(identifiers);
@@ -164,7 +164,7 @@ exec(CJavaScript *js)
   // get current value for +=, -=, ...
   if (opType != CJOperator::Type::Assign) {
     if (! ivalues.empty()) {
-      rvarValue = getIndexValue(varValue, ivalues);
+      rvarValue = getIndexValue(js, varValue, ivalues);
 
       if (! rvarValue) {
         js->errorMsg(this, "Variable is not an array or dictionary");
@@ -222,7 +222,7 @@ exec(CJavaScript *js)
   }
 
   if (! indices.empty()) {
-    if (! setIndexValue(varValue, ivalues, rvalue)) {
+    if (! setIndexValue(js, varValue, ivalues, rvalue)) {
       js->errorMsg(this, "Variable is not an array or dictionary");
       return CJValueP();
     }
@@ -237,7 +237,7 @@ exec(CJavaScript *js)
 
 CJValueP
 CJExecAssignExpression::
-getIndexValue(CJValueP varValue, const std::vector<CJValueP> &ivalues)
+getIndexValue(CJavaScript *js, CJValueP varValue, const Values &ivalues)
 {
   CJValueP varValue1 = varValue;
 
@@ -246,17 +246,7 @@ getIndexValue(CJValueP varValue, const std::vector<CJValueP> &ivalues)
 
     CJValueP varValue2;
 
-    if      (varValue1->hasIndex()) {
-      long ind = ivalue->toInteger();
-
-      varValue2 = varValue1->indexValue(ind);
-    }
-    else if (varValue1->hasProperty()) {
-      std::string ind = ivalue->toString();
-
-      varValue2 = varValue1->propertyValue(ind);
-    }
-    else {
+    if (! js->indexValue(varValue1, ivalue, varValue2)) {
       return CJValueP();
     }
 
@@ -271,35 +261,26 @@ getIndexValue(CJValueP varValue, const std::vector<CJValueP> &ivalues)
 
 bool
 CJExecAssignExpression::
-setIndexValue(CJValueP varValue, const std::vector<CJValueP> &ivalues, CJValueP rvalue)
+setIndexValue(CJavaScript *js, CJValueP varValue, const Values &ivalues, CJValueP rvalue)
 {
   CJValueP varValue1 = varValue;
 
   for (uint i = 0; i < ivalues.size(); ++i) {
     CJValueP ivalue = ivalues[i];
 
-    if      (varValue1->hasIndex()) {
-      long ind = ivalue->toInteger();
-
-      // last index
-      if (i == ivalues.size() - 1)
-        varValue1->setIndexValue(ind, rvalue);
-      // non last index
-      else
-        varValue1 = varValue1->indexValue(ind);
+    // last index
+    if (i == ivalues.size() - 1) {
+      if (! js->setIndexValue(varValue1, ivalue, rvalue))
+        return false;
     }
-    else if (varValue1->hasProperty()) {
-      std::string ind = ivalue->toString();
-
-      // last index
-      if (i == ivalues.size() - 1)
-        varValue1->setPropertyValue(ind, rvalue);
-      // non last index
-      else
-        varValue1 = varValue1->propertyValue(ind);
-    }
+    // non last index
     else {
-      return false;
+      CJValueP rvalue1;
+
+      if (! js->indexValue(varValue1, ivalue, rvalue1))
+        return false;
+
+      varValue1 = rvalue1;
     }
   }
 
@@ -311,6 +292,6 @@ CJExecAssignExpression::
 print(std::ostream &os) const
 {
   if (lexpr_ && op_ && rexpr_) {
-    os << *lexpr_ << " " << *op_ << " " << *rexpr_ << ";";
+    os << *lexpr_ << " " << *op_ << " " << *rexpr_;
   }
 }

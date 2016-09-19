@@ -1,10 +1,10 @@
 #ifndef CJTypeFunction_H
 #define CJTypeFunction_H
 
-#include <CJFunction.h>
+#include <CJFunctionBase.h>
 
 // function called on type name
-class CJTypeFunction : public CJFunction {
+class CJTypeFunction : public CJFunctionBase {
  public:
   CJTypeFunction(CJavaScript *js, const std::string &name, CJObjTypeP type=CJObjTypeP());
 
@@ -21,7 +21,7 @@ class CJTypeFunction : public CJFunction {
   CJValueP exec(CJavaScript *js, const Values &values) override;
 
   void print(std::ostream &os) const override {
-    os << "[Function " + name_ + "]";
+    os << "[Function: " + name_ + "]";
   }
 
  private:

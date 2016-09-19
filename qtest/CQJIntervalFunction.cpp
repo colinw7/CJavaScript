@@ -4,7 +4,7 @@
 
 CQJSetInterval::
 CQJSetInterval(CQJavaScript *qjs) :
- CJFunction(qjs->js(), "setInterval"), qjs_(qjs)
+ CJFunctionBase(qjs->js(), "setInterval"), qjs_(qjs)
 {
 }
 
@@ -22,7 +22,7 @@ exec(CJavaScript *js, const Values &values)
   double   t       = values[1]->toReal();
 
   if (fnValue->type() == CJToken::Type::Function) {
-    CJFunctionP timerFn = std::static_pointer_cast<CJFunction>(fnValue);
+    CJFunctionBaseP timerFn = std::static_pointer_cast<CJFunctionBase>(fnValue);
 
     CQJWindowP window = std::static_pointer_cast<CQJWindow>(qjs_->jsWindow());
 
@@ -43,7 +43,7 @@ exec(CJavaScript *js, const Values &values)
 
 CQJClearInterval::
 CQJClearInterval(CQJavaScript *qjs) :
- CJFunction(qjs->js(), "clearInterval"), qjs_(qjs)
+ CJFunctionBase(qjs->js(), "clearInterval"), qjs_(qjs)
 {
 }
 

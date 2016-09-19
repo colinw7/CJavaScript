@@ -18,8 +18,8 @@ exec(CJavaScript *js)
 
   Values values;
 
-  CJFunctionP fn;
-  CJObjP      obj;
+  CJFunctionBaseP fn;
+  CJObjP          obj;
 
   if (expr_ || evalue_) {
     CJValueP evalue;
@@ -30,7 +30,7 @@ exec(CJavaScript *js)
       evalue = evalue_;
 
     if (! evalue) {
-      js->errorMsg(this, "Missing function name");
+      js->throwSyntaxError(this, "Missing function name");
       return CJValueP();
     }
 
@@ -39,21 +39,28 @@ exec(CJavaScript *js)
 
       if (identifiers.size() != 1) {
         std::stringstream ss; ss << *identifiers_;
-        js->errorMsg(identifiers_, "Invalid type function identifiers : " + ss.str());
+        js->throwSyntaxError(this, "Invalid type function identifiers : " + ss.str());
         return CJValueP();
       }
 
+      CJValueP evalue1;
+
+      if (! evalue->isObject())
+        evalue1 = js->valueToObj(evalue);
+      else
+        evalue1 = evalue;
+
       CJValueP fnValue;
 
-      CJPropertyData data;
+      CJPropertyData data(js);
 
-      if (js->lookupPropertyData(evalue, identifiers, data, 0)) {
-        fnValue = data.value;
+      if (js->lookupValuePropertyData(evalue1, identifiers, data, 0)) {
+        fnValue = data.value();
       }
 
       if (! fnValue) {
         std::stringstream ss; ss << *identifiers_;
-        js->errorMsg(identifiers_, "Function not found : " + ss.str());
+        js->throwSyntaxError(this, "Function not found : " + ss.str());
         return CJValueP();
       }
 
@@ -61,18 +68,18 @@ exec(CJavaScript *js)
 
       if (! fn) {
         std::stringstream ss; ss << *identifiers_;
-        js->errorMsg(fnValue, "Function not found : " + ss.str());
+        js->throwSyntaxError(this, "Function not found : " + ss.str());
         return CJValueP();
       }
 
       if (fn->hasObjectValue())
-        values.push_back(evalue);
+        values.push_back(evalue1);
     }
     else {
       fn = js->valueToFunction(evalue);
 
       if (! fn) {
-        js->errorMsg(this, "Missing function name");
+        js->throwSyntaxError(this, "Missing function name");
         return CJValueP();
       }
 
@@ -82,7 +89,7 @@ exec(CJavaScript *js)
   }
   else {
     if (! identifiers_) {
-      js->errorMsg(this, "Missing function name");
+      js->throwSyntaxError(this, "Missing function name");
       return CJValueP();
     }
 
@@ -97,7 +104,7 @@ exec(CJavaScript *js)
 
     if (! fnValue) {
       std::stringstream ss; ss << *identifiers_;
-      js->errorMsg(identifiers_, "Function not found : " + ss.str());
+      js->throwReferenceError(this, ss.str() + " is not defined");
       return CJValueP();
     }
 
@@ -105,7 +112,7 @@ exec(CJavaScript *js)
 
     if (! fn) {
       std::stringstream ss; ss << *fnValue;
-      js->errorMsg(fnValue, "Invalid function value : " + ss.str());
+      js->throwSyntaxError(this, "Invalid function value : " + ss.str());
       return CJValueP();
     }
 
@@ -120,12 +127,18 @@ exec(CJavaScript *js)
   if (exprList_)
     values1 = exprList_->getValues(js);
 
-  for (auto &v1 : values1)
+  for (auto &v1 : values1) {
+    if (! v1) {
+      js->throwReferenceError(this, "variable not defined");
+      return CJValueP();
+    }
+
     values.push_back(v1);
+  }
 
   if (! fn) {
     std::stringstream ss; ss << *identifiers_;
-    js->errorMsg(this, "Function not found : " + ss.str());
+    js->throwSyntaxError(this, "Function not found : " + ss.str());
     return CJValueP();
   }
 
@@ -134,12 +147,12 @@ exec(CJavaScript *js)
   if (obj) {
     js->pushThis(obj);
 
-    res = fn->cast<CJFunction>()->exec(js, values);
+    res = fn->cast<CJFunctionBase>()->exec(js, values);
 
     js->popThis();
   }
   else
-    res = fn->cast<CJFunction>()->exec(js, values);
+    res = fn->cast<CJFunctionBase>()->exec(js, values);
 
   //--
 
@@ -148,6 +161,8 @@ exec(CJavaScript *js)
 
     res = fn->exec(js);
   }
+
+  //--
 
   return res;
 }

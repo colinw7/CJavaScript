@@ -1,11 +1,11 @@
 #ifndef CQJIntervalFunction_H
 #define CQJIntervalFunction_H
 
-#include <CJFunction.h>
+#include <CJFunctionBase.h>
 
 class CQJavaScript;
 
-class CQJSetInterval : public CJFunction {
+class CQJSetInterval : public CJFunctionBase {
  public:
   CQJSetInterval(CQJavaScript *js);
 
@@ -17,7 +17,7 @@ class CQJSetInterval : public CJFunction {
   CQJavaScript *qjs_ { 0 };
 };
 
-class CQJClearInterval : public CJFunction {
+class CQJClearInterval : public CJFunctionBase {
  public:
   CQJClearInterval(CQJavaScript *js);
 

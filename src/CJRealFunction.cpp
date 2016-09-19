@@ -3,22 +3,29 @@
 #include <CJUtil.h>
 
 CJValueP
-CJRealFunction::
+CJMathFunction::
 exec(CJavaScript *js, const Values &values)
 {
-  if (values.size() != 1) {
-    js->errorMsg("Wrong number of function values");
-    return CJValueP();
+  if      (fn_) {
+    if (values.size() != 1) {
+      js->errorMsg("Wrong number of function values");
+      return CJValueP();
+    }
+
+    if (! values[0])
+      return CJValueP();
+
+    double r = values[0]->toReal();
+
+    double res = (*fn_)(r);
+
+    return js->createNumberValue(res);
   }
-
-  if (! values[0])
+  else if (name_ == "toString") {
+    return js->createStringValue("[object Math]");
+  }
+  else
     return CJValueP();
-
-  double r = values[0]->toReal();
-
-  double res = (*fn_)(r);
-
-  return js->createNumberValue(res);
 }
 
 //------

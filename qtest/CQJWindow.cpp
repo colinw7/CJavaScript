@@ -1,6 +1,8 @@
 #include <CQJWindow.h>
 #include <CQJWindowTimer.h>
+#include <CQJSCanvas.h>
 #include <CQJavaScript.h>
+#include <CQJRequestAnimationFrame.h>
 #include <iostream>
 
 CJObjTypeP CQJWindowType::type_;
@@ -32,12 +34,17 @@ CQJWindow(CQJavaScript *qjs) :
 {
   CJavaScript *js = qjs->js();
 
-  type_->addObjectFunction(js, "setTimeout");
+  objType_->addObjectFunction(js, "setTimeout");
+
+  addPseudoProperty("innerWidth");
+  addPseudoProperty("innerHeight");
+
+  setProperty(js, "requestAnimationFrame", CJValueP(new CQJRequestAnimationFrame(qjs)));
 }
 
 long
 CQJWindow::
-addTimer(CJFunctionP timerFn, double t)
+addTimer(CJFunctionBaseP timerFn, double t)
 {
   CQJWindowP window = std::static_pointer_cast<CQJWindow>(shared_from_this());
 
@@ -66,7 +73,7 @@ removeTimer(long id)
 
 void
 CQJWindow::
-addOneShotTimer(CJFunctionP timerFn, double t)
+addOneShotTimer(CJFunctionBaseP timerFn, double t)
 {
   CQJWindowP window = std::static_pointer_cast<CQJWindow>(shared_from_this());
 
@@ -81,6 +88,27 @@ addOneShotTimer(CJFunctionP timerFn, double t)
 
 CJValueP
 CQJWindow::
+getProperty(CJavaScript *js, const std::string &name) const
+{
+  if       (name == "innerWidth") {
+    return qjs_->js()->createNumberValue(long(qjs_->canvas()->width()));
+  }
+  else if  (name == "innerHeight") {
+    return qjs_->js()->createNumberValue(long(qjs_->canvas()->height()));
+  }
+  else
+    return CJObj::getProperty(js, name);
+}
+
+void
+CQJWindow::
+setProperty(CJavaScript *js, const std::string &name, CJValueP value)
+{
+  CJObj::setProperty(js, name, value);
+}
+
+CJValueP
+CQJWindow::
 execNameFn(CJavaScript *js, const std::string &name, const Values &values)
 {
   if (name == "setTimeout") {
@@ -89,7 +117,7 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
       double   t       = values[2]->toReal();
 
       if (fnValue->type() == CJToken::Type::Function) {
-        CJFunctionP timerFn = std::static_pointer_cast<CJFunction>(fnValue);
+        CJFunctionBaseP timerFn = std::static_pointer_cast<CJFunctionBase>(fnValue);
 
         if (! timer_) {
           CQJWindowP window = std::static_pointer_cast<CQJWindow>(shared_from_this());

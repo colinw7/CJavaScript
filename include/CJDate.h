@@ -10,6 +10,8 @@ class CJDateType : public CJObjType {
 
   CJDateType(CJavaScript *js);
 
+  CJValueP execType(CJavaScript *js, const std::string &name, const Values &values) override;
+
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
@@ -21,7 +23,7 @@ class CJDateType : public CJObjType {
 // Date Value
 class CJDate : public CJObj {
  public:
-  CJDate(CJavaScript *js, time_t t);
+  CJDate(CJavaScript *js, time_t t=0);
   CJDate(CJavaScript *js, const Values &values);
 
   CJDate *dup(CJavaScript *js) const override { return new CJDate(js, t_); }

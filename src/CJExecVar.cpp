@@ -18,10 +18,13 @@ exec(CJavaScript *js)
   for (const auto &varValue : varValues_) {
     auto identifiers1 = varValue.identifiers->identifiers();
 
-    CJLValueP idValue = js->lookupProperty(identifiers1);
+    CJPropertyData data(js);
 
-    if (! idValue)
-      idValue = js->lookupProperty(identifiers1, /*create*/true);
+    data.setModifiable(true);
+    data.setCreate    (true); // always create in local scope
+
+    if (! js->lookupPropertyData(identifiers1, data))
+      return CJLValueP();
 
     CJValueP value;
 
@@ -36,11 +39,16 @@ exec(CJavaScript *js)
     else if (varValue.value)
       value = varValue.value;
 
-    if (idValue) {
-      if (! value)
-        value = js->createUndefinedValue();
+    if (! value)
+      value = js->createUndefinedValue();
 
-      idValue->setValue(value);
+    CJLValueP lvalue = data.lvalue();
+
+    if (lvalue) {
+      lvalue->setValue(value);
+
+      if (data.scope())
+        data.scope()->setCanDeleteProperty(data.name(), false);
     }
   }
 

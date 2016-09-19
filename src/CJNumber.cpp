@@ -26,7 +26,9 @@ CJNumberType(CJavaScript *js) :
   addTypeFunction(js, "isNaN");
   addTypeFunction(js, "parseInt");
   addTypeFunction(js, "parseFloat");
+  addTypeFunction(js, "toString");
 
+  addObjectFunction(js, "toString");
   addObjectFunction(js, "toFixed");
 
   addPseudoProperty("MAX_VALUE");
@@ -53,15 +55,14 @@ getProperty(CJavaScript *js, const std::string &key) const
 
 CJValueP
 CJNumberType::
-exec(CJavaScript *js, const std::string &name, const Values &values)
+execType(CJavaScript *js, const std::string &name, const Values &values)
 {
   if (values.size() < 1) {
     js->errorMsg("Invalid number of arguments for " + name);
     return CJValueP();
   }
 
-  CJNumber *num = values[0]->cast<CJNumber>();
-  assert(num);
+  // values[0] is CJNumberFunction
 
   //---
 
@@ -93,7 +94,31 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     else
       return CJValueP();
   }
+  else if (name == "toString") {
+    return js->createStringValue("function Number() { }");
+  }
+  else
+    return CJValueP();
+}
+
+CJValueP
+CJNumberType::
+exec(CJavaScript *js, const std::string &name, const Values &values)
+{
+  if (values.size() < 1) {
+    js->errorMsg("Invalid number of arguments for " + name);
+    return CJValueP();
+  }
+
+  CJNumber *num = values[0]->cast<CJNumber>();
+  assert(num);
+
+  //---
+
   // object functions
+  if      (name == "toString") {
+    return js->createStringValue(num->toString());
+  }
   else if (name == "toFixed") {
     double r = num->toReal();
     long   n = 0;
@@ -123,5 +148,8 @@ std::string
 CJNumber::
 toString() const
 {
-  return CJUtil::realToString(real_);
+  if (! isBasic())
+    return "[Number: " + CJUtil::realToString(real_) + "]";
+  else
+    return CJUtil::realToString(real_);
 }

@@ -21,7 +21,9 @@ CJArguments.cpp \
 CJArray.cpp \
 CJArrayFunction.cpp \
 CJavaScript.cpp \
+CJBoolean.cpp \
 CJBooleanFunction.cpp \
+CJCallFunction.cpp \
 CJConsole.cpp \
 CJDate.cpp \
 CJDateFunction.cpp \
@@ -38,7 +40,7 @@ CJExecBlock.cpp \
 CJExecBreak.cpp \
 CJExecConst.cpp \
 CJExecContinue.cpp \
-CJExecDelete.cpp \
+CJExecData.cpp \
 CJExecDictionary.cpp \
 CJExecDo.cpp \
 CJExecExpression.cpp \
@@ -58,12 +60,13 @@ CJExecThis.cpp \
 CJExecThrow.cpp \
 CJExecTry.cpp \
 CJExecVar.cpp \
-CJExecVoid.cpp \
 CJExecWhile.cpp \
 CJExecWith.cpp \
 CJFalse.cpp \
+CJFunctionBase.cpp \
 CJFunction.cpp \
 CJFunctionFunction.cpp \
+CJGetterSetter.cpp \
 CJGlobalFunction.cpp \
 CJIdentifier.cpp \
 CJIntervalFunction.cpp \
@@ -82,7 +85,9 @@ CJObjectFunction.cpp \
 CJObjectTypeFunction.cpp \
 CJObjectValue.cpp \
 CJObjFunction.cpp \
+CJObjTypeFunction.cpp \
 CJOperator.cpp \
+CJPropertyData.cpp \
 CJRandFunction.cpp \
 CJRealFunction.cpp \
 CJRegExp.cpp \
@@ -92,12 +97,12 @@ CJString.cpp \
 CJStringFunction.cpp \
 CJSystem.cpp \
 CJToken.cpp \
+CJTokenValue.cpp \
 CJTrue.cpp \
 CJTypeFunction.cpp \
 CJTypeObjectFunction.cpp \
 CJTypeValue.cpp \
 CJUndefined.cpp \
-CJUserFunction.cpp \
 CJUserObject.cpp \
 CJValue.cpp \
 

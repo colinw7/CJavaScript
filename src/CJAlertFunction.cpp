@@ -2,7 +2,7 @@
 
 CJAlertFunction::
 CJAlertFunction(CJavaScript *js) :
- CJFunction(js, "alert")
+ CJFunctionBase(js, "alert")
 {
 }
 

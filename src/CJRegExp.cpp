@@ -23,11 +23,37 @@ CJRegExpType::
 CJRegExpType(CJavaScript *js) :
  CJObjType(js, CJToken::Type::RegExp, "regexp")
 {
+  addTypeFunction(js, "toString");
+
   addObjectFunction(js, "compile");
   addObjectFunction(js, "exec");
   addObjectFunction(js, "test");
   addObjectFunction(js, "toSource");
   addObjectFunction(js, "toString");
+}
+
+CJValueP
+CJRegExpType::
+execType(CJavaScript *js, const std::string &name, const Values &values)
+{
+  if (values.size() < 1) {
+    js->errorMsg("Invalid number of arguments for " + name);
+    return CJValueP();
+  }
+
+  // values[0] is CJRegExpFunction
+
+  //---
+
+  // type functions
+  if (name == "toString") {
+    return js->createStringValue("function RegExp() { }");
+  }
+  else {
+    js->errorMsg("Invalid regexp type function " + name);
+  }
+
+  return CJValueP();
 }
 
 CJValueP

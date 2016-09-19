@@ -29,7 +29,7 @@ CQJCanvasRadialGradient(CQJavaScript *qjs, double x1, double y1, double r1,
 {
   CJavaScript *js = qjs->js();
 
-  type_->addObjectFunction(js, "addColorStop");
+  objType_->addObjectFunction(js, "addColorStop");
 
   rg_ = QRadialGradient(x2, y2, r2, x1, y1, r1);
 }

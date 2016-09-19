@@ -1,79 +1,72 @@
 #ifndef CJFunction_H
 #define CJFunction_H
 
-#include <CJObj.h>
-#include <CJDictionary.h>
-#include <vector>
+#include <CJFunctionBase.h>
 
-// Function Type
+// User Function Type
 class CJFunctionType : public CJObjType {
  public:
-  static CJObjTypeP instance(CJavaScript *js, const std::string &name);
+  static CJObjTypeP instance(CJavaScript *js);
 
-  CJFunctionType(CJavaScript *js, const std::string &name);
+  CJFunctionType(CJavaScript *js);
 
-  const std::string &name() const { return name_; }
+  CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
+
+  CJValueP execType(CJavaScript *js, const std::string &name, const Values &values) override;
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  typedef std::map<std::string,CJObjTypeP> NameTypeMap;
-
-  static NameTypeMap nameTypeMap_;
-
-  std::string name_;
+  static CJObjTypeP type_;
 };
 
 //------
 
-// Function Value
-class CJFunction : public CJObj {
+// User Function
+class CJFunction : public CJFunctionBase {
  public:
-  enum class Type {
-    Normal,
-    Real,
-    Real2,
-    Min,
-    Max,
-    Random,
-    Type,
-    ObjectType,
-    Object,
-    User,
-    Global,
-    JSONParse,
-    JSONStringify
-  };
-
-  typedef std::vector<CJValueP> Values;
+  typedef std::vector<std::string> Args;
 
  public:
-  CJFunction(CJavaScript *js, const std::string &name, Type type=Type::Normal);
+  CJFunction(CJavaScript *js, const std::string &name="",
+             const Args &args=Args(), CJExecBlockP block=CJExecBlockP());
 
-  CJValue *dup(CJavaScript *) const override { assert(false); return 0; }
-
-  bool isProtoValue() const override { return true; }
-
-  const std::string &name() const { return name_; }
-
-  std::string toString() const override { return name_; }
-
-  virtual bool hasObjectValue() const { return false; }
-
-  const Type &type() const { return type_; }
-
-  const CJDictionaryP &prototype() const { return prototype_; }
-
-  virtual CJValueP exec(CJavaScript *js, const Values &values) = 0;
-
-  void print(std::ostream &os) const override {
-    os << name_ << "()";
+  CJValue *dup(CJavaScript *js) const override {
+    return new CJFunction(js, name_, args_, block_);
   }
 
- protected:
-  std::string   name_;
-  Type          type_;
-  CJDictionaryP prototype_;
+  bool hasObjectValue() const override { return true; }
+
+  void setScope(CJavaScript *js, CJDictionaryP parentScope=CJDictionaryP());
+
+  const Args &args() const { return args_; }
+  void setArgs(const Args &v) { args_ = v; }
+
+  const CJExecBlockP &block() const { return block_; }
+  void setBlock(const CJExecBlockP &v) { block_ = v; }
+
+  const CJDictionaryP &scope() const { return scope_; }
+  void setScope(const CJDictionaryP &v) { scope_ = v; }
+
+  CJValueP getScopeProperty(const std::string &name) const;
+  void setScopeProperty(const std::string &name, CJValueP value);
+
+  std::string toString() const override;
+
+  CJValueP exec(CJavaScript *js, const Values &values) override;
+
+  void print(std::ostream &os) const override;
+
+  friend std::ostream &operator<<(std::ostream &os, const CJFunction &rhs) {
+    rhs.print(os);
+
+    return os;
+  }
+
+ private:
+  Args          args_;
+  CJExecBlockP  block_;
+  CJDictionaryP scope_;
 };
 
 #endif

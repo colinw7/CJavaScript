@@ -2,7 +2,7 @@
 
 CJTypeObjectFunction::
 CJTypeObjectFunction(CJavaScript *js, CJObjTypeP objType, const std::string &name) :
- CJFunction(js, name, Type::Normal), objType_(objType), name_(name)
+ CJFunctionBase(js, name, Type::Normal), objType_(objType), name_(name)
 {
 }
 

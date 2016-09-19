@@ -29,6 +29,7 @@ CJDateType(CJavaScript *js) :
   addTypeFunction(js, "UTC");
   addTypeFunction(js, "now");
   addTypeFunction(js, "parse");
+  addTypeFunction(js, "toString");
 
   addObjectFunction(js, "getDate");
   addObjectFunction(js, "getDay");
@@ -82,8 +83,17 @@ CJDateType(CJavaScript *js) :
 
 CJValueP
 CJDateType::
-exec(CJavaScript *js, const std::string &name, const Values &values)
+execType(CJavaScript *js, const std::string &name, const Values &values)
 {
+  if (values.size() < 1) {
+    js->errorMsg("Invalid number of arguments for " + name);
+    return CJValueP();
+  }
+
+  // values[0] is CJDateFunction
+
+  //---
+
   // type functions
   if      (name == "UTC") {
     long t = CJDate::dateFromValues(values);
@@ -99,9 +109,20 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     // TODO:
     return js->createNumberValue(long(0));
   }
+  else if (name == "toString") {
+    return js->createStringValue("function Date() { }");
+  }
+  else {
+    js->errorMsg("Invalid date type function " + name);
+  }
 
-  //---
+  return CJValueP();
+}
 
+CJValueP
+CJDateType::
+exec(CJavaScript *js, const std::string &name, const Values &values)
+{
   if (values.size() < 1) {
     js->errorMsg("Invalid number of arguments for " + name);
     return CJValueP();

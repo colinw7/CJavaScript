@@ -1,9 +1,9 @@
 #ifndef CJIntervalFunction_H
 #define CJIntervalFunction_H
 
-#include <CJFunction.h>
+#include <CJFunctionBase.h>
 
-class CJSetInterval : public CJFunction {
+class CJSetInterval : public CJFunctionBase {
  public:
   CJSetInterval(CJavaScript *js);
 
@@ -12,7 +12,7 @@ class CJSetInterval : public CJFunction {
   CJValueP exec(CJavaScript *js, const Values &values) override;
 };
 
-class CJClearInterval : public CJFunction {
+class CJClearInterval : public CJFunctionBase {
  public:
   CJClearInterval(CJavaScript *js);
 

@@ -1,10 +1,10 @@
 #ifndef CJErrorFunction_H
 #define CJErrorFunction_H
 
-#include <CJTypeFunction.h>
+#include <CJObjTypeFunction.h>
 
 // base error function
-class CJErrorFunctionBase : public CJTypeFunction {
+class CJErrorFunctionBase : public CJObjTypeFunction {
  public:
   CJErrorFunctionBase(CJavaScript *js, const std::string &name, CJObjTypeP type);
 

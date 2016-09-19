@@ -19,44 +19,57 @@ exec(CJavaScript *js)
   if      (identifiers_) {
     const CJavaScript::Identifiers &identifiers = identifiers_->identifiers();
 
-    CJPropertyData data;
+    CJPropertyData data(js);
 
     if (assign_ || incrDecr_)
-      data.create = true;
+      data.setCreate(true);
 
-    data.modifiable = true;
+    data.setModifiable(true);
 
-    if (! js->lookupPropertyData(dict, identifiers, data))
+    if (! js->lookupScopePropertyData(dict, identifiers, data))
       return CJValueP();
 
     if      (assign_) {
       CJValueP avalue = assign_->exec(js);
 
-      if (data.lvalue)
-        data.lvalue->setValue(avalue);
-      else
+      CJLValueP lvalue = data.lvalue();
+
+      if (! lvalue) {
         js->errorMsg("Invalid assign for this");
+        return CJValueP();
+      }
+
+      lvalue->setValue(avalue);
 
       return avalue;
     }
     else if (incrDecr_) {
-      if (data.value->type() == CJValue::Type::Null)
-        data.value = js->createNumberValue(0L);
+      CJValueP dvalue = data.value();
 
-      CJValueP value1 = js->execUnaryOp(incrDecr_->type(), data.value);
+      if (dvalue->type() == CJValue::Type::Null)
+        dvalue = js->createNumberValue(0L);
 
-      if (data.lvalue)
-        data.lvalue->setValue(value1);
-      else
+      CJValueP value1 = js->execUnaryOp(incrDecr_->type(), dvalue);
+
+      CJLValueP dlvalue = data.lvalue();
+
+      if (! dlvalue) {
         js->errorMsg("Invalid incr/decr for this");
+        return CJValueP();
+      }
+
+      dlvalue->setValue(value1);
 
       if (postOp_)
-        return data.value;
+        return dvalue;
       else
-         return value1;
+        return value1;
     }
-    else
-      return data.value;
+    else {
+      CJValueP dvalue = data.value();
+
+      return dvalue;
+    }
   }
   else if (iexpr_) {
     if (assign_) {

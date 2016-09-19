@@ -12,6 +12,8 @@ class CJObjectType : public CJObjType {
 
   CJObjectType(CJavaScript *js);
 
+  CJValueP execType(CJavaScript *js, const std::string &name, const Values &values) override;
+
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
@@ -26,6 +28,16 @@ class CJObject : public CJObj {
   CJObject(CJavaScript *js);
 
   CJValue *dup(CJavaScript *) const override { return new CJObject(js_); }
+
+  const std::string &typeName() const { return typeName_; }
+  void setTypeName(const std::string &v) { typeName_ = v; }
+
+  std::string toString() const override;
+
+  void print(std::ostream &os) const override;
+
+ protected:
+  std::string typeName_;
 };
 
 #endif

@@ -10,7 +10,7 @@ namespace {
       case Qt::Key_Right: return 39;
       case Qt::Key_Down : return 40;
 
-      default: std::cerr << "Unsupported key" << key << std::endl; break;
+      default: std::cerr << "Unsupported key: " << key << std::endl; break;
     }
 
     return 0;

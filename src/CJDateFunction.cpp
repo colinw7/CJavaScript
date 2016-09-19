@@ -4,7 +4,7 @@
 
 CJDateFunction::
 CJDateFunction(CJavaScript *js) :
- CJTypeFunction(js, "Date", CJDateType::instance(js))
+ CJObjTypeFunction(js, "Date", CJDateType::instance(js))
 {
 }
 

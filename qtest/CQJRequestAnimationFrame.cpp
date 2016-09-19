@@ -5,7 +5,7 @@
 
 CQJRequestAnimationFrame::
 CQJRequestAnimationFrame(CQJavaScript *qjs) :
- CJFunction(qjs->js(), "requestAnimationFrame"), qjs_(qjs)
+ CJFunctionBase(qjs->js(), "requestAnimationFrame"), qjs_(qjs)
 {
 }
 
@@ -19,7 +19,7 @@ exec(CJavaScript *, const Values &values)
   CJValueP fnValue = values[0];
 
   if (fnValue->type() == CJToken::Type::Function) {
-    CJFunctionP fn = std::static_pointer_cast<CJFunction>(fnValue);
+    CJFunctionBaseP fn = std::static_pointer_cast<CJFunctionBase>(fnValue);
 
     CQJWindowP window = std::static_pointer_cast<CQJWindow>(qjs_->jsWindow());
 

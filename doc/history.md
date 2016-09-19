@@ -49,3 +49,14 @@
  . Improve 'void' operator support
  . Add JSON class
  . Support UTF* encoding/decoding for strings
+# 9/19/2016
+ . Improve prototype handling
+ . Make function object it's own type
+ . Improve delete operator support
+ . Separate type and object function invocation methids
+ . Add separate boolean object
+ . support object/non-object strings and numbers
+ . new operator uses prototype object
+ . make var variables undeletable
+ . improve property lookup for lvalue to include more parent data and calculaet value on demand
+ . support function direct call on declaration

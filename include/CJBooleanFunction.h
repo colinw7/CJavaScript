@@ -1,10 +1,10 @@
 #ifndef CJBooleanFunction_H
 #define CJBooleanFunction_H
 
-#include <CJTypeFunction.h>
+#include <CJObjTypeFunction.h>
 
 // boolean function
-class CJBooleanFunction : public CJTypeFunction {
+class CJBooleanFunction : public CJObjTypeFunction {
  public:
   CJBooleanFunction(CJavaScript *js);
 

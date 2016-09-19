@@ -1,10 +1,10 @@
 #ifndef CJObjectTypeFunction_H
 #define CJObjectTypeFunction_H
 
-#include <CJFunction.h>
+#include <CJFunctionBase.h>
 
 // function called on object but shared across types
-class CJObjectTypeFunction : public CJFunction {
+class CJObjectTypeFunction : public CJFunctionBase {
  public:
   CJObjectTypeFunction(CJavaScript *js, const std::string &name, CJObjTypeP type=CJObjTypeP());
 

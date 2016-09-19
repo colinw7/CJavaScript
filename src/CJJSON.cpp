@@ -13,76 +13,139 @@ CJJSON(CJavaScript *js)
 
   js->setProperty("JSON", std::static_pointer_cast<CJValue>(dict_));
 
-  dict_->setFunctionProperty(js, CJFunctionP(new CJJSONParseFunction    (js)));
-  dict_->setFunctionProperty(js, CJFunctionP(new CJJSONStringifyFunction(js)));
+  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJJSONFunction(js, "parse")));
+  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJJSONFunction(js, "stringify")));
+  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJJSONFunction(js, "toString")));
 }
 
 //------
 
 CJValueP
-CJJSONParseFunction::
+CJJSONFunction::
 exec(CJavaScript *js, const Values &values)
 {
-  // text [, reviver ]
-  std::string str;
+  if (name_ == "parse") {
+    // text [, reviver ]
+    std::string str;
 
-  if (values.size() >= 1)
-    str = values[0]->toString();
+    if (values.size() >= 1)
+      str = values[0]->toString();
 
-  CJFunctionP reviver;
+    CJFunctionBaseP reviver;
 
-  if (values.size() >= 2) {
-    reviver = js->valueToFunction(values[1]);
+    if (values.size() >= 2) {
+      reviver = js->valueToFunction(values[1]);
+    }
+
+    //---
+
+    CJson json;
+
+    CJson::Value *value;
+
+    json.setStrict(true);
+
+    if (! json.loadString(str, value)) {
+      js->throwSyntaxError(this, "Unexpected token");
+      return CJValueP();
+    }
+
+    CJValueP key = js->createStringValue("");
+
+    return parseToValue(js, key, value, reviver);
   }
+  else if (name_ == "stringify") {
+    // value [, filter [, indent ]]
+    CJValueP value;
 
-  //---
+    if (values.size() >= 1)
+      value = values[0];
 
-  CJson json;
+    replacer_ = CJFunctionBaseP();
+    filter_   = CJArrayP();
 
-  CJson::Value *value;
+    if (values.size() >= 2 && values[1]) {
+      if (values[1]->type() == CJToken::Type::Array)
+        filter_ = std::static_pointer_cast<CJArray>(values[1]);
+      else
+        replacer_ = js->valueToFunction(values[1]);
+    }
 
-  json.setStrict(true);
+    CJValueP indent;
 
-  if (! json.loadString(str, value)) {
-    js->throwSyntaxError(this, "Unexpected token");
+    if (values.size() >= 3)
+      indent = values[2];
+
+    //---
+
+    // Check for toJSON function
+    toJSON_ = CJFunctionBaseP();
+
+    if ( value && value->type() == CJToken::Type::Dictionary) {
+      CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(value);
+
+      CJValueP value1 = dict->getProperty(js, "toJSON");
+
+      if (value1)
+        toJSON_ = js->valueToFunction(value1);
+    }
+
+    //---
+
+    if (value->type() == CJToken::Type::Undefined)
+      return js->createUndefinedValue();
+
+    //---
+
+    CJValueP key;
+
+    ivalue_ = value;
+
+    std::string str;
+    bool        skip = false;
+
+    if (! stringify(js, key, value, str, skip))
+      return js->createUndefinedValue();
+
+    return js->createStringValue(str);
+  }
+  else if (name_ == "toString") {
+    return js->createStringValue("[object JSON]");
+  }
+  else
     return CJValueP();
-  }
-
-  CJValueP key = js->createStringValue("");
-
-  return toValue(js, key, value, reviver);
 }
 
 CJValueP
-CJJSONParseFunction::
-toValue(CJavaScript *js, CJValueP key, CJson::Value *value, CJFunctionP reviver)
+CJJSONFunction::
+parseToValue(CJavaScript *js, CJValueP key, CJson::Value *value, CJFunctionBaseP reviver)
 {
   CJValueP value1;
 
   if      (value->isString()) {
     value1 = js->createStringValue(value->cast<CJson::String>()->value());
 
-    callFunc(js, key, value1, reviver);
+    parseCallFunc(js, key, value1, reviver);
   }
   else if (value->isNumber()) {
     value1 = js->createNumberValue(value->cast<CJson::Number>()->value());
 
-    callFunc(js, key, value1, reviver);
+    parseCallFunc(js, key, value1, reviver);
   }
   else if (value->isTrue()) {
     value1 = js->createTrueValue();
 
-    callFunc(js, key, value1, reviver);
+    parseCallFunc(js, key, value1, reviver);
   }
   else if (value->isFalse()) {
     value1 = js->createFalseValue();
 
-    callFunc(js, key, value1, reviver);
+    parseCallFunc(js, key, value1, reviver);
   }
   else if (value->isNull()) {
     value1 = js->createNullValue();
 
-    callFunc(js, key, value1, reviver);
+    parseCallFunc(js, key, value1, reviver);
   }
   else if (value->isObject()) {
     CJson::Object *obj = value->cast<CJson::Object>();
@@ -98,7 +161,7 @@ toValue(CJavaScript *js, CJValueP key, CJson::Value *value, CJFunctionP reviver)
 
       obj->getNamedValue(name, value1);
 
-      CJValueP value2 = toValue(js, key, value1);
+      CJValueP value2 = parseToValue(js, key, value1);
 
       dict->setProperty(js, name, value2);
     }
@@ -111,13 +174,13 @@ toValue(CJavaScript *js, CJValueP key, CJson::Value *value, CJFunctionP reviver)
 
         CJValueP key1 = js->createStringValue(name);
 
-        CJValueP value3 = callFunc(js, key1, value2, reviver);
+        CJValueP value3 = parseCallFunc(js, key1, value2, reviver);
 
         if (value3)
           dict->setPropertyValue(name, value3);
       }
 
-      callFunc(js, key, value1, reviver);
+      parseCallFunc(js, key, value1, reviver);
     }
   }
   else if (value->isArray()) {
@@ -132,7 +195,7 @@ toValue(CJavaScript *js, CJValueP key, CJson::Value *value, CJFunctionP reviver)
     for (const auto &value : array->values()) {
       CJValueP key1 = js->createNumberValue(i);
 
-      CJValueP value1 = toValue(js, key1, value, reviver);
+      CJValueP value1 = parseToValue(js, key1, value, reviver);
 
       array1->addValue(value1);
 
@@ -141,15 +204,15 @@ toValue(CJavaScript *js, CJValueP key, CJson::Value *value, CJFunctionP reviver)
 
     value1 = CJValueP(array1);
 
-    callFunc(js, key, value1, reviver);
+    parseCallFunc(js, key, value1, reviver);
   }
 
   return value1;
 }
 
 CJValueP
-CJJSONParseFunction::
-callFunc(CJavaScript *js, CJValueP key, CJValueP value, CJFunctionP reviver)
+CJJSONFunction::
+parseCallFunc(CJavaScript *js, CJValueP key, CJValueP value, CJFunctionBaseP reviver)
 {
   if (! reviver) return CJValueP();
 
@@ -158,73 +221,12 @@ callFunc(CJavaScript *js, CJValueP key, CJValueP value, CJFunctionP reviver)
   return reviver->exec(js, values);
 }
 
-//------
-
-CJValueP
-CJJSONStringifyFunction::
-exec(CJavaScript *js, const Values &values)
-{
-  // value [, filter [, indent ]]
-  CJValueP value;
-
-  if (values.size() >= 1)
-    value = values[0];
-
-  replacer_ = CJFunctionP();
-  filter_   = CJArrayP();
-
-  if (values.size() >= 2 && values[1]) {
-    if (values[1]->type() == CJToken::Type::Array)
-      filter_ = std::static_pointer_cast<CJArray>(values[1]);
-    else
-      replacer_ = js->valueToFunction(values[1]);
-  }
-
-  CJValueP indent;
-
-  if (values.size() >= 3)
-    indent = values[2];
-
-  //---
-
-  // Check for toJSON function
-  toJSON_ = CJFunctionP();
-
-  if ( value && value->type() == CJToken::Type::Dictionary) {
-    CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(value);
-
-    CJValueP value1 = dict->getProperty(js, "toJSON");
-
-    if (value1)
-      toJSON_ = js->valueToFunction(value1);
-  }
-
-  //---
-
-  if (value->type() == CJToken::Type::Undefined)
-    return js->createUndefinedValue();
-
-  //---
-
-  CJValueP key;
-
-  ivalue_ = value;
-
-  std::string str;
-  bool        skip = false;
-
-  if (! stringify(js, key, value, str, skip))
-    return js->createUndefinedValue();
-
-  return js->createStringValue(str);
-}
-
 bool
-CJJSONStringifyFunction::
+CJJSONFunction::
 stringify(CJavaScript *js, CJValueP key, CJValueP value, std::string &str, bool &skip) const
 {
   if (toJSON_) {
-    CJFunction::Values values;
+    CJFunctionBase::Values values;
 
     values.push_back(CJValueP());
     values.push_back(value);
@@ -238,7 +240,7 @@ stringify(CJavaScript *js, CJValueP key, CJValueP value, std::string &str, bool 
   //---
 
   if (replacer_) {
-    CJFunction::Values values;
+    CJFunctionBase::Values values;
 
     values.push_back(CJValueP());
     values.push_back(key);
@@ -365,7 +367,7 @@ stringify(CJavaScript *js, CJValueP key, CJValueP value, std::string &str, bool 
 }
 
 std::string
-CJJSONStringifyFunction::
+CJJSONFunction::
 encodeString(const std::string &s) const
 {
   static char buffer[16];

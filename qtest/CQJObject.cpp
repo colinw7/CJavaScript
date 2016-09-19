@@ -1,5 +1,5 @@
 #include <CQJObject.h>
-#include <CJUserFunction.h>
+#include <CJFunction.h>
 #include <CQJavaScript.h>
 
 CQJObject::
@@ -8,7 +8,7 @@ CQJObject(CQJavaScript *qjs, const CJObjTypeP &type) :
 {
   CJavaScript *js = qjs_->js();
 
-  type_->addObjectFunction(js, "addEventListener");
+  objType_->addObjectFunction(js, "addEventListener");
 
   qjs_->addObject(this);
 }
@@ -64,10 +64,10 @@ callEventListener(CJValueP value, const EventArgs &args, const NameValues &nameV
   if (! value || value->type() != CJToken::Type::Function)
     return false;
 
-  CJFunctionP fn = std::static_pointer_cast<CJFunction>(value);
+  CJFunctionBaseP fn = std::static_pointer_cast<CJFunctionBase>(value);
 
-  if (fn->type() == CJFunction::Type::User) {
-    CJUserFunctionP userFn = std::static_pointer_cast<CJUserFunction>(value);
+  if (fn->type() == CJFunctionBase::Type::User) {
+    CJFunctionP userFn = std::static_pointer_cast<CJFunction>(value);
 
     for (auto &nv : nameValues)
       userFn->setProperty(js_, nv.first, nv.second);

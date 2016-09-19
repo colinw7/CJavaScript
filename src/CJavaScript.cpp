@@ -9,6 +9,8 @@
 #include <CJDebug.h>
 #include <CJError.h>
 #include <CJUtil.h>
+#include <CJGetterSetter.h>
+#include <CJTokenValue.h>
 
 #include <CJArrayFunction.h>
 #include <CJBooleanFunction.h>
@@ -21,7 +23,8 @@
 #include <CJDateFunction.h>
 #include <CJStringFunction.h>
 #include <CJTypeFunction.h>
-#include <CJUserFunction.h>
+#include <CJObjTypeFunction.h>
+#include <CJFunction.h>
 #include <CJAlertFunction.h>
 #include <CJIntervalFunction.h>
 #include <CJRequireFunction.h>
@@ -32,7 +35,6 @@
 #include <CJExecBreak.h>
 #include <CJExecConst.h>
 #include <CJExecContinue.h>
-#include <CJExecDelete.h>
 #include <CJExecDictionary.h>
 #include <CJExecDo.h>
 #include <CJExecExpression.h>
@@ -52,7 +54,6 @@
 #include <CJExecThrow.h>
 #include <CJExecTry.h>
 #include <CJExecVar.h>
-#include <CJExecVoid.h>
 #include <CJExecWhile.h>
 #include <CJExecWith.h>
 
@@ -63,11 +64,13 @@
 #include <iostream>
 #include <cmath>
 
-//---
-
 CJavaScript::
 CJavaScript()
 {
+  initNameMaps();
+
+  //------
+
   // Types (prototype ?)
   rootScope_    = CJDictionaryP(new CJDictionary(this, "__root__"));
   currentScope_ = rootScope_;
@@ -88,28 +91,24 @@ CJavaScript()
 
   //------
 
-  defineObject("String" , CJTypeFunctionP(new CJStringFunction (this)));
-  defineObject("Number" , CJTypeFunctionP(new CJNumberFunction (this)));
-  defineObject("Boolean", CJTypeFunctionP(new CJBooleanFunction(this)));
-  defineObject("Array"  , CJTypeFunctionP(new CJArrayFunction  (this)));
-  defineObject("Object" , CJTypeFunctionP(new CJObjectFunction (this)));
+  defineObjectT<CJStringFunction  , CJString  >(this, "String"  );
+  defineObjectT<CJNumberFunction  , CJNumber  >(this, "Number"  );
+  defineObjectT<CJBooleanFunction , CJBoolean >(this, "Boolean" );
+  defineObjectT<CJArrayFunction   , CJArray   >(this, "Array"   );
+  defineObjectT<CJObjectFunction  , CJObject  >(this, "Object"  );
+  defineObjectT<CJFunctionFunction, CJFunction>(this, "Function");
+  defineObjectT<CJDateFunction    , CJDate    >(this, "Date"    );
+  defineObjectT<CJRegExpFunction  , CJRegExp  >(this, "RegExp"  );
 
-  defineObject("Function", CJTypeFunctionP(new CJFunctionFunction(this)));
   // Symbol
 
   // Math Dictionary (Object)
   math_ = CJMathP(new CJMath(this));
-
   // JSON Dictionary (Object)
   json_ = CJJSONP(new CJJSON(this));
 
-  // Date
-  defineObject("Date", CJTypeFunctionP(new CJDateFunction(this)));
-
   // System
   setProperty("System", CJValueP(new CJSystem(this)));
-
-  defineObject("RegExp", CJTypeFunctionP(new CJRegExpFunction(this)));
 
   // Int8Array, Uint8Array, Int8ClampedArray, Int16Array, Uint16Array,
   // Int32Array, Uint32Array, Float32Array, Float64Array
@@ -124,13 +123,13 @@ CJavaScript()
 
   // Error, EvalError, InternalError, RangeError,
   // ReferenceError, SyntaxError, TypeError, URIError
-  defineObject("Error"         , CJTypeFunctionP(new CJErrorFunction         (this)));
-  defineObject("EvalError"     , CJTypeFunctionP(new CJEvalErrorFunction     (this)));
-  defineObject("RangeError"    , CJTypeFunctionP(new CJRangeErrorFunction    (this)));
-  defineObject("ReferenceError", CJTypeFunctionP(new CJReferenceErrorFunction(this)));
-  defineObject("SyntaxError"   , CJTypeFunctionP(new CJSyntaxErrorFunction   (this)));
-  defineObject("TypeError"     , CJTypeFunctionP(new CJTypeErrorFunction     (this)));
-  defineObject("URIError"      , CJTypeFunctionP(new CJURIErrorFunction      (this)));
+  defineObjectT<CJErrorFunction         , CJError         >(this, "Error"         );
+  defineObjectT<CJEvalErrorFunction     , CJEvalError     >(this, "EvalError"     );
+  defineObjectT<CJRangeErrorFunction    , CJRangeError    >(this, "RangeError"    );
+  defineObjectT<CJReferenceErrorFunction, CJReferenceError>(this, "ReferenceError");
+  defineObjectT<CJSyntaxErrorFunction   , CJSyntaxError   >(this, "SyntaxError"   );
+  defineObjectT<CJTypeErrorFunction     , CJTypeError     >(this, "TypeError"     );
+  defineObjectT<CJURIErrorFunction      , CJURIError      >(this, "URIError"      );
 
   //------
 
@@ -154,14 +153,43 @@ CJavaScript()
 
 void
 CJavaScript::
-defineObject(const std::string &name, CJTypeFunctionP typeFn)
+initNameMaps()
+{
+  nameOperatorMap_["delete"    ] = CJOperator::Type::Delete;
+  nameOperatorMap_["in"        ] = CJOperator::Type::In;
+  nameOperatorMap_["instanceof"] = CJOperator::Type::InstanceOf;
+  nameOperatorMap_["typeof"    ] = CJOperator::Type::TypeOf;
+  nameOperatorMap_["void"      ] = CJOperator::Type::Void;
+
+  nameRealTypeMap_["NaN"      ] = CJNumber::RealType::NaN;
+  nameRealTypeMap_["Infinity" ] = CJNumber::RealType::PosInf;
+  nameRealTypeMap_["-Infinity"] = CJNumber::RealType::NegInf;
+}
+
+void
+CJavaScript::
+defineObject(const std::string &name, CJObjTypeFunctionP typeFn, CJObjP prototype)
 {
   setProperty(name, typeFn);
 
-  CJDictionaryP prototype = std::static_pointer_cast<CJDictionary>(
-    typeFn->getProperty(this, "prototype"));
+  typeFn->setProperty(this, "prototype", prototype);
 
-  prototype->setProperty(this, "constructor", typeFn);
+  //CJDictionaryP prototype = std::static_pointer_cast<CJDictionary>(
+  //  typeFn->getProperty(this, "prototype"));
+
+  // <Object>.prototype.constructor = <ObjectConstructor>
+  if (prototype)
+    prototype->setProperty(this, "constructor", typeFn);
+
+  typeFn->objectType()->setTypeFunction(typeFn);
+
+  CJObjTypeP typeFnObjType = typeFn->objectType();
+
+  // add object functions to prototype
+  for (const auto &f : typeFnObjType->objFunctions()) {
+    if (prototype)
+      prototype->setProperty(this, f.first, f.second);
+  }
 }
 
 void
@@ -229,7 +257,7 @@ endScope()
 
 void
 CJavaScript::
-startFunctionScope(CJUserFunctionP fn)
+startFunctionScope(CJFunctionP fn)
 {
   functions_.push_back(fn);
 
@@ -251,7 +279,7 @@ startFunctionScope(CJUserFunctionP fn)
     printScopeStack("startFunctionScope [stack]");
 }
 
-CJUserFunctionP
+CJFunctionP
 CJavaScript::
 endFunctionScope()
 {
@@ -267,14 +295,14 @@ endFunctionScope()
   currentScopeStack_.pop_back();
   scopeStackStack_  .pop_back();
 
-  CJUserFunctionP fn = functions_.back();
+  CJFunctionP fn = functions_.back();
 
   functions_.pop_back();
 
   termFunctionScope(fn);
 
   if (! functions_.empty()) {
-    CJUserFunctionP fn = functions_.back();
+    CJFunctionP fn = functions_.back();
 
     initFunctionScope(fn);
   }
@@ -287,9 +315,12 @@ endFunctionScope()
 
 void
 CJavaScript::
-initFunctionScope(CJUserFunctionP fn)
+initFunctionScope(CJFunctionP fn)
 {
   CJDictionaryP rootScope = fn->scope();
+
+  if (! rootScope)
+    return;
 
   while (rootScope->getParent())
     rootScope = rootScope->getParent();
@@ -300,9 +331,12 @@ initFunctionScope(CJUserFunctionP fn)
 
 void
 CJavaScript::
-termFunctionScope(CJUserFunctionP fn)
+termFunctionScope(CJFunctionP fn)
 {
   CJDictionaryP rootScope = fn->scope();
+
+  if (! rootScope)
+    return;
 
   while (rootScope->getParent())
     rootScope = rootScope->getParent();
@@ -310,12 +344,12 @@ termFunctionScope(CJUserFunctionP fn)
   rootScope->setParent(CJDictionaryP());
 }
 
-CJUserFunctionP
+CJFunctionP
 CJavaScript::
 currentFunction() const
 {
   if (functions_.empty())
-    return CJUserFunctionP();
+    return CJFunctionP();
 
   return functions_.back();
 }
@@ -358,7 +392,7 @@ printScopeChain(CJDictionaryP scope, const std::string &msg) const
 
 void
 CJavaScript::
-pushUserFunction(CJUserFunctionP fn)
+pushUserFunction(CJFunctionP fn)
 {
   userFunctions_.push_back(fn);
 }
@@ -505,40 +539,105 @@ setProperty(const std::string &name, CJValueP value)
   return value;
 }
 
+bool
+CJavaScript::
+indexValue(CJValueP value, CJValueP ivalue, CJValueP &rvalue) const
+{
+  if      (value->hasIndex()) {
+    long ind = ivalue->toInteger();
+
+    rvalue = value->indexValue(ind);
+  }
+  else if (value->hasProperty()) {
+    std::string ind = ivalue->toString();
+
+    rvalue = value->propertyValue(ind);
+  }
+  else {
+    rvalue = CJValueP();
+    return false;
+  }
+
+  return true;
+}
+
+bool
+CJavaScript::
+setIndexValue(CJValueP value, CJValueP ivalue, CJValueP rvalue)
+{
+  if      (value->hasIndex()) {
+    long ind = ivalue->toInteger();
+
+    value->setIndexValue(ind, rvalue);
+  }
+  else if (value->hasProperty()) {
+    std::string ind = ivalue->toString();
+
+    value->setPropertyValue(ind, rvalue);
+  }
+  else
+    return false;
+
+  return true;
+}
+
+bool
+CJavaScript::
+deleteIndexValue(CJValueP value, CJValueP ivalue)
+{
+  if (value->type() == CJToken::Type::String)
+    return false;
+
+  if      (value->hasIndex()) {
+    long ind = ivalue->toInteger();
+
+    value->deleteIndexValue(ind);
+  }
+  else if (value->hasProperty()) {
+    std::string ind = ivalue->toString();
+
+    value->deletePropertyValue(ind);
+  }
+  else
+    return false;
+
+  return true;
+}
+
 //---
 
 bool
 CJavaScript::
 lookupPropertyData(const Identifiers &identifiers, CJPropertyData &data)
 {
-  bool create = false;
+  bool create = data.isCreate();
 
-  std::swap(data.create, create);
+  data.setCreate(false);
 
   CJDictionaryP scope = currentScope();
 
-  if (lookupPropertyData(scope, identifiers, data, 0))
+  if (lookupScopePropertyData(scope, identifiers, data, 0))
     return true;
 
   while (scope->getParent()) {
     scope = scope->getParent();
 
-    if (lookupPropertyData(scope, identifiers, data, 0))
+    if (lookupScopePropertyData(scope, identifiers, data, 0))
       return true;
   }
 
   if (create) {
-    std::swap(data.create, create);
+    data.setCreate(true);
 
     CJDictionaryP scope = currentScope();
 
-    if (lookupPropertyData(scope, identifiers, data, 0))
+    if (lookupScopePropertyData(scope, identifiers, data, 0))
       return true;
 
     while (scope->getParent()) {
       scope = scope->getParent();
 
-      if (lookupPropertyData(scope, identifiers, data, 0))
+      if (lookupScopePropertyData(scope, identifiers, data, 0))
         return true;
     }
   }
@@ -548,78 +647,88 @@ lookupPropertyData(const Identifiers &identifiers, CJPropertyData &data)
 
 bool
 CJavaScript::
-lookupPropertyData(CJDictionaryP dict, const Identifiers &identifiers,
-                   CJPropertyData &data, int ind)
+lookupScopePropertyData(CJDictionaryP dict, const Identifiers &identifiers,
+                        CJPropertyData &data, int ind)
 {
   CJNameSpaceP scope = std::static_pointer_cast<CJNameSpace>(dict);
   CJValueP     value = std::static_pointer_cast<CJValue    >(dict);
 
-  return lookupPropertyData(scope, value, identifiers, data, ind);
+  return lookupScopeValuePropertyData(scope, value, identifiers, data, ind);
 }
 
 bool
 CJavaScript::
-lookupPropertyData(CJFunctionP fn, const Identifiers &identifiers,
-                   CJPropertyData &data, int ind)
+lookupFunctionPropertyData(CJFunctionBaseP fn, const Identifiers &identifiers,
+                           CJPropertyData &data, int ind)
 {
   CJNameSpaceP scope = std::static_pointer_cast<CJNameSpace>(fn);
   CJValueP     value = std::static_pointer_cast<CJValue    >(fn);
 
-  return lookupPropertyData(scope, value, identifiers, data, ind);
+  return lookupScopeValuePropertyData(scope, value, identifiers, data, ind);
 }
 
 bool
 CJavaScript::
-lookupPropertyData(CJNameSpaceP scope, CJValueP svalue, const Identifiers &identifiers,
-                   CJPropertyData &data, int ind)
+lookupScopeValuePropertyData(CJNameSpaceP scope, CJValueP svalue, const Identifiers &identifiers,
+                             CJPropertyData &data, int ind)
 {
   int len = identifiers.size();
 
   if (ind >= len)
     return false;
 
+  // get property
   const std::string &name = identifiers[ind]->name();
 
+  // non-last name so recurse
   if (ind < len - 1) {
-    // get property
+    // get object value
     CJValueP value = scope->getProperty(this, name);
 
     if (! value)
       return false;
 
-    // lookup in dictionary
-    return lookupPropertyData(value, identifiers, data, ind + 1);
+    // lookup remaining names in value
+    return lookupValuePropertyData(value, identifiers, data, ind + 1);
   }
-  else {
-    // get property
-    CJValueP value = scope->getProperty(this, name);
 
-    if (! value) {
-      if (! data.create)
-        return false;
+  //---
 
-//std::cerr << "Set property '" << name << "' for '" << scope->name() << "'" << std::endl;
+  // get last name value
+  // TODO: use hasProperty
+  CJValueP value = scope->getProperty(this, name);
+
+  // fail if no value and no create
+  if (! value && ! data.isCreate())
+    return false;
+
+  // set parent scope, scope value and property name
+  data.setScope   (scope);
+  data.setObjValue(svalue);
+  data.setName    (name);
+
+  if (! data.isModifiable()) {
+    // create dummy value for create
+    if (! value && data.isCreate()) {
+      // auto create with null value if create enabled
+      // TODO: undefined ?
+      //std::cerr << "Set property '" << name << "' for '" << scope->name() << "'" << std::endl;
       value = createNullValue();
 
       scope->setProperty(this, name, value);
     }
 
-    data.scope    = scope;
-    data.objValue = svalue;
-    data.value    = value;
-
-    // lvalue
-    if (data.modifiable)
-      data.lvalue = CJLValueP(new CJNameSpaceValue(this, scope, name));
-
-    return true;
+    // set value
+    data.setValue(value);
   }
+
+  return true;
 }
 
 bool
 CJavaScript::
-lookupPropertyData(CJObjP obj, const Identifiers &identifiers,
-                   CJPropertyData &data, int ind)
+lookupObjPropertyData(CJObjP obj, const Identifiers &identifiers,
+                      CJPropertyData &data, int ind)
 {
   int len = identifiers.size();
 
@@ -628,6 +737,7 @@ lookupPropertyData(CJObjP obj, const Identifiers &identifiers,
 
   const std::string &name = identifiers[ind]->name();
 
+  // non-last name so recurse
   if (ind < len - 1) {
     // get object value
     CJValueP value = obj->getProperty(this, name);
@@ -635,69 +745,85 @@ lookupPropertyData(CJObjP obj, const Identifiers &identifiers,
     if (! value)
       return false;
 
-    return lookupPropertyData(value, identifiers, data, ind + 1);
+    // lookup remaining names in value
+    return lookupValuePropertyData(value, identifiers, data, ind + 1);
   }
-  else {
-    data.obj      = obj;
-    data.objValue = obj;
 
-    // lvalue
-    if (data.modifiable)
-      data.lvalue = CJLValueP(new CJObjectValue(this, obj, name));
-    else {
-      data.value = obj->getProperty(this, name);
+  //---
 
-      if (! data.value) {
-        CJObjTypeP objType = obj->type();
+  // get last name value
+  // TODO: use hasProperty
+  CJValueP value = obj->getProperty(this, name);
 
-        if (objType->hasProperty(this, name)) {
-          data.value = objType->getProperty(this, name);
-        }
-      }
+  // fail if no value and no create
+  if (! value && ! data.isCreate())
+    return false;
+
+  // get last name value with details of parent
+  data.setObj     (obj);
+  data.setObjValue(obj);
+  data.setName    (name);
+
+  // lvalue
+  if (! data.isModifiable()) {
+    // create dummy value for create
+    if (! value && data.isCreate()) {
+      // auto create with null value if create enabled
+      // TODO: undefined ?
+      //std::cerr << "Set property '" << name << "' for '" << scope->name() << "'" << std::endl;
+      value = createNullValue();
+
+      obj->setProperty(this, name, value);
     }
 
-    return true;
+    data.setValue(value);
   }
+
+  return true;
 }
 
 bool
 CJavaScript::
-lookupPropertyData(CJValueP value, const Identifiers &identifiers,
-                   CJPropertyData &data, int ind)
+lookupValuePropertyData(CJValueP value, const Identifiers &identifiers,
+                        CJPropertyData &data, int ind)
 {
   int len = identifiers.size();
 
   if (ind >= len)
     return false;
 
-  // lookup in dictionary
-  if      (value->type() == CJToken::Type::Dictionary) {
-    CJDictionaryP dict1 = std::static_pointer_cast<CJDictionary>(value);
+  // TODO: lookup order ???
 
-    return lookupPropertyData(dict1, identifiers, data, ind);
-  }
-  else if (value->type() == CJToken::Type::Function) {
-    CJFunctionP fn1 = std::static_pointer_cast<CJFunction>(value);
-
-    return lookupPropertyData(fn1, identifiers, data, ind);
-  }
   // lookup in object
-  else if (value->isObject()) {
+  if      (value->isObject()) {
     CJObjP obj1 = std::static_pointer_cast<CJObj>(value);
 
-    return lookupPropertyData(obj1, identifiers, data, ind);
+    return lookupObjPropertyData(obj1, identifiers, data, ind);
   }
-  else if (value->type() == CJToken::Type::Function) {
-    CJFunctionP fn1 = std::static_pointer_cast<CJFunction>(value);
+  // lookup in function
+  else if (value->isFunction()) {
+    CJFunctionBaseP fn1 = std::static_pointer_cast<CJFunctionBase>(value);
 
-    if      (fn1->type() == CJFunction::Type::User) {
-      CJUserFunctionP userFn1 = std::static_pointer_cast<CJUserFunction>(value);
+    return lookupScopePropertyData(fn1, identifiers, data, ind);
+  }
+  // lookup in dictionary
+  else if (value->type() == CJToken::Type::Dictionary) {
+    CJDictionaryP dict1 = std::static_pointer_cast<CJDictionary>(value);
 
-      return lookupPropertyData(userFn1->scope(), identifiers, data, ind);
+    return lookupScopePropertyData(dict1, identifiers, data, ind);
+  }
+#if 0
+  else if (value->isFunction()) {
+    CJFunctionBaseP fn1 = std::static_pointer_cast<CJFunctionBase>(value);
+
+    if      (fn1->type() == CJFunctionBase::Type::User) {
+      CJFunctionP userFn1 = std::static_pointer_cast<CJFunction>(value);
+
+      return lookupScopePropertyData(userFn1->scope(), identifiers, data, ind);
     }
-    else if (fn1->type() == CJFunction::Type::Type ||
-             fn1->type() == CJFunction::Type::ObjectType ||
-             fn1->type() == CJFunction::Type::Object) {
+    else if (fn1->type() == CJFunctionBase::Type::ObjType ||
+             fn1->type() == CJFunctionBase::Type::ObjectType ||
+             fn1->type() == CJFunctionBase::Type::Object) {
       if (ind != len - 1) {
         throwSyntaxError(0, "Invalid object type identifiers");
         return false;
@@ -705,12 +831,12 @@ lookupPropertyData(CJValueP value, const Identifiers &identifiers,
 
       CJObjTypeP valueType1;
 
-      if (fn1->type() == CJFunction::Type::Type) {
+      if (fn1->type() == CJFunctionBase::Type::ObjType) {
         CJTypeFunctionP typeFn = std::static_pointer_cast<CJTypeFunction>(value);
 
         valueType1 = typeFn->objectType();
       }
-      if (fn1->type() == CJFunction::Type::ObjectType) {
+      if (fn1->type() == CJFunctionBase::Type::ObjectType) {
         CJObjectTypeFunctionP objTypeFn = std::static_pointer_cast<CJObjectTypeFunction>(value);
 
         valueType1 = objTypeFn->objectType();
@@ -729,24 +855,24 @@ lookupPropertyData(CJValueP value, const Identifiers &identifiers,
       if (! propVal)
         return false;
 
-      if (propVal->type() == CJToken::Type::Function) {
+      if (propVal->isFunction()) {
         CJTypeObjectFunctionP fn(new CJTypeObjectFunction(this, valueType1, name1));
 
-        data.objValue = value;
-        data.value    = std::static_pointer_cast<CJValue>(fn);
+        data.setObjValue(value);
+        data.setValue   (std::static_pointer_cast<CJValue>(fn));
 
         return true;
       }
       else {
         // TODO: namespace function
-        data.value = propVal;
+        data.setValue(propVal);
 
 #if 0
         CJObjType::Values values;
 
         values.push_back(value);
 
-        data.value = valueType1->exec(this, name1, values);
+        data.setValue(valueType1->exec(this, name1, values));
 #endif
 
         return true;
@@ -755,7 +881,16 @@ lookupPropertyData(CJValueP value, const Identifiers &identifiers,
     else
       return false;
   }
-  // lookup object property (TODO: support multiple names)
+#endif
+  // true, false are values not objects so promote to Boolean value before processing
+  else if (value->type() == CJToken::Type::True || value->type() == CJToken::Type::False) {
+    CJValueP value1(new CJBoolean(this, value->toBoolean()));
+
+    return lookupValuePropertyData(value1, identifiers, data, ind);
+  }
+  // lookup object property
+  // TODO: support multiple names
+  // TODO: used ??
   else {
     // value is an object
     if (ind != len - 1) {
@@ -775,11 +910,11 @@ lookupPropertyData(CJValueP value, const Identifiers &identifiers,
     if (! propVal)
       return false;
 
-    if (propVal->type() == CJToken::Type::Function) {
+    if (propVal->isFunction()) {
       CJTypeObjectFunctionP fn(new CJTypeObjectFunction(this, valueType, name1));
 
-      data.objValue = value;
-      data.value    = std::static_pointer_cast<CJValue>(fn);
+      data.setObjValue(value);
+      data.setValue   (std::static_pointer_cast<CJValue>(fn));
 
       return true;
     }
@@ -788,7 +923,7 @@ lookupPropertyData(CJValueP value, const Identifiers &identifiers,
 
       values.push_back(value);
 
-      data.value = valueType->exec(this, name1, values);
+      data.setValue(valueType->exec(this, name1, values));
 
       return true;
     }
@@ -799,17 +934,31 @@ lookupPropertyData(CJValueP value, const Identifiers &identifiers,
 
 CJValueP
 CJavaScript::
+valueToObj(CJValueP value) const
+{
+  CJValueP value1;
+
+  if (value->type() == CJToken::Type::True || value->type() == CJToken::Type::False) {
+    CJavaScript *th = const_cast<CJavaScript *>(this);
+
+    value1 = CJValueP(new CJBoolean(th, value->toBoolean()));
+  }
+
+  return value1;
+}
+
+//---
+
+CJValueP
+CJavaScript::
 lookupValue(const Identifiers &identifiers)
 {
-  CJPropertyData data;
+  CJPropertyData data(this);
 
   if (! lookupPropertyData(identifiers, data))
     return CJValueP();
 
-  if (! data.value && data.lvalue)
-    return data.lvalue->value();
-  else
-    return data.value;
+  return data.value();
 }
 
 //---
@@ -818,14 +967,14 @@ CJLValueP
 CJavaScript::
 lookupLValue(const Identifiers &identifiers)
 {
-  CJPropertyData data;
+  CJPropertyData data(this);
 
-  data.modifiable = true;
+  data.setModifiable(true);
 
   if (! lookupPropertyData(identifiers, data))
     return CJLValueP();
 
-  return data.lvalue;
+  return data.lvalue();
 }
 
 //---
@@ -834,25 +983,22 @@ CJavaScript::ValuePair
 CJavaScript::
 lookupObjectProperty(const Identifiers &identifiers, bool create)
 {
-  CJPropertyData data;
+  CJPropertyData data(this);
 
-  data.modifiable = true;
-  data.create     = create;
+  data.setModifiable(true);
+  data.setCreate    (create);
 
   if (! lookupPropertyData(identifiers, data))
     return ValuePair();
 
   CJValueP objValue, dataValue;
 
-  if      (data.obj)
-    objValue = std::static_pointer_cast<CJValue>(data.obj);
-  else if (data.objValue)
-    objValue = data.objValue;
+  if      (data.obj())
+    objValue = std::static_pointer_cast<CJValue>(data.obj());
+  else if (data.objValue())
+    objValue = data.objValue();
 
-  dataValue = data.value;
-
-  if (! dataValue && data.lvalue)
-    dataValue = data.lvalue->value();
+  dataValue = data.value();
 
   return ValuePair(objValue, dataValue);
 }
@@ -863,32 +1009,80 @@ CJLValueP
 CJavaScript::
 lookupProperty(const Identifiers &identifiers, bool create)
 {
-  CJPropertyData data;
+  CJPropertyData data(this);
 
-  data.modifiable = true;
-  data.create     = create;
+  data.setModifiable(true);
+  data.setCreate    (create);
 
   if (! lookupPropertyData(identifiers, data))
     return CJLValueP();
 
-  return data.lvalue;
+  return data.lvalue();
 }
 
 //---
 
 bool
 CJavaScript::
-deleteProperty(const Identifiers &identifiers)
+deleteToken(const Tokens &tokens)
+{
+  assert(tokens.size() == 1);
+
+  CJTokenP token = tokens[0];
+
+  if      (token->type() == CJToken::Type::Identifiers) {
+    CJExecIdentifiersP identifiers = std::static_pointer_cast<CJExecIdentifiers>(token);
+
+    return deleteProperty(identifiers->identifiers());
+  }
+  else if (token->type() == CJToken::Type::IndexExpression) {
+    std::deque<CJValueP> values;
+
+    CJExecIndexExpressionP iexpr = std::static_pointer_cast<CJExecIndexExpression>(token);
+
+    CJExecIdentifiersP identifiers = iexpr->identifiers();
+
+    while (! identifiers) {
+      values.push_front(iexpr->indValue(this));
+
+      CJExecIndexExpressionP liexpr = iexpr->lindexExpression();
+
+      if (! liexpr)
+        return true;
+
+      identifiers = liexpr->identifiers();
+
+      iexpr = liexpr;
+    }
+
+    values.push_front(iexpr->indValue(this));
+
+    Values values1;
+
+    for (const auto &v : values)
+      values1.push_back(v);
+
+    return deleteProperty(identifiers->identifiers(), values1);
+  }
+  else
+    return true;
+
+  return true;
+}
+
+bool
+CJavaScript::
+deleteProperty(const Identifiers &identifiers, const Values &values)
 {
   CJDictionaryP scope = currentScope();
 
-  if (deleteProperty(scope, identifiers))
+  if (deleteProperty(scope, identifiers, values))
     return true;
 
   while (scope->getParent()) {
     scope = scope->getParent();
 
-    if (deleteProperty(scope, identifiers))
+    if (deleteProperty(scope, identifiers, values))
       return true;
   }
 
@@ -897,7 +1091,7 @@ deleteProperty(const Identifiers &identifiers)
 
 bool
 CJavaScript::
-deleteProperty(CJDictionaryP scope, const Identifiers &identifiers)
+deleteProperty(CJDictionaryP scope, const Identifiers &identifiers, const Values &values)
 {
   int len = identifiers.size();
 
@@ -925,14 +1119,17 @@ deleteProperty(CJDictionaryP scope, const Identifiers &identifiers)
             throwSyntaxError(0, "Invalid value named index");
 
           if (dict) {
-            dict->deleteProperty(identifiers[i]->name());
+            dict->deleteProperty(this, identifiers[i]->name(), values);
             return true;
           }
         }
       }
     }
     else {
-      scope->deleteProperty(identifiers[i]->name());
+      if (values.empty() && ! scope->canDeleteProperty(identifiers[i]->name()))
+        return false;
+
+      scope->deleteProperty(this, identifiers[i]->name(), values);
 
       return true;
     }
@@ -964,6 +1161,18 @@ addTypeObject(CJToken::Type type, CJObjTypeP obj)
   typeObject_[type] = obj;
 }
 
+CJObjTypeP
+CJavaScript::
+getTypeObject(CJToken::Type type) const
+{
+  auto p = typeObject_.find(type);
+
+  if (p == typeObject_.end())
+    return CJObjTypeP();
+
+  return (*p).second;
+}
+
 int
 CJavaScript::
 isCompleteLine(const std::string &str) const
@@ -980,6 +1189,7 @@ isCompleteLine(const std::string &str) const
   int numBraces   = 0;
   int numSBracket = 0;
   int numRBracket = 0;
+  int numComment  = 0;
 
   CStrParse parse(str);
 
@@ -1006,11 +1216,20 @@ isCompleteLine(const std::string &str) const
     else if (parse.isChar(')')) {
       --numRBracket; parse.skipChar();
     }
+    else if (parse.isString("/*")) {
+      parse.skipChars("/*");
+
+      while (! parse.eof() && ! parse.isString("*/"))
+        parse.skipChar();
+
+      if (! parse.isString("*/"))
+        ++numComment;
+    }
     else
       parse.skipChar();
   }
 
-  return (numBraces + numSBracket + numRBracket);
+  return (numBraces + numSBracket + numRBracket + numComment);
 }
 
 bool
@@ -1032,9 +1251,6 @@ loadFile(const std::string &filename)
 
   while (file.readLine(line)) {
     line = CStrUtil::stripSpaces(line);
-
-    if (line.empty())
-      continue;
 
     if (! str.empty())
       str += "\n";
@@ -1064,7 +1280,7 @@ loadText(const std::string &str)
 
   if (isParseDebug()) {
     for (const auto &t : tokens_)
-      std::cout << *t << std::endl;
+      std::cout << *t << "@" << t->lineNum() << std::endl;
   }
 
   return true;
@@ -1074,6 +1290,9 @@ void
 CJavaScript::
 parseString(const std::string &str)
 {
+  CJOperator::Type   opType;
+  CJNumber::RealType realType;
+
   CStrParse parse(str);
 
   parse.skipSpace();
@@ -1094,68 +1313,66 @@ parseString(const std::string &str)
 
     std::string name = getIdentifier(parse, allowUnary);
 
-    if      (name == "typeof") {
-      parse.skipChars("typeof");
+    if (isOperatorName(name, opType)) {
+      CJOperatorP op;
 
-      CJOperatorP op(new CJOperator(CJOperator::Type::TypeOf, 1,
-        CJOperator::Associativty::Right, CJOperator::Ary::Unary));
+      if      (opType == CJOperator::Type::Delete) {
+        parse.skipChars("delete");
+
+        op = CJOperatorP(new CJOperator(CJOperator::Type::Delete, 1,
+          CJOperator::Associativty::Right, CJOperator::Ary::Unary));
+      }
+      else if (opType == CJOperator::Type::In) {
+        parse.skipChars("in");
+
+        op = CJOperatorP(new CJOperator(CJOperator::Type::In, 11,
+          CJOperator::Associativty::Left, CJOperator::Ary::Binary));
+      }
+      else if (opType == CJOperator::Type::InstanceOf) {
+        parse.skipChars("instanceof");
+
+        op = CJOperatorP(new CJOperator(CJOperator::Type::InstanceOf, 11,
+          CJOperator::Associativty::Left, CJOperator::Ary::Binary));
+      }
+      else if (opType == CJOperator::Type::TypeOf) {
+        parse.skipChars("typeof");
+
+        op = CJOperatorP(new CJOperator(CJOperator::Type::TypeOf, 1,
+          CJOperator::Associativty::Right, CJOperator::Ary::Unary));
+      }
+      else if (opType == CJOperator::Type::Void) {
+        parse.skipChars("void");
+
+        op = CJOperatorP(new CJOperator(CJOperator::Type::Void, 1,
+          CJOperator::Associativty::Right, CJOperator::Ary::Unary));
+      }
+      else
+        assert(false);
 
       op->setLineNum(parse.lineNum());
 
       tokens_.push_back(CJTokenP(op));
     }
-    else if (name == "void") {
-      parse.skipChars("void");
+    else if (isRealValueName(name, allowUnary, realType)) {
+      CJTokenP token;
 
-      CJOperatorP op(new CJOperator(CJOperator::Type::Void, 1,
-        CJOperator::Associativty::Right, CJOperator::Ary::Unary));
+      if      (realType == CJNumber::RealType::NaN) {
+        parse.skipChars("NaN");
 
-      op->setLineNum(parse.lineNum());
+        token = createNumberValue(CJUtil::getNaN());
+      }
+      else if (realType == CJNumber::RealType::PosInf) {
+        parse.skipChars("Infinity");
 
-      tokens_.push_back(CJTokenP(op));
-    }
-    else if (name == "instanceof") {
-      parse.skipChars("instanceof");
+        token = createNumberValue(CJUtil::getPosInf());
+      }
+      else if (realType == CJNumber::RealType::NegInf) {
+        parse.skipChars("-Infinity");
 
-      CJOperatorP op(new CJOperator(CJOperator::Type::InstanceOf, 11,
-        CJOperator::Associativty::Left, CJOperator::Ary::Binary));
-
-      op->setLineNum(parse.lineNum());
-
-      tokens_.push_back(CJTokenP(op));
-    }
-    else if (name == "in") {
-      parse.skipChars("in");
-
-      CJOperatorP op(new CJOperator(CJOperator::Type::In, 11,
-        CJOperator::Associativty::Left, CJOperator::Ary::Binary));
-
-      op->setLineNum(parse.lineNum());
-
-      tokens_.push_back(CJTokenP(op));
-    }
-    else if (name == "NaN") {
-      parse.skipChars("NaN");
-
-      CJTokenP token = createNumberValue(CJUtil::getNaN());
-
-      token->setLineNum(parse.lineNum());
-
-      tokens_.push_back(token);
-    }
-    else if (name == "Infinity") {
-      parse.skipChars("Infinity");
-
-      CJTokenP token = createNumberValue(CJUtil::getPosInf());
-
-      token->setLineNum(parse.lineNum());
-
-      tokens_.push_back(token);
-    }
-    else if (allowUnary && name == "-Infinity") {
-      parse.skipChars("-Infinity");
-
-      CJTokenP token = createNumberValue(CJUtil::getNegInf());
+        token = createNumberValue(CJUtil::getNegInf());
+      }
+      else
+        assert(false);
 
       token->setLineNum(parse.lineNum());
 
@@ -1573,28 +1790,6 @@ interp(CJExecData &execData)
 
         execData_->addEToken(std::static_pointer_cast<CJToken>(enew));
       }
-      else if (keyword->type() == CJKeyword::Type::Delete) {
-        CJExecDeleteP edelete = interpExecDelete();
-
-        if (! edelete) {
-          throwSyntaxError(token, "Interp failed for 'delete'");
-          break;
-        }
-
-        execData_->addEToken(std::static_pointer_cast<CJToken>(edelete));
-      }
-#if 0
-      else if (keyword->type() == CJKeyword::Type::Void) {
-        CJExecVoidP evoid = interpExecVoid();
-
-        if (! evoid) {
-          throwSyntaxError(token, "Interp failed for 'void'");
-          break;
-        }
-
-        execData_->addEToken(std::static_pointer_cast<CJToken>(evoid));
-      }
-#endif
       // assert <expression_list>
       else if (keyword->type() == CJKeyword::Type::Assert) {
         CJExecAssertP eassert = interpExecAssert();
@@ -1641,7 +1836,7 @@ interp(CJExecData &execData)
       }
       // function [<identifier>] ( <parameters> ) { <body> }
       else if (keyword->type() == CJKeyword::Type::Function) {
-        CJUserFunctionP efunction = interpUserFunction(/*named*/true);
+        CJFunctionP efunction = interpUserFunction(/*named*/true);
 
         if (! efunction) {
           throwSyntaxError(token, "Interp failed for 'function'");
@@ -1682,7 +1877,7 @@ interp(CJExecData &execData)
         execData_->addEToken(std::static_pointer_cast<CJToken>(ethrow));
       }
       else {
-        throwSyntaxError(token, "Interp failed at keyword: " + keyword->name());
+        throwSyntaxError(keyword, "Interp failed at keyword: " + keyword->name());
         break;
       }
     }
@@ -1849,6 +2044,8 @@ interpExecFor()
     throwSyntaxError(efor, "Missing close round bracket for for");
     return CJExecForP();
   }
+
+  //---
 
   // { <statement> }
   if (! isExecOperator(CJOperator::Type::OpenBrace)) {
@@ -2648,23 +2845,110 @@ isInterpDictionary() const
     return true;
   }
 
+  bool isGet = false, isSet = false;
+
   CJTokenP token = execData_->token();
 
-  // a:<value>
-  if      (token->type() == CJToken::Type::Identifier)
-    execData_->next();
+  // <name>:<value> or get <name>(<arg>) { <body> }
+  if      (token->type() == CJToken::Type::Identifier) {
+    std::string name = token->cast<CJIdentifier>()->name();
+
+    isGet = (name == "get");
+    isSet = (name == "set");
+  }
   // "a":<value>
-  else if (token->type() == CJToken::Type::String)
-    execData_->next();
+  else if (token->type() == CJToken::Type::String) {
+  }
   // 1:<value>
-  else if (token->type() == CJToken::Type::Number)
-    execData_->next();
+  else if (token->type() == CJToken::Type::Number) {
+  }
   else {
     execData_->setPos(pos);
     return false;
   }
 
-  if (! isExecOperator(CJOperator::Type::Colon)) {
+  execData_->next();
+
+  //---
+
+  if      (isExecOperator(CJOperator::Type::Colon)) {
+  }
+  else if (isGet || isSet) {
+    CJTokenP token = execData_->token();
+
+    if (token->type() != CJToken::Type::Identifier) {
+      execData_->setPos(pos);
+      return false;
+    }
+
+    execData_->next();
+
+    //---
+
+    if (! isExecOperator(CJOperator::Type::OpenRBracket)) {
+      execData_->setPos(pos);
+      return false;
+    }
+
+    execData_->next();
+
+    if (isGet) {
+      if (! isExecOperator(CJOperator::Type::CloseRBracket)) {
+        execData_->setPos(pos);
+        return false;
+      }
+
+      execData_->next();
+    }
+    else {
+      CJTokenP token = execData_->token();
+
+      if (token->type() != CJToken::Type::Identifier) {
+        execData_->setPos(pos);
+        return false;
+      }
+
+      execData_->next();
+
+      if (! isExecOperator(CJOperator::Type::CloseRBracket)) {
+        execData_->setPos(pos);
+        return false;
+      }
+
+      execData_->next();
+    }
+
+    //---
+
+    // { <tokens> }
+    if (isExecOperator(CJOperator::Type::CloseBrace)) {
+      execData_->setPos(pos);
+      return false;
+    }
+
+    execData_->next();
+
+    int depth = 1;
+
+    while (! execData_->eof()) {
+      if      (isExecOperator(CJOperator::Type::OpenBrace))
+        ++depth;
+      else if (isExecOperator(CJOperator::Type::CloseBrace)) {
+        --depth;
+
+        if (depth == 0)
+          break;
+      }
+
+      execData_->next();
+    }
+
+    if (! isExecOperator(CJOperator::Type::CloseBrace)) {
+      execData_->setPos(pos);
+      return false;
+    }
+  }
+  else {
     execData_->setPos(pos);
     return false;
   }
@@ -2689,30 +2973,50 @@ interpExecDictionary()
 
   execData_->next();
 
-  if (! isExecOperator(CJOperator::Type::CloseBrace)) {
-    while (! execData_->eof()) {
-      CJValueP key;
+  // handle empty dictionary {}
+  if (isExecOperator(CJOperator::Type::CloseBrace)) {
+    execData_->next();
+    return dict;
+  }
 
-      CJTokenP token = execData_->token();
+  //---
 
-      if      (token->type() == CJToken::Type::Identifier)
-        key = createStringValue(token->cast<CJIdentifier>()->name());
-      else if (token->type() == CJToken::Type::String)
-        key = createStringValue(token->cast<CJString>()->text());
-      else if (token->type() == CJToken::Type::Number)
-        key = std::static_pointer_cast<CJValue>(token);
-      else {
-        throwSyntaxError(dict, "Invalid key value type");
-        return CJExecDictionaryP();
-      }
+  // read key values paits and getters/setters
+  //
+  //  <key> : <value>
+  //  get <key> ( ) { <block> }
+  //  set <key> (<arg>) { <block> }
+  while (! execData_->eof()) {
+    // get key (check for get/set)
+    CJValueP key;
 
-      execData_->next();
+    bool isGet = false, isSet = false;
 
-      if (! interpExecOperator(CJOperator::Type::Colon)) {
-        throwSyntaxError(dict, "Missing colon for key value");
-        return CJExecDictionaryP();
-      }
+    CJTokenP token = execData_->token();
 
+    if      (token->type() == CJToken::Type::Identifier) {
+      std::string name = token->cast<CJIdentifier>()->name();
+
+      isGet = (name == "get");
+      isSet = (name == "set");
+
+      key = createStringValue(name);
+    }
+    else if (token->type() == CJToken::Type::String)
+      key = createStringValue(token->cast<CJString>()->text());
+    else if (token->type() == CJToken::Type::Number)
+      key = std::static_pointer_cast<CJValue>(token);
+    else {
+      throwSyntaxError(dict, "Invalid key value type");
+      return CJExecDictionaryP();
+    }
+
+    execData_->next();
+
+    //---
+
+    // <key> : <value>
+    if      (interpExecOperator(CJOperator::Type::Colon)) {
       CJExecExpressionP expr = interpExpression();
 
       if (! expr) {
@@ -2721,20 +3025,114 @@ interpExecDictionary()
       }
 
       dict->addDictionaryValue(key, expr);
+    }
+    // get <key> ( ) { <block> }
+    // set <key> (<arg>) { <block> }
+    else if (isGet || isSet) {
+      // get key name
+      CJTokenP token = execData_->token();
 
-      if (! isExecOperator(CJOperator::Type::Comma))
-        break;
+      if (token->type() != CJToken::Type::Identifier) {
+        throwSyntaxError(dict, "Missing name for get/set");
+        return CJExecDictionaryP();
+      }
+
+      std::string propName = token->cast<CJIdentifier>()->name();
 
       execData_->next();
-    }
 
-    if (! interpExecOperator(CJOperator::Type::CloseBrace)) {
-      throwSyntaxError(dict, "Missing close brace for dictionary");
+      //---
+
+      // args
+      if (! isExecOperator(CJOperator::Type::OpenRBracket)) {
+        throwSyntaxError(dict, "Missing args for get/set");
+        return CJExecDictionaryP();
+      }
+
+      execData_->next();
+
+      std::string arg;
+
+      if (isGet) {
+        if (! isExecOperator(CJOperator::Type::CloseRBracket)) {
+          throwSyntaxError(dict, "Missing close bracket for get args");
+          return CJExecDictionaryP();
+        }
+
+        execData_->next();
+      }
+      else {
+        CJTokenP token = execData_->token();
+
+        if (token->type() != CJToken::Type::Identifier) {
+          throwSyntaxError(dict, "Missing arg name for set");
+          return CJExecDictionaryP();
+        }
+
+        arg = token->cast<CJIdentifier>()->name();
+
+        execData_->next();
+
+        if (! isExecOperator(CJOperator::Type::CloseRBracket)) {
+          throwSyntaxError(dict, "Missing close bracket for set arg");
+          return CJExecDictionaryP();
+        }
+
+        execData_->next();
+      }
+
+      //---
+
+      // get function block
+      CJExecBlockP block = interpExecBlock(CJExecBlock::Type::Function);
+
+      if (! block)
+        return CJExecDictionaryP();
+
+      //---
+
+      CJFunction::Args args;
+
+      if (isSet)
+        args.push_back(arg);
+
+      CJFunctionP userFn(new CJFunction(this, propName, args, block));
+
+      userFn->setScope(this);
+
+      //---
+
+      CJGetterSetterP gs = dict->getGetterSetter(propName);
+
+      if (! gs) {
+        gs = CJGetterSetterP(new CJGetterSetter(this));
+
+        dict->setGetterSetter(propName, gs);
+      }
+
+      if (isGet)
+        gs->setGetter(userFn);
+      else
+        gs->setSetter(userFn);
+    }
+    else {
+      throwSyntaxError(dict, "Missing colon for key value");
       return CJExecDictionaryP();
     }
-  }
-  else {
+
+    // more keys after comma
+    if (! isExecOperator(CJOperator::Type::Comma))
+      break;
+
     execData_->next();
+  }
+
+  //---
+
+  // ensure close brace
+  if (! interpExecOperator(CJOperator::Type::CloseBrace)) {
+    throwSyntaxError(dict, "Missing close brace for dictionary");
+    return CJExecDictionaryP();
   }
 
   return dict;
@@ -2793,70 +3191,6 @@ interpExecNew()
 
   return enew;
 }
-
-CJExecDeleteP
-CJavaScript::
-interpExecDelete()
-{
-  // delete <UnaryExpression>
-  CJExecDeleteP edelete(new CJExecDelete);
-
-  edelete->setLineNum(execLineNum());
-
-  //---
-
-  // delete
-  if (! interpExecKeyword(CJKeyword::Type::Delete))
-    return CJExecDeleteP();
-
-  CJExecIdentifiersP identifiers = interpIdentifiers();
-
-  if (! identifiers)
-    return CJExecDeleteP();
-
-  edelete->setIdentifiers(identifiers);
-
-  //---
-
-  if (isInterpDebug()) {
-    std::cerr << "interpExecDelete: " << *edelete << std::endl;
-  }
-
-  return edelete;
-}
-
-#if 0
-CJExecVoidP
-CJavaScript::
-interpExecVoid()
-{
-  // void <UnaryExpression>
-  CJExecVoidP evoid(new CJExecVoid);
-
-  evoid->setLineNum(execLineNum());
-
-  //---
-
-  // void
-  if (! interpExecKeyword(CJKeyword::Type::Void))
-    return CJExecVoidP();
-
-  CJExecIdentifiersP identifiers = interpIdentifiers();
-
-  if (! identifiers)
-    return CJExecVoidP();
-
-  evoid->setIdentifiers(identifiers);
-
-  //---
-
-  if (isInterpDebug()) {
-    std::cerr << "interpExecVoid: " << *evoid << std::endl;
-  }
-
-  return evoid;
-}
-#endif
 
 // assert <expression_list>
 CJExecAssertP
@@ -3097,13 +3431,13 @@ interpExecThrow()
 }
 
 // function [<identifier>] ( <parameters> ) { <body> }
-CJUserFunctionP
+CJFunctionP
 CJavaScript::
 interpUserFunction(bool named)
 {
   // function
   if (! interpExecKeyword(CJKeyword::Type::Function))
-    return CJUserFunctionP();
+    return CJFunctionP();
 
   // [<identifier>]
   std::string name;
@@ -3118,18 +3452,18 @@ interpUserFunction(bool named)
   else {
     if (named) {
       throwSyntaxError(token, "Missing identifier");
-      return CJUserFunctionP();
+      return CJFunctionP();
     }
   }
 
-  CJUserFunctionP userFn(new CJUserFunction(this, name));
+  CJFunctionP userFn(new CJFunction(this, name));
 
   //---
 
   // ( <parameters> )
   if (! interpExecOperator(CJOperator::Type::OpenRBracket)) {
     throwSyntaxError(token, "Missing open bracket for function");
-    return CJUserFunctionP();
+    return CJFunctionP();
   }
 
   std::vector<std::string> args;
@@ -3148,20 +3482,20 @@ interpUserFunction(bool named)
 
     if (! interpExecOperator(CJOperator::Type::Comma)) {
       throwSyntaxError(token, "Missing comma for function args");
-      return CJUserFunctionP();
+      return CJFunctionP();
     }
 
     token = execData_->token();
 
     if (token->type() != CJToken::Type::Identifier) {
       throwSyntaxError(token, "Missing arg after comma for function args");
-      return CJUserFunctionP();
+      return CJFunctionP();
     }
   }
 
   if (! interpExecOperator(CJOperator::Type::CloseRBracket)) {
     throwSyntaxError(token, "Missing close bracket for function");
-    return CJUserFunctionP();
+    return CJFunctionP();
   }
 
   userFn->setArgs(args);
@@ -3174,7 +3508,7 @@ interpUserFunction(bool named)
   // { <block> }
   if (! isExecOperator(CJOperator::Type::OpenBrace)) {
     throwSyntaxError(userFn, "Missing open brace for function");
-    return CJUserFunctionP();
+    return CJFunctionP();
   }
 
   pushUserFunction(userFn);
@@ -3187,7 +3521,7 @@ interpUserFunction(bool named)
   popUserFunction();
 
   if (! block)
-    return CJUserFunctionP();
+    return CJFunctionP();
 
   //---
 
@@ -3313,7 +3647,8 @@ interpExpression()
     if      (canInterpIdentifiers()) {
       CJToken::Type lastType = expr->lastTokenType();
 
-      if (lastType == CJToken::Type::Identifiers) {
+      if (lastType == CJToken::Type::Identifiers ||
+          lastType == CJToken::Type::Function) {
         std::stringstream ss; ss << *token;
         throwSyntaxError(execData_->token(), "Syntax error at identifier '" + ss.str() + "'");
         return CJExecExpressionP();
@@ -3361,9 +3696,8 @@ interpExpression()
       if      (isExecOperator(CJOperator::Type::OpenRBracket)) {
         CJExecFunctionP function = interpFunction();
 
-        if (! function) {
+        if (! function)
           return CJExecExpressionP();
-        }
 
         if (iexpr) {
           if (isInterpDebug()) {
@@ -3398,9 +3732,8 @@ interpExpression()
 
           CJExecFunctionP function1 = interpFunction();
 
-          if (! function1) {
+          if (! function1)
             return CJExecExpressionP();
-          }
 
           function1->setIdentifiers(identifiers);
 
@@ -3480,9 +3813,8 @@ interpExpression()
 
         CJExecFunctionP function = interpFunction();
 
-        if (! function) {
+        if (! function)
           return CJExecExpressionP();
-        }
 
         expr->addToken(token);
 
@@ -3589,6 +3921,11 @@ interpExpression()
         return expr;
       }
       else if (opType == CJOperator::Type::OpenRBracket) {
+        if (expr->lastToken() && expr->lastTokenType() != CJToken::Type::Operator) {
+          throwTypeError(expr, "Invalid function operator");
+          return CJExecExpressionP();
+        }
+
         execData_->next();
 
         CJExecExpressionListP expr1 = interpExpressionList();
@@ -3599,6 +3936,31 @@ interpExpression()
         if (! interpExecOperator(CJOperator::Type::CloseRBracket)) {
           throwSyntaxError(expr, "Missing close round bracket");
           return CJExecExpressionP();
+        }
+
+        // check for call of bracketed expression
+        if (isExecOperator(CJOperator::Type::OpenRBracket)) {
+          CJExecFunctionP function = interpFunction();
+
+          if (! function)
+            return CJExecExpressionP();
+
+          if (isInterpDebug())
+            std::cerr << "interpFunction: " << *function << std::endl;
+
+          CJExecExpressionP expr1 = expr;
+
+          expr = CJExecExpressionP(new CJExecExpression);
+
+          expr->setLineNum(execLineNum());
+
+          function->setLineNum(expr1->lineNum());
+
+          function->setExpression(expr1);
+
+          expr->addToken(CJTokenP(function));
+
+          //allowIncrDecr = false;
         }
       }
       else if (opType == CJOperator::Type::CloseRBracket) {
@@ -3631,9 +3993,8 @@ interpExpression()
 
           CJExecFunctionP function = interpFunction();
 
-          if (! function) {
+          if (! function)
             return CJExecExpressionP();
-          }
 
           expr->addToken(CJTokenP(array));
 
@@ -3676,9 +4037,8 @@ interpExpression()
 
             CJExecFunctionP function = interpFunction();
 
-            if (! function) {
+            if (! function)
               return CJExecExpressionP();
-            }
 
             expr->addToken(CJTokenP(dict));
 
@@ -3712,6 +4072,8 @@ interpExpression()
           }
 
           expr->addToken(block);
+
+          break;
         }
       }
       else if (opType == CJOperator::Type::CloseBrace) {
@@ -3742,7 +4104,7 @@ interpExpression()
         expr->addToken(std::static_pointer_cast<CJToken>(enew));
       }
       else if (keyword->type() == CJKeyword::Type::Function) {
-        CJUserFunctionP efunction = interpUserFunction(/*named*/false);
+        CJFunctionP efunction = interpUserFunction(/*named*/false);
 
         if (! efunction) {
           throwSyntaxError(expr, "Interp failed for 'function'");
@@ -3756,7 +4118,7 @@ interpExpression()
         expr->addToken(value);
       }
       else {
-        throwSyntaxError(expr, "Interp failed at keyword: " + keyword->name());
+        throwSyntaxError(keyword, "Interp failed at keyword: " + keyword->name());
         break;
       }
     }
@@ -3991,18 +4353,6 @@ interpExecBlock(CJExecBlock::Type type)
 
 bool
 CJavaScript::
-isOperator(CJTokenP token, CJOperator::Type opType) const
-{
-  if (! token || token->type() != CJToken::Type::Operator)
-    return false;
-
-  CJOperator *op = token->cast<CJOperator>();
-
-  return (op->type() == opType);
-}
-
-bool
-CJavaScript::
 interpExecKeyword(CJKeyword::Type type)
 {
   if (! isExecKeyword(type))
@@ -4058,7 +4408,14 @@ isExecOperator(CJOperator::Type opType) const
 
   CJTokenP token = execData_->token();
 
-  if (token->type() != CJToken::Type::Operator)
+  return isOperator(token, opType);
+}
+
+bool
+CJavaScript::
+isOperator(CJTokenP token, CJOperator::Type opType) const
+{
+  if (! token || token->type() != CJToken::Type::Operator)
     return false;
 
   CJOperator *op = token->cast<CJOperator>();
@@ -4076,19 +4433,19 @@ execLineNum() const
   return execData_->token()->lineNum();
 }
 
-CJFunctionP
+CJFunctionBaseP
 CJavaScript::
 valueToFunction(CJValueP value) const
 {
-  CJFunctionP fn;
+  CJFunctionBaseP fn;
 
-  if      (value->type() == CJToken::Type::Function) {
-    fn = std::static_pointer_cast<CJFunction>(value);
+  if      (value->isFunction()) {
+    fn = std::static_pointer_cast<CJFunctionBase>(value);
   }
   else if (value->type() == CJToken::Type::UserObject) {
     CJUserObjectP userObj = std::static_pointer_cast<CJUserObject>(value);
 
-    fn = std::static_pointer_cast<CJFunction>(userObj->userFn());
+    fn = std::static_pointer_cast<CJFunctionBase>(userObj->userFn());
   }
   else if (value->type() == CJToken::Type::Dictionary) {
     CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(value);
@@ -4201,8 +4558,12 @@ CJValueP
 CJavaScript::
 execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
 {
-  if (isExprDebug())
-    std::cerr << *value1 << CJOperator::typeName(op) << " " << *value2 << std::endl;
+  if (isExprDebug()) {
+    if (value1) std::cerr << *value1; else std::cerr << "<null>";
+    std::cerr << CJOperator::typeName(op) << " ";
+    if (value2) std::cerr << *value2; else std::cerr << "<null>";
+    std::cerr << std::endl;
+  }
 
   if (! value1 || ! value2) {
     if      (op == CJOperator::Type::StrictEqual) {
@@ -4210,6 +4571,12 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
     }
     else if (op == CJOperator::Type::StrictNotEqual) {
       return createBoolValue(value1 != value2);
+    }
+    else if (op == CJOperator::Type::LogicalOr) {
+      return (value1 ? value1 : value2);
+    }
+    else if (op == CJOperator::Type::LogicalAnd) {
+      return CJValueP();
     }
     else {
       return CJValueP();
@@ -4476,10 +4843,10 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
 
       if      (value1->type() == CJToken::Type::Object)
         valueType1 = value1->cast<CJObj>()->valueType();
-      else if (value1->type() == CJToken::Type::Function) {
-        CJFunctionP fn = std::static_pointer_cast<CJFunction>(value1);
+      else if (value1->isFunction()) {
+        CJFunctionBaseP fn = std::static_pointer_cast<CJFunctionBase>(value1);
 
-        if (fn->type() == CJFunction::Type::Type) {
+        if (fn->type() == CJFunctionBase::Type::ObjType) {
           CJTypeFunctionP typeFn = std::static_pointer_cast<CJTypeFunction>(value1);
 
           valueType1 = typeFn->objectType();
@@ -4490,10 +4857,10 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
 
       if      (value2->type() == CJToken::Type::Object)
         valueType2 = value2->cast<CJObj>()->valueType();
-      else if (value2->type() == CJToken::Type::Function) {
-        CJFunctionP fn = std::static_pointer_cast<CJFunction>(value2);
+      else if (value2->isFunction()) {
+        CJFunctionBaseP fn = std::static_pointer_cast<CJFunctionBase>(value2);
 
-        if (fn->type() == CJFunction::Type::Type) {
+        if (fn->type() == CJFunctionBase::Type::ObjType) {
           CJTypeFunctionP typeFn = std::static_pointer_cast<CJTypeFunction>(value2);
 
           valueType2 = typeFn->objectType();
@@ -4537,14 +4904,19 @@ CJValueP
 CJavaScript::
 execUnaryOp(CJOperator::Type op, CJValueP value)
 {
-  if (isExprDebug())
-    std::cerr << CJOperator::typeName(op) << " " << *value << std::endl;
+  if (isExprDebug()) {
+    std::cerr << CJOperator::typeName(op) << " ";
+    if (value) std::cerr << *value; else std::cerr << "<null>";
+    std::cerr << std::endl;
+  }
 
   if (! value) {
     if      (op == CJOperator::Type::TypeOf)
       return createUndefinedValue();
-    if      (op == CJOperator::Type::Void)
+    else if (op == CJOperator::Type::Void)
       return createUndefinedValue();
+    else if (op == CJOperator::Type::Delete)
+      return createBoolValue(true);
     else if (op == CJOperator::Type::LogicalNot)
       return createBoolValue(true);
     else
@@ -4605,7 +4977,7 @@ execUnaryOp(CJOperator::Type op, CJValueP value)
     case CJOperator::Type::TypeOf: {
       std::string res;
 
-      if      (value->valueType()->type() == CJToken::Type::Function)
+      if      (value->isFunction())
         res = "function";
       else if (value->valueType()->type() == CJToken::Type::Dictionary)
         res = "object";
@@ -4626,6 +4998,18 @@ execUnaryOp(CJOperator::Type op, CJValueP value)
         res = value->valueType()->name();
 
       return createStringValue(res);
+    }
+
+    case CJOperator::Type::Delete: {
+      if (value->type() == CJToken::Type::TokenValue) {
+        CJTokenValueP tokenValue = std::static_pointer_cast<CJTokenValue>(value);
+
+        bool b = deleteToken(tokenValue->tokens());
+
+        return createBoolValue(b);
+      }
+      else
+        return value;
     }
 
     case CJOperator::Type::Void: {
@@ -4704,6 +5088,23 @@ isKeyword(const std::string &name) const
     return std::pair<bool, CJKeyword::Type>(true, type);
   else
     return std::pair<bool, CJKeyword::Type>(false, CJKeyword::Type::None);
+}
+
+bool
+CJavaScript::
+isRealValueName(const std::string &name, bool allowUnary, CJNumber::RealType &realType) const
+{
+  auto p = nameRealTypeMap_.find(name);
+
+  if (p == nameRealTypeMap_.end())
+    return false;
+
+  realType = (*p).second;
+
+  if (! allowUnary && realType == CJNumber::RealType::NegInf)
+    return false;
+
+  return true;
 }
 
 void
@@ -4831,14 +5232,39 @@ readNumber(CStrParse &parse)
   else {
     const char *p;
 
+    errno = 0;
+
     double real = strtod(realStr.c_str(), (char **) &p);
 
-    number = createNumberValue(sign*real);
+    int fpc = std::fpclassify(real);
+
+    if      (fpc == FP_NAN)
+      real = CJUtil::getNaN();
+    else if (fpc == FP_INFINITE)
+      real = (sign > 0 ? CJUtil::getPosInf() : CJUtil::getNegInf());
+    else
+      real = sign*real;
+
+    number = createNumberValue(real);
   }
 
   number->setLineNum(parse.lineNum());
 
   tokens_.push_back(number);
+}
+
+bool
+CJavaScript::
+isOperatorName(const std::string &name, CJOperator::Type &type) const
+{
+  auto p = nameOperatorMap_.find(name);
+
+  if (p == nameOperatorMap_.end())
+    return false;
+
+  type = (*p).second;
+
+  return true;
 }
 
 void
@@ -5205,7 +5631,7 @@ readDoubleString(CStrParse &parse)
         c = parse.readChar();
 
         switch (c) {
-          default : str += '\\'; str += c; break;
+          default : str += c; break; // ignore escape char
 
           case '\n': break;
           case 'b' : str += '\b'; break;
@@ -5318,7 +5744,7 @@ readSingleString(CStrParse &parse)
         c = parse.readChar();
 
         switch (c) {
-          default : str += '\\'; str += c; break;
+          default : str += c; break; // ignore escape char
 
           case '\n': break;
           case 'b' : str += '\b'; break;
@@ -5470,9 +5896,16 @@ throwException(CJExceptionType type)
 {
   CJError *error = new CJError(this);
 
-  error->setType(type);
+  error->setExceptionType(type);
 
   throwError(0, CJErrorBaseP(error));
+}
+
+void
+CJavaScript::
+throwTypeError(CJTokenP token, const std::string &msg)
+{
+  throwTypeError(token.get(), msg);
 }
 
 void
@@ -5506,13 +5939,35 @@ throwSyntaxError(CJToken *token, const std::string &msg)
 
 void
 CJavaScript::
+throwReferenceError(CJTokenP token, const std::string &msg)
+{
+  throwReferenceError(token.get(), msg);
+}
+
+void
+CJavaScript::
+throwReferenceError(CJToken *token, const std::string &msg)
+{
+  CJReferenceError *error = new CJReferenceError(this);
+
+  error->setMessage(msg);
+
+  throwError(token, CJErrorBaseP(error));
+}
+
+void
+CJavaScript::
 throwError(CJToken *token, CJErrorBaseP error)
 {
-  if (getCurrentBlock())
+  if (getCurrentBlock()) {
     getCurrentBlock()->setError(error);
 
-  if (isExceptDebug())
-    errorMsg(token, error->message());
+    if (isExceptDebug())
+      errorMsg(token, error->message());
+  }
+  else {
+    errorMsg(token, error->toString());
+  }
 }
 
 void

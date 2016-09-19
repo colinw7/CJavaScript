@@ -1,4 +1,5 @@
 #include <CJDictionary.h>
+#include <CJGetterSetter.h>
 #include <CJavaScript.h>
 
 CJObjTypeP CJDictionaryType::type_;
@@ -50,10 +51,10 @@ toString() const
   CJValueP prop = getProperty(js_, "toString");
 
   if (prop) {
-    CJFunctionP fn = js_->valueToFunction(prop);
+    CJFunctionBaseP fn = js_->valueToFunction(prop);
 
     if (fn) {
-      CJFunction::Values values;
+      CJFunctionBase::Values values;
 
       CJValueP value = fn->exec(js_, values);
 
@@ -72,6 +73,59 @@ toString() const
 
 CJValueP
 CJDictionary::
+getProperty(CJavaScript *js, const std::string &key) const
+{
+  CJValueP propVal = CJNameSpace::getProperty(js, key);
+
+  if (propVal && propVal->type() == CJToken::Type::GetterSetter) {
+    CJGetterSetterP gs = std::static_pointer_cast<CJGetterSetter>(propVal);
+
+    CJDictionary *th = const_cast<CJDictionary *>(this);
+
+    CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(th->shared_from_this());
+
+    js->pushThis(dict);
+
+    propVal = gs->getValue();
+
+    js->popThis();
+  }
+
+  return propVal;
+}
+
+void
+CJDictionary::
+setProperty(CJavaScript *js, const std::string &key, CJValueP value)
+{
+  CJValueP propVal = getProperty(js, key);
+
+  if (propVal && propVal->type() == CJToken::Type::GetterSetter) {
+    CJGetterSetterP gs = std::static_pointer_cast<CJGetterSetter>(propVal);
+
+    CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(shared_from_this());
+
+    js->pushThis(dict);
+
+    gs->setValue(value);
+
+    js->popThis();
+
+    return;
+  }
+
+  CJNameSpace::setProperty(js, key, value);
+}
+
+bool
+CJDictionary::
+hasPropertyValue(const std::string &key) const
+{
+  return CJNameSpace::hasProperty(js_, key);
+}
+
+CJValueP
+CJDictionary::
 propertyValue(const std::string &key) const
 {
   return CJNameSpace::getProperty(js_, key);
@@ -84,11 +138,11 @@ setPropertyValue(const std::string &key, CJValueP value)
   CJNameSpace::setProperty(js_, key, value);
 }
 
-bool
+void
 CJDictionary::
-hasPropertyValue(const std::string &key) const
+deletePropertyValue(const std::string &key)
 {
-  return CJNameSpace::hasProperty(js_, key);
+  CJNameSpace::deleteProperty(key);
 }
 
 bool
@@ -117,7 +171,7 @@ getFunctionNames() const
   std::vector<std::string> names;
 
   for (const auto &f : keyValues_) {
-    if (f.second->type() == CJToken::Type::Function)
+    if (f.second->isFunction())
       names.push_back(f.first);
   }
 

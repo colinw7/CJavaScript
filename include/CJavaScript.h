@@ -28,11 +28,12 @@ class CStrParse;
 #include <CJNull.h>
 #include <CJTrue.h>
 #include <CJFalse.h>
+#include <CJBoolean.h>
 #include <CJNumber.h>
 #include <CJString.h>
 #include <CJArray.h>
 #include <CJOperator.h>
-#include <CJFunction.h>
+#include <CJFunctionBase.h>
 #include <CJDictionary.h>
 #include <CJRegExp.h>
 #include <CJDate.h>
@@ -46,36 +47,26 @@ class CStrParse;
 #include <CJObjectValue.h>
 #include <CJUserObject.h>
 #include <CJNameSpaceValue.h>
+#include <CJTypeFunction.h>
 
 //------
 
 #include <CJExecBlock.h>
 #include <CJTypeObjectFunction.h>
 #include <CJExecData.h>
-
-//------
-
-struct CJPropertyData {
-  bool         modifiable { false };
-  bool         create { false };
-  CJNameSpaceP scope;
-  CJObjP       obj;
-  CJValueP     objValue;
-  CJValueP     value;
-  CJLValueP    lvalue;
-};
+#include <CJPropertyData.h>
 
 //------
 
 class CJavaScript {
  public:
-  typedef std::vector<CJTokenP>            Tokens;
-  typedef std::vector<CJTokenP>            ETokens;
-  typedef std::vector<CJIdentifier *>      Identifiers;
-  typedef std::pair<CJFunctionP, CJValueP> FunctionValuePair;
-  typedef std::pair<CJValueP, CJValueP>    ValuePair;
-  typedef std::vector<CJUserFunctionP>     UserFunctions;
-  typedef std::vector<CJValueP>            Values;
+  typedef std::vector<CJTokenP>                Tokens;
+  typedef std::vector<CJTokenP>                ETokens;
+  typedef std::vector<CJIdentifier *>          Identifiers;
+  typedef std::pair<CJFunctionBaseP, CJValueP> FunctionValuePair;
+  typedef std::pair<CJValueP, CJValueP>        ValuePair;
+  typedef std::vector<CJFunctionP>             UserFunctions;
+  typedef std::vector<CJValueP>                Values;
 
  public:
   CJavaScript();
@@ -120,18 +111,25 @@ class CJavaScript {
 
   CJValueP setProperty(const std::string &name, CJValueP value);
 
+  bool indexValue(CJValueP value, CJValueP ivalue, CJValueP &rvalue) const;
+  bool setIndexValue(CJValueP value, CJValueP ivalue, CJValueP rvalue);
+  bool deleteIndexValue(CJValueP value, CJValueP ivalue);
+
   bool lookupPropertyData(const Identifiers &identifiers, CJPropertyData &data);
 
-  bool lookupPropertyData(CJDictionaryP dict, const Identifiers &identifiers,
-                          CJPropertyData &data, int ind=0);
-  bool lookupPropertyData(CJFunctionP fn, const Identifiers &identifiers,
-                          CJPropertyData &data, int ind=0);
-  bool lookupPropertyData(CJNameSpaceP scope, CJValueP value, const Identifiers &identifiers,
-                          CJPropertyData &data, int ind=0);
-  bool lookupPropertyData(CJObjP obj, const Identifiers &identifiers,
-                          CJPropertyData &data, int ind=0);
-  bool lookupPropertyData(CJValueP value, const Identifiers &identifiers,
-                          CJPropertyData &data, int ind=0);
+  bool lookupScopePropertyData(CJDictionaryP dict, const Identifiers &identifiers,
+                               CJPropertyData &data, int ind=0);
+  bool lookupFunctionPropertyData(CJFunctionBaseP fn, const Identifiers &identifiers,
+                                  CJPropertyData &data, int ind=0);
+  bool lookupScopeValuePropertyData(CJNameSpaceP scope, CJValueP value,
+                                    const Identifiers &identifiers,
+                                    CJPropertyData &data, int ind=0);
+  bool lookupObjPropertyData(CJObjP obj, const Identifiers &identifiers,
+                             CJPropertyData &data, int ind=0);
+  bool lookupValuePropertyData(CJValueP value, const Identifiers &identifiers,
+                               CJPropertyData &data, int ind=0);
+
+  CJValueP valueToObj(CJValueP value) const;
 
   CJValueP lookupValue(const Identifiers &identifiers);
 
@@ -143,14 +141,19 @@ class CJavaScript {
 
   ValuePair lookupObjectProperty(const Identifiers &identifiers, bool create=false);
 
-  bool deleteProperty(const Identifiers &identifiers);
-  bool deleteProperty(CJDictionaryP scope, const Identifiers &identifiers);
+  bool deleteToken(const Tokens &tokens);
+
+  bool deleteProperty(const Identifiers &identifiers, const Values &values=Values());
+
+  bool deleteProperty(CJDictionaryP scope, const Identifiers &identifiers,
+                      const Values &values=Values());
 
   CJValueP setVariable(const Identifiers &identifiers, CJValueP value);
 
   void addTypeObject(CJToken::Type type, CJObjTypeP obj);
+  CJObjTypeP getTypeObject(CJToken::Type type) const;
 
-  void addTypeFunction(CJToken::Type type, CJFunctionP fn);
+  void addTypeFunction(CJToken::Type type, CJFunctionBaseP fn);
 
   CJExecBlockP getCurrentBlock() const { return block_; }
 
@@ -167,13 +170,13 @@ class CJavaScript {
   void startScope(CJDictionaryP scope);
   CJDictionaryP endScope();
 
-  void startFunctionScope(CJUserFunctionP fn);
-  CJUserFunctionP endFunctionScope();
+  void startFunctionScope(CJFunctionP fn);
+  CJFunctionP endFunctionScope();
 
-  void initFunctionScope(CJUserFunctionP fn);
-  void termFunctionScope(CJUserFunctionP fn);
+  void initFunctionScope(CJFunctionP fn);
+  void termFunctionScope(CJFunctionP fn);
 
-  CJUserFunctionP currentFunction() const;
+  CJFunctionP currentFunction() const;
 
   void printScopeStack(const std::string &msg="") const;
 
@@ -181,7 +184,7 @@ class CJavaScript {
 
   //---
 
-  void pushUserFunction(CJUserFunctionP fn);
+  void pushUserFunction(CJFunctionP fn);
   void popUserFunction();
 
   const UserFunctions &userFunctions() const { return userFunctions_; }
@@ -208,7 +211,7 @@ class CJavaScript {
 
   CJValueP exec();
 
-  CJFunctionP valueToFunction(CJValueP value) const;
+  CJFunctionBaseP valueToFunction(CJValueP value) const;
 
   COptInt cmp(CJValueP value1, CJValueP value2);
 
@@ -288,9 +291,12 @@ class CJavaScript {
 
   void throwException(CJExceptionType type);
 
-  void throwTypeError  (CJToken *token, const std::string &msg);
-  void throwSyntaxError(CJTokenP token, const std::string &msg);
-  void throwSyntaxError(CJToken *token, const std::string &msg);
+  void throwTypeError     (CJTokenP token, const std::string &msg);
+  void throwTypeError     (CJToken *token, const std::string &msg);
+  void throwSyntaxError   (CJTokenP token, const std::string &msg);
+  void throwSyntaxError   (CJToken *token, const std::string &msg);
+  void throwReferenceError(CJTokenP token, const std::string &msg);
+  void throwReferenceError(CJToken *token, const std::string &msg);
 
   void throwError(CJToken *token, CJErrorBaseP error);
 
@@ -301,7 +307,14 @@ class CJavaScript {
   //---
 
  private:
-  void defineObject(const std::string &name, CJTypeFunctionP typeFn);
+  void initNameMaps();
+
+  template<typename FUNC, typename PROTO>
+  void defineObjectT(CJavaScript *js, const std::string &name) {
+    js->defineObject(name, CJObjTypeFunctionP(new FUNC(js)), CJObjP(new PROTO(js)));
+  }
+
+  void defineObject(const std::string &name, CJObjTypeFunctionP typeFn, CJObjP value);
 
   bool loadText(const std::string &str);
 
@@ -312,8 +325,14 @@ class CJavaScript {
   std::string getIdentifier(CStrParse &parse, bool allowUnary) const;
 
   void readIdentifier(CStrParse &parse);
+
+  bool isRealValueName(const std::string &name, bool allowUnary,
+                       CJNumber::RealType &realType) const;
   void readNumber(CStrParse &parse);
+
+  bool isOperatorName(const std::string &name, CJOperator::Type &type) const;
   void readOperator(CStrParse &parse, bool allowUnary);
+
   void readDoubleString(CStrParse &parse);
   void readSingleString(CStrParse &parse);
   void readRegExp(CStrParse &parse);
@@ -334,7 +353,6 @@ class CJavaScript {
   CJExecBreakP           interpExecBreak();
   CJExecConstP           interpExecConst();
   CJExecContinueP        interpExecContinue();
-  CJExecDeleteP          interpExecDelete();
   CJExecDictionaryP      interpExecDictionary();
   CJExecDoP              interpExecDo();
   CJExecLabelP           interpExecLabel();
@@ -353,10 +371,9 @@ class CJavaScript {
   CJExecThrowP           interpExecThrow();
   CJExecTryP             interpExecTry();
   CJExecVarP             interpExecVar();
-//CJExecVoidP            interpExecVoid();
   CJExecWhileP           interpExecWhile();
   CJExecWithP            interpExecWith();
-  CJUserFunctionP        interpUserFunction(bool named);
+  CJFunctionP            interpUserFunction(bool named);
 
   bool interpExecKeyword(CJKeyword::Type type);
   bool isExecKeyword    (CJKeyword::Type type) const;
@@ -369,14 +386,16 @@ class CJavaScript {
   int execLineNum() const;
 
  private:
-  typedef std::vector<CJExecData *>          ExecDataStack;
-  typedef std::vector<CJDictionaryP>         ScopeStack;
-  typedef std::vector<ScopeStack>            ScopeStackStack;
-  typedef std::vector<CJExecBlockP>          BlockStack;
-  typedef std::vector<CJUserFunctionP>       FunctionStack;
-  typedef std::map<std::string,CJFunctionP>  Functions;
-  typedef std::map<CJToken::Type,CJObjTypeP> TypeObject;
-  typedef std::map<std::string,CJObjTypeP>   NamedType;
+  typedef std::map<std::string,CJOperator::Type>   NameOperatorMap;
+  typedef std::map<std::string,CJNumber::RealType> NameRealTypeMap;
+  typedef std::vector<CJExecData *>                ExecDataStack;
+  typedef std::vector<CJDictionaryP>               ScopeStack;
+  typedef std::vector<ScopeStack>                  ScopeStackStack;
+  typedef std::vector<CJExecBlockP>                BlockStack;
+  typedef std::vector<CJFunctionP>                 FunctionStack;
+  typedef std::map<std::string,CJFunctionBaseP>    Functions;
+  typedef std::map<CJToken::Type,CJObjTypeP>       TypeObject;
+  typedef std::map<std::string,CJObjTypeP>         NamedType;
 
   struct DebugData {
     bool parse  { false };
@@ -389,6 +408,8 @@ class CJavaScript {
   DebugData       debugData_;
   std::string     fileName_;
   NamedType       namedType_;
+  NameOperatorMap nameOperatorMap_;
+  NameRealTypeMap nameRealTypeMap_;
   CJDictionaryP   rootScope_;
   CJDictionaryP   currentScope_;
   ScopeStack      scopeStack_;

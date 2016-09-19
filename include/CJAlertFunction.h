@@ -1,9 +1,9 @@
 #ifndef CJAlertFunction_H
 #define CJAlertFunction_H
 
-#include <CJFunction.h>
+#include <CJFunctionBase.h>
 
-class CJAlertFunction : public CJFunction {
+class CJAlertFunction : public CJFunctionBase {
  public:
   CJAlertFunction(CJavaScript *js);
 

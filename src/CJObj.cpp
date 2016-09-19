@@ -1,6 +1,6 @@
 #include <CJObj.h>
 #include <CJTypeValue.h>
-#include <CJTypeFunction.h>
+#include <CJObjTypeFunction.h>
 #include <CJObjectTypeFunction.h>
 #include <CJavaScript.h>
 
@@ -18,14 +18,23 @@ void
 CJObjType::
 addTypeFunction(CJavaScript *js, const std::string &name)
 {
-  setFunctionProperty(js, CJFunctionP(new CJTypeFunction(js, name)));
+  CJFunctionBaseP fn(new CJObjTypeFunction(js, name));
+
+  setFunctionProperty(js, fn);
+
+  typeFunctions_[name] = fn;
 }
 
 void
 CJObjType::
 addObjectFunction(CJavaScript *js, const std::string &name)
 {
-  setFunctionProperty(js, CJFunctionP(new CJObjectTypeFunction(js, name)));
+  CJFunctionBaseP fn(new CJObjectTypeFunction(js, name));
+
+  if (! typeFunction())
+    setFunctionProperty(js, fn);
+
+  objFunctions_[name] = fn;
 }
 
 CJNameSpace::KeyNames
@@ -39,10 +48,10 @@ getTypePropertyNames() const
   for (const auto &n : names1) {
     CJValueP v = getProperty(js_, n);
 
-    if (v->type() == CJToken::Type::Function) {
-      CJFunctionP fn = std::static_pointer_cast<CJFunction>(v);
+    if (v->isFunction()) {
+      CJFunctionBaseP fn = std::static_pointer_cast<CJFunctionBase>(v);
 
-      if (fn->type() != CJFunction::Type::Type)
+      if (fn->type() != CJFunctionBase::Type::ObjType)
         continue;
     }
 
@@ -95,8 +104,8 @@ getProperty(CJavaScript *js, const std::string &key) const
 //------
 
 CJObj::
-CJObj(CJavaScript *js, CJObjTypeP type) :
- CJDictionary(js, type), type_(type)
+CJObj(CJavaScript *js, CJObjTypeP objType) :
+ CJDictionary(js, objType), objType_(objType)
 {
 }
 
@@ -104,14 +113,14 @@ const std::string &
 CJObj::
 name() const
 {
-  return type_->name();
+  return objType_->name();
 }
 
 void
 CJObj::
 addVariable(CJavaScript *js, const std::string &name)
 {
-  setProperty(js, name, CJValueP(new CJTypeValue(js, type(), name)));
+  setProperty(js, name, CJValueP(new CJTypeValue(js, objType(), name)));
 }
 
 CJValueP
@@ -132,21 +141,26 @@ CJValueP
 CJObj::
 getProperty(CJavaScript *js, const std::string &name) const
 {
+  // get direct property
   if (CJNameSpace::hasProperty(js, name))
     return CJNameSpace::getProperty(js, name);
 
-  if (CJNameSpace::hasProperty(js, "prototype")) {
-    CJValueP value = getProperty(js, "prototype");
+  // get constructor property
+  CJObjTypeFunctionP typeFn = objType()->typeFunction();
 
-    if (value && value->type() == CJToken::Type::Dictionary) {
-      CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(value);
+  CJValueP value;
 
-      if (dict->hasPropertyValue(name))
-        return dict->propertyValue(name);
-    }
+  if (typeFn)
+    value = typeFn->getProperty(js, "prototype");
+
+  if (value && value->isObject()) {
+    CJObjP obj = std::static_pointer_cast<CJObj>(value);
+
+    if (obj->hasPropertyValue(name))
+      return obj->propertyValue(name);
   }
 
-  return type()->getProperty(js, name);
+  return objType()->getProperty(js, name);
 }
 
 void
@@ -161,4 +175,18 @@ CJObj::
 execNameFn(CJavaScript *, const std::string &, const Values &)
 {
   assert(false);
+}
+
+std::string
+CJObj::
+toString() const
+{
+  return "[object " + name() + "]";
+}
+
+void
+CJObj::
+print(std::ostream &os) const
+{
+  os << toString();
 }

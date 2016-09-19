@@ -4,7 +4,7 @@
 int CQJWindowTimer::lastId_ = 0;
 
 CQJWindowTimer::
-CQJWindowTimer(CQJWindowP window, CJFunctionP timerFn) :
+CQJWindowTimer(CQJWindowP window, CJFunctionBaseP timerFn) :
  window_(window), timerFn_(timerFn), id_(++lastId_)
 {
   connect(this, SIGNAL(timeout()), this, SLOT(timerSlot()));

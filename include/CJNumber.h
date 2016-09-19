@@ -14,6 +14,8 @@ class CJNumberType : public CJObjType {
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
 
+  CJValueP execType(CJavaScript *js, const std::string &name, const Values &values) override;
+
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
@@ -25,9 +27,19 @@ class CJNumberType : public CJObjType {
 // Number Value
 class CJNumber : public CJObj {
  public:
+  enum class RealType {
+    NaN,
+    PosInf,
+    NegInf
+  };
+
+ public:
   CJNumber(CJavaScript *js, double real=0.0);
 
   CJNumber *dup(CJavaScript *js) const override { return new CJNumber(js, real_); }
+
+  bool isBasic() const { return isBasic_; }
+  void setIsBasic(bool b) { isBasic_ = b; }
 
   std::string toString() const override;
 
@@ -50,6 +62,7 @@ class CJNumber : public CJObj {
 
  private:
   double real_;
+  bool   isBasic_ { true };
 };
 
 #endif

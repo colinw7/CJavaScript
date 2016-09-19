@@ -1,12 +1,11 @@
 #include <CJTypeFunction.h>
 #include <CJavaScript.h>
-#include <CJObject.h>
 #include <CJString.h>
 #include <CJArray.h>
 
 CJTypeFunction::
 CJTypeFunction(CJavaScript *js, const std::string &name, CJObjTypeP type) :
- CJFunction(js, name, CJFunction::Type::Type), type_(type)
+ CJFunctionBase(js, name, CJFunctionBase::Type::Type), type_(type)
 {
 }
 
@@ -16,20 +15,21 @@ getProperty(CJavaScript *js, const std::string &name) const
 {
   if (type_->hasProperty(js, name))
     return type_->getProperty(js, name);
-  else
-    return CJFunction::getProperty(js, name);
+
+  return CJFunctionBase::getProperty(js, name);
 }
 
 void
 CJTypeFunction::
 setProperty(CJavaScript *js, const std::string &name, CJValueP value)
 {
-  if (type_->hasProperty(js, name))
+  if (type_ && type_->hasProperty(js, name))
     type_->setProperty(js, name, value);
   else
-    CJFunction::setProperty(js, name, value);
+    CJFunctionBase::setProperty(js, name, value);
 }
 
+// call type function for type
 CJValueP
 CJTypeFunction::
 exec(CJavaScript *js, const Values &values)
@@ -61,7 +61,7 @@ exec(CJavaScript *js, const Values &values)
 
     value = dateType->exec(js, name(), values);
   }
-  else if (ovalue->type() == CJToken::Type::Function) {
+  else if (ovalue->isFunction()) {
     CJTypeFunctionP typeFn = std::static_pointer_cast<CJTypeFunction>(ovalue);
 
     CJObjTypeP objType = typeFn->objectType();

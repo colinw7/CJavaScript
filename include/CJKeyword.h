@@ -16,7 +16,6 @@ class CJKeyword : public CJToken {
     Const,
     Continue,
     Default,
-    Delete,
     Do,
     Else,
     Finally,

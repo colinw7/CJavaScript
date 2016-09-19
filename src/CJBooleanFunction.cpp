@@ -4,7 +4,7 @@
 
 CJBooleanFunction::
 CJBooleanFunction(CJavaScript *js) :
- CJTypeFunction(js, "Boolean", CJTrueType::instance(js))
+ CJObjTypeFunction(js, "Boolean", CJBooleanType::instance(js))
 {
 }
 
@@ -12,13 +12,15 @@ CJValueP
 CJBooleanFunction::
 exec(CJavaScript *js, const Values &values)
 {
-  if (values.size() < 1)
-    return js->createFalseValue();
+  CJBoolean *bobj;
 
-  bool b = values[0]->toBoolean();
+  if (values.size() <= 1)
+    bobj = new CJBoolean(js);
+  else {
+    bool b = values[1]->toBoolean();
 
-  if (b)
-    return js->createTrueValue();
-  else
-    return js->createFalseValue();
+    bobj = new CJBoolean(js, b);
+  }
+
+  return CJValueP(bobj);
 }

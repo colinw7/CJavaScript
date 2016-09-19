@@ -13,21 +13,19 @@ class CJObj : public CJDictionary {
   typedef std::vector<CJValueP> Values;
 
  public:
-  CJObj(CJavaScript *js, CJObjTypeP type);
+  CJObj(CJavaScript *js, CJObjTypeP objType);
 
   CJValue *dup(CJavaScript *js) const override {
-    return new CJObj(js, type_);
+    return new CJObj(js, objType_);
   }
 
   bool isObject() const override { return true; }
 
-  CJObjTypeP type() const { return type_; }
+  CJObjTypeP objType() const { return objType_; }
 
   const std::string &name() const;
 
-  std::string toString() const override {
-    return "[object " + name() + "]";
-  }
+  std::string toString() const override;
 
   bool toBoolean() const override { return true; }
 
@@ -48,9 +46,7 @@ class CJObj : public CJDictionary {
 
   virtual CJValueP execNameFn(CJavaScript *, const std::string &, const Values &);
 
-  void print(std::ostream &os) const override {
-    os << toString();
-  }
+  void print(std::ostream &os) const override;
 
   friend std::ostream &operator<<(std::ostream &os, const CJObj &rhs) {
     rhs.print(os);
@@ -59,7 +55,7 @@ class CJObj : public CJDictionary {
   }
 
  protected:
-  CJObjTypeP type_;
+  CJObjTypeP objType_;
 };
 
 #endif

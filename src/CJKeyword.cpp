@@ -18,7 +18,6 @@ nameToType(const std::string &name)
     keywords["const"    ] = Type::Const;
     keywords["continue" ] = Type::Continue;
     keywords["default"  ] = Type::Default;
-    keywords["delete"   ] = Type::Delete;
     keywords["do"       ] = Type::Do;
     keywords["else"     ] = Type::Else;
     keywords["finally"  ] = Type::Finally;
@@ -64,7 +63,6 @@ name() const
     case Type::Const   : return "const";
     case Type::Continue: return "continue";
     case Type::Default : return "default";
-    case Type::Delete  : return "delete";
     case Type::Do      : return "do";
     case Type::Else    : return "else";
     case Type::Finally : return "finally";

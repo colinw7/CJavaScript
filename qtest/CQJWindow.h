@@ -34,10 +34,14 @@ class CQJWindow : public CQJObject {
 
   CJValue *dup(CJavaScript *) const override { return new CQJWindow(qjs_); }
 
-  long addTimer(CJFunctionP timerFn, double t);
+  long addTimer(CJFunctionBaseP timerFn, double t);
   void removeTimer(long id);
 
-  void addOneShotTimer(CJFunctionP timerFn, double t);
+  void addOneShotTimer(CJFunctionBaseP timerFn, double t);
+
+  CJValueP getProperty(CJavaScript *js, const std::string &name) const;
+
+  void setProperty(CJavaScript *js, const std::string &name, CJValueP value);
 
   CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values);
 

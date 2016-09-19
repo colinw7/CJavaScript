@@ -1,10 +1,10 @@
 #ifndef CJNumberFunction_H
 #define CJNumberFunction_H
 
-#include <CJTypeFunction.h>
+#include <CJObjTypeFunction.h>
 
 // number function
-class CJNumberFunction : public CJTypeFunction {
+class CJNumberFunction : public CJObjTypeFunction {
  public:
   CJNumberFunction(CJavaScript *js);
 

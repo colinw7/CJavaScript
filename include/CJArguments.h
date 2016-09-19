@@ -44,9 +44,10 @@ class CJArguments : public CJObj {
   bool toBoolean() const override { return ! values_.empty(); }
 
   bool hasIndex() const override { return true; }
+  bool hasIndexValue(int ind) const override;
   CJValueP indexValue(int ind) const override;
   void setIndexValue(int ind, CJValueP value) override;
-  bool hasIndexValue(int ind) const override;
+  void deleteIndexValue(int ind) override;
 
   void addValue(CJValueP value);
 

@@ -1,10 +1,10 @@
 #ifndef CJRegExpFunction_H
 #define CJRegExpFunction_H
 
-#include <CJTypeFunction.h>
+#include <CJObjTypeFunction.h>
 
 // string function
-class CJRegExpFunction : public CJTypeFunction {
+class CJRegExpFunction : public CJObjTypeFunction {
  public:
   CJRegExpFunction(CJavaScript *js);
 

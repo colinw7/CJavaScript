@@ -66,7 +66,7 @@ getProperty(CJavaScript *js, const std::string &key) const
   else if (key == "message")
     return js->createStringValue(message_);
   else if (key == "code")
-    return js->createNumberValue(long(type_));
+    return js->createNumberValue(long(exceptionType_));
   else
     return CJObj::getProperty(js, key);
 }
@@ -81,6 +81,21 @@ setProperty(CJavaScript *js, const std::string &key, CJValueP value)
     message_ = value->toString();
   else
     CJObj::setProperty(js, key, value);
+}
+
+std::string
+CJErrorBase::
+toString() const
+{
+  std::string str;
+
+  if (name_ != "")
+    str += name_;
+
+  if (message_ != "")
+    str += ": " + message_;
+
+  return str;
 }
 
 void

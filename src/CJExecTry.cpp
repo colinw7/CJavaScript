@@ -13,23 +13,30 @@ CJValueP
 CJExecTry::
 exec(CJavaScript *js)
 {
-  if (! tryBlock_)
-    return CJValueP();
+  CJValueP value;
 
-  js->startBlock(tryBlock_);
+  // try { block }
+  if (tryBlock_) {
+    js->startBlock(tryBlock_);
 
-  CJValueP value = tryBlock_->exec(js);
+    value = tryBlock_->exec(js);
 
-  js->endBlock();
+    js->endBlock();
+  }
 
-  if (tryBlock_->hasError()) {
-    if (! catchBlock_)
-      return CJValueP();
-
+  // execute catch block if error and defined
+  if (tryBlock_->hasError() && catchBlock_) {
     if (catchIdentifiers_) {
       CJLValueP evar = js->lookupProperty(catchIdentifiers_->identifiers(), /*create*/true);
 
-      CJValueP evalue = std::static_pointer_cast<CJValue>(tryBlock_->error());
+      CJErrorBaseP error = tryBlock_->error();
+
+      CJValueP evalue;
+
+      if (error->type() == CJToken::Type::Error)
+        evalue = std::static_pointer_cast<CJError>(error)->value();
+      else
+        evalue = std::static_pointer_cast<CJValue>(error);
 
       evar->setValue(evalue);
     }
@@ -37,6 +44,15 @@ exec(CJavaScript *js)
     js->startBlock(catchBlock_);
 
     value = catchBlock_->exec(js);
+
+    js->endBlock();
+  }
+
+  // finally block always executed
+  if (finallyBlock_) {
+    js->startBlock(finallyBlock_);
+
+    value = finallyBlock_->exec(js);
 
     js->endBlock();
   }

@@ -38,36 +38,36 @@ CQJCanvasContext2D(CQJavaScript *qjs) :
 {
   CJavaScript *js = qjs->js();
 
-  type_->addObjectFunction(js, "arc"         );
-  type_->addObjectFunction(js, "beginPath"   );
-  type_->addObjectFunction(js, "clearRect"   );
-  type_->addObjectFunction(js, "clip"        );
-  type_->addObjectFunction(js, "closePath"   );
-  type_->addObjectFunction(js, "fillRect"    );
-  type_->addObjectFunction(js, "measureText" );
-  type_->addObjectFunction(js, "fillText"    );
-  type_->addObjectFunction(js, "strokeText"  );
-  type_->addObjectFunction(js, "drawImage"   );
-  type_->addObjectFunction(js, "lineTo"      );
-  type_->addObjectFunction(js, "moveTo"      );
-  type_->addObjectFunction(js, "rect"        );
-  type_->addObjectFunction(js, "restore"     );
-  type_->addObjectFunction(js, "rotate"      );
-  type_->addObjectFunction(js, "save"        );
-  type_->addObjectFunction(js, "scale"       );
-  type_->addObjectFunction(js, "setTransform");
-  type_->addObjectFunction(js, "stroke"      );
-  type_->addObjectFunction(js, "fill"        );
-  type_->addObjectFunction(js, "strokeRect"  );
-  type_->addObjectFunction(js, "translate"   );
+  objType_->addObjectFunction(js, "arc"         );
+  objType_->addObjectFunction(js, "beginPath"   );
+  objType_->addObjectFunction(js, "clearRect"   );
+  objType_->addObjectFunction(js, "clip"        );
+  objType_->addObjectFunction(js, "closePath"   );
+  objType_->addObjectFunction(js, "fillRect"    );
+  objType_->addObjectFunction(js, "measureText" );
+  objType_->addObjectFunction(js, "fillText"    );
+  objType_->addObjectFunction(js, "strokeText"  );
+  objType_->addObjectFunction(js, "drawImage"   );
+  objType_->addObjectFunction(js, "lineTo"      );
+  objType_->addObjectFunction(js, "moveTo"      );
+  objType_->addObjectFunction(js, "rect"        );
+  objType_->addObjectFunction(js, "restore"     );
+  objType_->addObjectFunction(js, "rotate"      );
+  objType_->addObjectFunction(js, "save"        );
+  objType_->addObjectFunction(js, "scale"       );
+  objType_->addObjectFunction(js, "setTransform");
+  objType_->addObjectFunction(js, "stroke"      );
+  objType_->addObjectFunction(js, "fill"        );
+  objType_->addObjectFunction(js, "strokeRect"  );
+  objType_->addObjectFunction(js, "translate"   );
 
-  type_->addObjectFunction(js, "createLinearGradient");
-  type_->addObjectFunction(js, "createRadialGradient");
-  type_->addObjectFunction(js, "createPattern");
+  objType_->addObjectFunction(js, "createLinearGradient");
+  objType_->addObjectFunction(js, "createRadialGradient");
+  objType_->addObjectFunction(js, "createPattern");
 
-  type_->addObjectFunction(js, "createImageData");
-  type_->addObjectFunction(js, "getImageData");
-  type_->addObjectFunction(js, "putImageData");
+  objType_->addObjectFunction(js, "createImageData");
+  objType_->addObjectFunction(js, "getImageData");
+  objType_->addObjectFunction(js, "putImageData");
 
   setStringProperty(js, "fillStyle"  , "black");
   setStringProperty(js, "strokeStyle", "black");
@@ -222,7 +222,7 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
       if (imageVal && imageVal->type() == CJValue::Type::Object) {
         CJObjP imageObj = std::static_pointer_cast<CJObj>(imageVal);
 
-        if (imageObj->type()->name() == "Image") {
+        if (imageObj->objType()->name() == "Image") {
           image = imageObj->cast<CQJImage>();
         }
       }
@@ -425,7 +425,7 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
       if (patternVal->type() == CJValue::Type::Object) {
         CJObjP patternObj = std::static_pointer_cast<CJObj>(patternVal);
 
-        if      (patternObj->type()->name() == "Image") {
+        if      (patternObj->objType()->name() == "Image") {
           CQJImage *image = patternObj->cast<CQJImage>();
 
           return CJValueP(new CQJCanvasPattern(qjs_, image->qimage(), repeat));
@@ -462,7 +462,7 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
       if (imageVal->type() == CJValue::Type::Object) {
         CJObjP imageObj = std::static_pointer_cast<CJObj>(imageVal);
 
-        if      (imageObj->type()->name() == "Image") {
+        if      (imageObj->objType()->name() == "Image") {
           CQJImage *image = imageObj->cast<CQJImage>();
 
           qjs_->canvas()->putImageData(image->qimage(), x, y);
@@ -487,17 +487,17 @@ initFill()
   if (fillStyle->type() == CJValue::Type::Object) {
     CJObjP fillStyleObj = std::static_pointer_cast<CJObj>(fillStyle);
 
-    if      (fillStyleObj->type()->name() == "CanvasLinearGradient") {
+    if      (fillStyleObj->objType()->name() == "CanvasLinearGradient") {
       CQJCanvasLinearGradient *lg = fillStyle->cast<CQJCanvasLinearGradient>();
 
       qjs_->canvas()->setFillGradient(lg->lg());
     }
-    else if (fillStyleObj->type()->name() == "CanvasRadialGradient") {
+    else if (fillStyleObj->objType()->name() == "CanvasRadialGradient") {
       CQJCanvasRadialGradient *rg = fillStyle->cast<CQJCanvasRadialGradient>();
 
       qjs_->canvas()->setFillGradient(rg->rg());
     }
-    else if (fillStyleObj->type()->name() == "CanvasPattern") {
+    else if (fillStyleObj->objType()->name() == "CanvasPattern") {
       CQJCanvasPattern *pattern = fillStyle->cast<CQJCanvasPattern>();
 
       qjs_->canvas()->setFillPattern(pattern->qimage());
@@ -525,12 +525,12 @@ initStroke()
   if (strokeStyle->type() == CJValue::Type::Object) {
     CJObjP strokeStyleObj = std::static_pointer_cast<CJObj>(strokeStyle);
 
-    if      (strokeStyleObj->type()->name() == "CanvasLinearGradient") {
+    if      (strokeStyleObj->objType()->name() == "CanvasLinearGradient") {
       CQJCanvasLinearGradient *lg = strokeStyle->cast<CQJCanvasLinearGradient>();
 
       qjs_->canvas()->setStrokeGradient(lg->lg());
     }
-    else if (strokeStyleObj->type()->name() == "CanvasRadialGradient") {
+    else if (strokeStyleObj->objType()->name() == "CanvasRadialGradient") {
       CQJCanvasRadialGradient *rg = strokeStyle->cast<CQJCanvasRadialGradient>();
 
       qjs_->canvas()->setStrokeGradient(rg->rg());

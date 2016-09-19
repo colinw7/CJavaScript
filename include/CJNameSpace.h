@@ -2,16 +2,23 @@
 #define CJNameSpace_H
 
 #include <CJTypes.h>
+#include <COptVal.h>
 #include <map>
 #include <set>
 #include <vector>
 
 class CJNameSpace {
  public:
-  typedef std::map<std::string,CJValueP> KeyValues;
-  typedef std::set<std::string>          KeyNames;
-  typedef std::vector<std::string>       Names;
-  typedef std::map<std::string,bool>     ReadOnly;
+  struct PropertyData {
+    COptBool canDelete;
+    COptBool readOnly;
+  };
+
+  typedef std::map<std::string,CJValueP>     KeyValues;
+  typedef std::set<std::string>              KeyNames;
+  typedef std::vector<std::string>           Names;
+  typedef std::map<std::string,PropertyData> PropertyMap;
+  typedef std::vector<CJValueP>              Values;
 
  public:
   CJNameSpace(const KeyValues &keyValues=KeyValues()) :
@@ -28,8 +35,8 @@ class CJNameSpace {
   void setIntegerProperty(CJavaScript *js, const std::string &key, long i);
   void setStringProperty (CJavaScript *js, const std::string &key, const std::string &str);
 
-  void setFunctionProperty(CJavaScript *js, const std::string &key, CJFunctionP function);
-  void setFunctionProperty(CJavaScript *js, CJFunctionP function);
+  void setFunctionProperty(CJavaScript *js, const std::string &key, CJFunctionBaseP function);
+  void setFunctionProperty(CJavaScript *js, CJFunctionBaseP function);
 
   std::string getStringProperty(CJavaScript *js, const std::string &key,
                                 const std::string &def="") const;
@@ -42,11 +49,15 @@ class CJNameSpace {
 
   Names getPropertyNames(bool pseudo=true) const;
 
+  bool deleteProperty(CJavaScript *js, const std::string &key, const Values &values);
   void deleteProperty(const std::string &key);
 
   void addPseudoProperty(const std::string &key);
 
   const KeyNames &getPseudoPropertyNames() const { return keyNames_; }
+
+  bool canDeleteProperty(const std::string &key) const;
+  void setCanDeleteProperty(const std::string &key, bool b);
 
   bool isReadOnlyProperty(const std::string &key) const;
   void setReadOnlyProperty(const std::string &key, bool b=true);
@@ -60,9 +71,9 @@ class CJNameSpace {
   }
 
  protected:
-  KeyValues keyValues_;
-  KeyNames  keyNames_;
-  ReadOnly  readOnly_;
+  KeyValues   keyValues_;
+  KeyNames    keyNames_;
+  PropertyMap propertyMap_;
 };
 
 #endif

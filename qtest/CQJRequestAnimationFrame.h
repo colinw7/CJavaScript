@@ -1,11 +1,11 @@
 #ifndef CQJRequestAnimationFrame_H
 #define CQJRequestAnimationFrame_H
 
-#include <CJFunction.h>
+#include <CJFunctionBase.h>
 
 class CQJavaScript;
 
-class CQJRequestAnimationFrame : public CJFunction {
+class CQJRequestAnimationFrame : public CJFunctionBase {
  public:
   CQJRequestAnimationFrame(CQJavaScript *js);
 

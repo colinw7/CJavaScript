@@ -19,11 +19,11 @@ class CJUserType : public CJObjType {
 
 class CJUserObject : public CJObj {
  public:
-  CJUserObject(CJavaScript *js, CJObjTypeP userType, CJFunctionP userFn);
+  CJUserObject(CJavaScript *js, CJObjTypeP userType, CJFunctionBaseP userFn);
 
   CJValue *dup(CJavaScript *) const override { return new CJUserObject(js_, userType_, userFn_); }
 
-  CJFunctionP userFn() const { return userFn_; }
+  CJFunctionBaseP userFn() const { return userFn_; }
 
   // TODO: call object toString method
   std::string toString() const override { return CJObj::toString(); }
@@ -46,8 +46,8 @@ class CJUserObject : public CJObj {
   CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  CJObjTypeP  userType_;
-  CJFunctionP userFn_;
+  CJObjTypeP      userType_;
+  CJFunctionBaseP userFn_;
 };
 
 #endif

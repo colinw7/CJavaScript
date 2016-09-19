@@ -1,10 +1,10 @@
 #ifndef CJArrayFunction_H
 #define CJArrayFunction_H
 
-#include <CJTypeFunction.h>
+#include <CJObjTypeFunction.h>
 
 // Array constructor function
-class CJArrayFunction : public CJTypeFunction {
+class CJArrayFunction : public CJObjTypeFunction {
  public:
   CJArrayFunction(CJavaScript *js);
 

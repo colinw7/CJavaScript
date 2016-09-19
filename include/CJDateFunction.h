@@ -1,10 +1,10 @@
 #ifndef CJDateFunction_H
 #define CJDateFunction_H
 
-#include <CJTypeFunction.h>
+#include <CJObjTypeFunction.h>
 
 // string function
-class CJDateFunction : public CJTypeFunction {
+class CJDateFunction : public CJObjTypeFunction {
  public:
   CJDateFunction(CJavaScript *js);
 

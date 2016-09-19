@@ -11,6 +11,8 @@ class CJRegExpType : public CJObjType {
 
   CJRegExpType(CJavaScript *js);
 
+  CJValueP execType(CJavaScript *js, const std::string &name, const Values &values) override;
+
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:

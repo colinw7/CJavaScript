@@ -3,7 +3,7 @@
 
 CJSetInterval::
 CJSetInterval(CJavaScript *js) :
- CJFunction(js, "setInterval")
+ CJFunctionBase(js, "setInterval")
 {
 }
 
@@ -27,7 +27,7 @@ exec(CJavaScript *js, const Values &values)
 
 CJClearInterval::
 CJClearInterval(CJavaScript *js) :
- CJFunction(js, "clearInterval")
+ CJFunctionBase(js, "clearInterval")
 {
 }
 

@@ -25,10 +25,29 @@ CJStringType::
 CJStringType(CJavaScript *js) :
  CJObjType(js, CJToken::Type::String, "string")
 {
+  // String properties
+  //   length, fromCharCode, fromCodePoint, raw
+  // Function
+  //   arguments, caller, displayName, length, name, prototype
+  // Object
+  //   __proto__, constructor
   addTypeFunction(js, "fromCharCode");
   addTypeFunction(js, "fromCodePoint");
   addTypeFunction(js, "raw");
+  addTypeFunction(js, "toString");
 
+  // String.prototype properties
+  //  anchor, charAt, charCodeAt, codePointAt, concat, endsWith,
+  //  includes, indexOf, lastIndexOf, link, localCompare, match,
+  //  normalize, repeat, replace, search, slice, split, startsWith,
+  //  substr, substring, toLocaleLowerCase, toLocaleUpperCase,
+  //  toLowerCase, toString, toUpperCase, trim, trimLeft, trimRight,
+  // Function.prototype properties
+  //  apply, bind, call, isGenerator, toSource, toString
+  // Object.prototype properties
+  //  hasOwnProperty, isPrototypeOf, propertyIsEnumerable,
+  //  toLocalString,  toSource, toString, unwatch, valueOf, watch
+  addObjectFunction(js, "toString");
   addObjectFunction(js, "charAt");
   addObjectFunction(js, "concat");
   addObjectFunction(js, "indexOf");
@@ -44,19 +63,14 @@ CJStringType(CJavaScript *js) :
 
 CJValueP
 CJStringType::
-exec(CJavaScript *js, const std::string &name, const Values &values)
+execType(CJavaScript *js, const std::string &name, const Values &values)
 {
   if (values.size() < 1) {
     js->errorMsg("Invalid number of arguments for " + name);
     return CJValueP();
   }
 
-  CJString *cstr = values[0]->cast<CJString>();
-  assert(cstr);
-
-  std::string str = cstr->text();
-
-  //---
+  // values[0] is CJStringFunction
 
   // type functions
   if      (name == "fromCharCode") {
@@ -84,7 +98,36 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
   else if (name == "raw") {
     return CJValueP();
   }
+  else if (name == "toString") {
+    return js->createStringValue("function String() { }");
+  }
+  else {
+    js->errorMsg("Invalid string function " + name);
+  }
+
+  return CJValueP();
+}
+
+CJValueP
+CJStringType::
+exec(CJavaScript *js, const std::string &name, const Values &values)
+{
+  if (values.size() < 1) {
+    js->errorMsg("Invalid number of arguments for " + name);
+    return CJValueP();
+  }
+
+  CJString *cstr = values[0]->cast<CJString>();
+  assert(cstr);
+
+  std::string str = cstr->text();
+
+  //---
+
   // object functions
+  if      (name == "toString") {
+    return js->createStringValue(str);
+  }
   else if (name == "charAt") {
     if (values.size() != 2) {
       js->errorMsg("Invalid number of arguments for " + name);
@@ -501,11 +544,28 @@ setIndexValue(int ind, CJValueP value)
   text_ = text_.substr(0, ind - 1) + s + text_.substr(ind + 1);
 }
 
+void
+CJString::
+deleteIndexValue(int)
+{
+  // false
+}
+
 bool
 CJString::
 hasIndexValue(int ind) const
 {
   return (ind >= 0 && ind < int(text_.length()));
+}
+
+std::string
+CJString::
+toString() const
+{
+  if (! isBasic())
+    return "[String: '" + text_ + "']";
+  else
+    return text_;
 }
 
 void

@@ -2,7 +2,16 @@
 #include <CJExecIdentifiers.h>
 #include <CJExecFunction.h>
 #include <CJExecIndexExpression.h>
+#include <CJTokenValue.h>
 #include <CJavaScript.h>
+
+namespace {
+  std::string valueToString(CJValueP value) {
+    return (value ? value->toString() : "<null>");
+  }
+}
+
+//---
 
 CJValueP
 CJExecExpression::
@@ -29,6 +38,9 @@ exec(CJavaScript *js)
           std::cerr << "pushValue " << *identifiers << "=<null>" << std::endl;
       }
 
+      //if (! value)
+      //  value = js_->createUndefinedValue();
+
       values_.push_back(value);
     }
 
@@ -43,6 +55,22 @@ exec(CJavaScript *js)
       values_.push_back(value);
     }
 
+    void pushTokenValue(CJTokenP token, CJValueP value) {
+      if (js_->isExprDebug()) {
+        if (value)
+          std::cerr << "pushTokenValue " << *token << "(" << *value << ")" << std::endl;
+        else
+          std::cerr << "pushTokenValue " << *token << "(<null>>" << std::endl;
+      }
+
+      CJTokenValueP tvalue(new CJTokenValue(js_));
+
+      tvalue->addToken(token);
+      tvalue->setValue(value);
+
+      values_.push_back(tvalue);
+    }
+
     CJValueP popValue() {
       if (js_->isExprDebug())
         std::cerr << "popValue" << std::endl;
@@ -52,6 +80,13 @@ exec(CJavaScript *js)
       values_.pop_back();
 
       return value;
+    }
+
+    CJValueP lastValue() {
+      if (values_.empty())
+        return CJValueP();
+
+      return values_.back();
     }
 
     bool anyValues() {
@@ -109,18 +144,22 @@ exec(CJavaScript *js)
     if (! token)
       return CJValueP();
 
+    CJOperator *lastOp  = state.lastOp();
+
     CJToken::Type type = token->type();
 
     if      (token->isValue()) {
       CJValueP value = std::static_pointer_cast<CJValue>(token);
 
-      state.pushValue(value);
+      if (lastOp && lastOp->type() == CJOperator::Type::Delete)
+        state.pushTokenValue(token, value);
+      else
+        state.pushValue(value);
     }
     else if (type == CJToken::Type::Operator) {
       CJOperator *op = token->cast<CJOperator>();
 
-      bool        unstack = false;
-      CJOperator *lastOp  = state.lastOp();
+      bool unstack = false;
 
       if (lastOp) {
         if      (lastOp->precedence() < op->precedence())
@@ -149,8 +188,8 @@ exec(CJavaScript *js)
             state.pushValue(value);
           else
             js->errorMsg(this, "Invalid binary operator value : " +
-                         (value1 ? value1->toString() : "<null>") + " " + lastOp->name() + " " +
-                         (value2 ? value2->toString() : "<null>"));
+                         valueToString(value1) + " " + lastOp->name() + " " +
+                         valueToString(value2));
         }
         else {
           if (state.numValues() < 1) {
@@ -166,7 +205,7 @@ exec(CJavaScript *js)
             state.pushValue(value);
           else
             js->errorMsg(this, "Invalid unary operator value : " +
-                         lastOp->name() + " " + value1->toString());
+                         lastOp->name() + " " + valueToString(value1));
         }
 
         //---
@@ -189,9 +228,7 @@ exec(CJavaScript *js)
     else if (type == CJToken::Type::Identifiers) {
       CJExecIdentifiers *identifiers = token->cast<CJExecIdentifiers>();
 
-      CJOperator *lastOp = state.lastOp();
-
-      if (lastOp && lastOp->type() == CJOperator::Type::Scope) {
+      if      (lastOp && lastOp->type() == CJOperator::Type::Scope) {
         if (! state.anyValues()) {
           js->errorMsg(this, "Missing value for identifiers scope");
           continue;
@@ -206,7 +243,14 @@ exec(CJavaScript *js)
         state.pushValue(identifiers);
       }
       else {
-        state.pushValue(identifiers);
+        if (lastOp && lastOp->type() == CJOperator::Type::Delete) {
+          CJValueP value = identifiers->exec(js);
+
+          state.pushTokenValue(token, value);
+        }
+        else {
+          state.pushValue(identifiers);
+        }
       }
     }
     else if (type == CJToken::Type::ExecFunction) {
@@ -225,8 +269,6 @@ exec(CJavaScript *js)
       //---
 
       CJExecFunction *fn = token->cast<CJExecFunction>();
-
-      CJOperator *lastOp = state.lastOp();
 
       if (lastOp && lastOp->type() == CJOperator::Type::Scope) {
         if (! state.anyValues()) {
@@ -270,7 +312,10 @@ exec(CJavaScript *js)
       else {
         CJValueP value = token->exec(js);
 
-        state.pushValue(value);
+        if (lastOp && lastOp->type() == CJOperator::Type::Delete)
+          state.pushTokenValue(token, value);
+        else
+          state.pushValue(value);
       }
     }
     else {
@@ -288,7 +333,10 @@ exec(CJavaScript *js)
 
       CJValueP value = token->exec(js);
 
-      state.pushValue(value);
+      if (lastOp && lastOp->type() == CJOperator::Type::Delete)
+        state.pushTokenValue(token, value);
+      else
+        state.pushValue(value);
     }
   }
 
@@ -314,8 +362,8 @@ exec(CJavaScript *js)
         state.pushValue(value);
       else
         js->errorMsg(this, "Invalid binary operator value : " +
-                     (value1 ? value1->toString() : "<null>") + " " + lastOp->name() + " " +
-                     (value2 ? value2->toString() : "<null>"));
+                     valueToString(value1) + " " + lastOp->name() + " " +
+                     valueToString(value2));
     }
     else {
       if (state.numValues() < 1) {
@@ -331,7 +379,7 @@ exec(CJavaScript *js)
         state.pushValue(value);
       else
         js->errorMsg(this, "Invalid unary operator value : " +
-                     lastOp->name() + " " + value1->toString());
+                     lastOp->name() + " " + valueToString(value1));
     }
   }
 

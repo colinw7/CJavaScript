@@ -13,16 +13,16 @@ class CJJSON {
 
 //------
 
-#include <CJFunction.h>
+#include <CJFunctionBase.h>
 #include <CJson.h>
 
-class CJJSONParseFunction : public CJFunction {
+class CJJSONFunction : public CJFunctionBase {
  public:
-  CJJSONParseFunction(CJavaScript *js) :
-   CJFunction(js, "parse", CJFunction::Type::JSONStringify) {
+  CJJSONFunction(CJavaScript *js, const std::string &name) :
+   CJFunctionBase(js, name, CJFunctionBase::Type::JSON), name_(name) {
   }
 
-  CJValue *dup(CJavaScript *js) const override { return new CJJSONParseFunction(js); }
+  CJValue *dup(CJavaScript *js) const override { return new CJJSONFunction(js, name_); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 
@@ -31,39 +31,22 @@ class CJJSONParseFunction : public CJFunction {
   }
 
  private:
-  CJValueP toValue(CJavaScript *js, CJValueP key, CJson::Value *value,
-                   CJFunctionP func=CJFunctionP());
+  CJValueP parseToValue(CJavaScript *js, CJValueP key, CJson::Value *value,
+                        CJFunctionBaseP func=CJFunctionBaseP());
 
-  CJValueP callFunc(CJavaScript *js, CJValueP key, CJValueP value, CJFunctionP func);
-};
+  CJValueP parseCallFunc(CJavaScript *js, CJValueP key, CJValueP value, CJFunctionBaseP func);
 
-//------
-
-class CJJSONStringifyFunction : public CJFunction {
- public:
-  CJJSONStringifyFunction(CJavaScript *js) :
-   CJFunction(js, "stringify", CJFunction::Type::JSONStringify) {
-  }
-
-  CJValue *dup(CJavaScript *js) const override { return new CJJSONStringifyFunction(js); }
-
-  CJValueP exec(CJavaScript *js, const Values &values) override;
-
-  void print(std::ostream &os) const override {
-    os << "stringify";
-  }
-
- private:
   bool stringify(CJavaScript *js, CJValueP key, CJValueP value,
                  std::string &str, bool &skip) const;
 
   std::string encodeString(const std::string &s) const;
 
  private:
-  CJValueP    ivalue_;
-  CJFunctionP toJSON_;
-  CJFunctionP replacer_;
-  CJArrayP    filter_;
+  std::string     name_;
+  CJValueP        ivalue_;
+  CJFunctionBaseP toJSON_;
+  CJFunctionBaseP replacer_;
+  CJArrayP        filter_;
 };
 
 #endif

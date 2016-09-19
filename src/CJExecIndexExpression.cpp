@@ -46,23 +46,11 @@ indexValue(CJavaScript *js, CJValueP avalue)
     return CJValueP();
 
   // index value
+  CJValueP ivalue = indValue(js);
+
   CJValueP res;
 
-  if      (avalue->hasIndex()) {
-    CJValueP ivalue = iexpr_->exec(js);
-
-    long ind = ivalue->toInteger();
-
-    res = avalue->indexValue(ind);
-  }
-  else if (avalue->hasProperty()) {
-    CJValueP ivalue = iexpr_->exec(js);
-
-    std::string ind = ivalue->toString();
-
-    res = avalue->propertyValue(ind);
-  }
-  else {
+  if (! js->indexValue(avalue, ivalue, res)) {
     js->throwTypeError(this, "Value not an array or property for index");
     return CJValueP();
   }
@@ -81,21 +69,9 @@ setIndexValue(CJavaScript *js, CJValueP avalue, CJValueP rvalue)
     return;
 
   // set index value
-  if      (avalue->hasIndex()) {
-    CJValueP ivalue = iexpr_->exec(js);
+  CJValueP ivalue = indValue(js);
 
-    long ind = ivalue->toInteger();
-
-    avalue->setIndexValue(ind, rvalue);
-  }
-  else if (avalue->hasProperty()) {
-    CJValueP ivalue = iexpr_->exec(js);
-
-    std::string ind = ivalue->toString();
-
-    avalue->setPropertyValue(ind, rvalue);
-  }
-  else {
+  if (! js->setIndexValue(avalue, ivalue, rvalue)) {
     js->errorMsg("Value not an array or property for index");
     return;
   }
@@ -116,9 +92,9 @@ decodeExpressions(CJExecIdentifiersP &identifiers, std::vector<CJExecExpressionP
     return true;
   }
 
-  if (expr_ && expr_->type() == CJToken::Type::IndexExpression) {
-    CJExecIndexExpressionP iexpr = std::static_pointer_cast<CJExecIndexExpression>(expr_);
+  CJExecIndexExpressionP iexpr = lindexExpression();
 
+  if (iexpr) {
     CJExecIdentifiersP             identifiers1;
     std::vector<CJExecExpressionP> indices1;
 
@@ -139,6 +115,23 @@ decodeExpressions(CJExecIdentifiersP &identifiers, std::vector<CJExecExpressionP
   return false;
 }
 
+CJExecIndexExpressionP
+CJExecIndexExpression::
+lindexExpression() const
+{
+  if (! expr_ || expr_->type() != CJToken::Type::IndexExpression)
+    return CJExecIndexExpressionP();
+
+  return std::static_pointer_cast<CJExecIndexExpression>(expr_);
+}
+
+CJValueP
+CJExecIndexExpression::
+indValue(CJavaScript *js)
+{
+  return iexpr_->exec(js);
+}
+
 void
 CJExecIndexExpression::
 print(std::ostream &os) const
@@ -147,12 +140,14 @@ print(std::ostream &os) const
     if (iexpr_)
       os << *expr_ << "[" << *iexpr_ << "]";
     else
-      os << *expr_ << "[]";
+      os << "[" << *expr_ << "]";
   }
   else if (identifiers_) {
     if (iexpr_)
       os << *identifiers_ << "[" << *iexpr_ << "]";
     else
-      os << *identifiers_ << "[]";
+      os << "[" << *identifiers_ << "]";
   }
+  else if (evalue_)
+    os << *evalue_;
 }

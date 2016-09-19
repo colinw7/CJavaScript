@@ -3,6 +3,7 @@
 
 #include <CJToken.h>
 #include <vector>
+#include <map>
 #include <iostream>
 
 // var <identifiers> [= <value>] [, <identifiers> [= <value>], ...]
@@ -10,9 +11,10 @@ class CJExecDictionary : public CJToken {
  public:
   CJExecDictionary();
 
-  void addDictionaryValue(const CJValueP &key, CJExecExpressionP expr) {
-    values_.push_back(DictionaryValue(key, expr));
-  }
+  void addDictionaryValue(const CJValueP &key, CJExecExpressionP expr);
+
+  CJGetterSetterP getGetterSetter(const std::string &name);
+  void setGetterSetter(const std::string &name, CJGetterSetterP gs);
 
   CJValueP exec(CJavaScript *js) override;
 
@@ -28,9 +30,11 @@ class CJExecDictionary : public CJToken {
     }
   };
 
-  typedef std::vector<DictionaryValue> DictionaryValues;
+  typedef std::vector<DictionaryValue>          DictionaryValues;
+  typedef std::map<std::string,CJGetterSetterP> GSMap;
 
   DictionaryValues values_;
+  GSMap            gsMap_;
 };
 
 #endif
