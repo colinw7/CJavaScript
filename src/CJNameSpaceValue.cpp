@@ -45,22 +45,22 @@ void
 CJNameSpaceValue::
 setValue(CJValueP value)
 {
-  if (! scope_->isReadOnlyProperty(name_))
+  if (scope_->isWritableProperty(name_))
     scope_->setProperty(js_, name_, value);
 }
 
 bool
 CJNameSpaceValue::
-isReadOnly() const
+isWritable() const
 {
-  return scope_->isReadOnlyProperty(name_);
+  return scope_->isWritableProperty(name_);
 }
 
 void
 CJNameSpaceValue::
-setReadOnly(bool b)
+setWritable(bool b)
 {
-  scope_->setReadOnlyProperty(name_, b);
+  scope_->setWritableProperty(name_, b);
 }
 
 void

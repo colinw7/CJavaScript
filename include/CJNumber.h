@@ -2,6 +2,7 @@
 #define CJNumber_H
 
 #include <CJObj.h>
+#include <CJUtil.h>
 #include <limits>
 #include <sstream>
 
@@ -38,17 +39,25 @@ class CJNumber : public CJObj {
 
   CJNumber *dup(CJavaScript *js) const override { return new CJNumber(js, real_); }
 
-  bool isBasic() const { return isBasic_; }
-  void setIsBasic(bool b) { isBasic_ = b; }
+  bool isPrimitive() const override { return primitive_; }
+  void setIsPrimitive(bool b) { primitive_ = b; }
+
+  bool isNumber() const override { return true; }
 
   std::string toString() const override;
 
   double real() const { return real_; }
   void setReal(double r) { real_ = r; }
 
+  bool isInteger() const { return CJUtil::isInteger(real_); }
+
   double toReal() const override { return real_; }
 
   bool toBoolean() const override { return (real_ != 0.0); }
+
+  bool hasProperty() const override { return ! isPrimitive(); }
+
+  std::string realString() const;
 
   int cmp(const CJValue *v) const override {
     double r1 =    toReal();
@@ -61,8 +70,8 @@ class CJNumber : public CJObj {
   }
 
  private:
-  double real_;
-  bool   isBasic_ { true };
+  double real_ { 0.0 };
+  bool   primitive_ { true };
 };
 
 #endif

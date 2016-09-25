@@ -49,6 +49,4 @@ print(std::ostream &os) const
     else
       os << *op_ << *expr_;
   }
-
-  os << ";";
 }

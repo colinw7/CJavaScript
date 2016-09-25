@@ -22,7 +22,7 @@ exec(CJavaScript *js, const Values &values)
     str = new CJString(js, s);
   }
 
-  str->setIsBasic(false);
+  str->setIsPrimitive(false);
 
   return CJValueP(str);
 }

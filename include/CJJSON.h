@@ -31,13 +31,51 @@ class CJJSONFunction : public CJFunctionBase {
   }
 
  private:
+  class Indent {
+   public:
+    Indent() { }
+
+    void setInteger(int i) {
+      i_   = i;
+      str_ = "";
+
+      while (int(str_.size()) < i)
+        str_ += " ";
+    }
+
+    void setString(const std::string &s) {
+      s_ = s;
+
+      str_ = s;
+    }
+
+    bool isValid() const { return i_.isValid() || s_.isValid(); }
+
+    std::string str() const { return str_; }
+
+    std::string depthStr(int depth) const {
+      std::string s;
+
+      for (int i = 0; i < depth; ++i)
+        s += str();
+
+      return s;
+    }
+
+   private:
+    COptInt     i_;
+    COptString  s_;
+    std::string str_;
+  };
+
+ private:
   CJValueP parseToValue(CJavaScript *js, CJValueP key, CJson::Value *value,
                         CJFunctionBaseP func=CJFunctionBaseP());
 
   CJValueP parseCallFunc(CJavaScript *js, CJValueP key, CJValueP value, CJFunctionBaseP func);
 
-  bool stringify(CJavaScript *js, CJValueP key, CJValueP value,
-                 std::string &str, bool &skip) const;
+  bool stringify(CJavaScript *js, CJValueP key, CJValueP value, const Indent &indent,
+                 int depth, std::string &str, bool &skip) const;
 
   std::string encodeString(const std::string &s) const;
 

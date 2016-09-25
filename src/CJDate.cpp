@@ -453,7 +453,7 @@ dateFromValues(const Values &values)
     if (! values[0])
       return 0;
 
-    if      (values[0]->type() == CJToken::Type::Number) {
+    if      (values[0]->isNumber()) {
       long t = values[0]->toInteger();
 
       return t;

@@ -72,7 +72,8 @@ class CJToken {
     ExecDo,
     ExecLabel,
     ExecReturn,
-    ExecWhile
+    ExecWhile,
+    Statement
   };
 
  public:
@@ -90,8 +91,6 @@ class CJToken {
   template<typename T> T *cast() { return static_cast<T *>(this); }
 
   virtual bool isValue() const { return false; }
-
-  virtual bool isProtoValue() const { return false; }
 
   virtual CJValueP exec(CJavaScript *) { return CJValueP(); }
 

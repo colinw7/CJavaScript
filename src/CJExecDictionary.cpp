@@ -1,5 +1,5 @@
 #include <CJExecDictionary.h>
-#include <CJDictionary.h>
+#include <CJObject.h>
 #include <CJGetterSetter.h>
 #include <CJExecExpression.h>
 
@@ -39,7 +39,7 @@ CJValueP
 CJExecDictionary::
 exec(CJavaScript *js)
 {
-  CJDictionary *dict = new CJDictionary(js);
+  CJObject *dict = new CJObject(js);
 
   for (const auto &v : values_) {
     CJValueP value = v.expr->exec(js);

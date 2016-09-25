@@ -11,7 +11,8 @@ class CJNameSpace {
  public:
   struct PropertyData {
     COptBool canDelete;
-    COptBool readOnly;
+    COptBool writable;
+    COptBool enumerable;
   };
 
   typedef std::map<std::string,CJValueP>     KeyValues;
@@ -59,8 +60,11 @@ class CJNameSpace {
   bool canDeleteProperty(const std::string &key) const;
   void setCanDeleteProperty(const std::string &key, bool b);
 
-  bool isReadOnlyProperty(const std::string &key) const;
-  void setReadOnlyProperty(const std::string &key, bool b=true);
+  bool isWritableProperty(const std::string &key) const;
+  void setWritableProperty(const std::string &key, bool b=true);
+
+  virtual bool isEnumerableProperty(const std::string &key) const;
+  void setEnumerableProperty(const std::string &key, bool b=true);
 
   void print(std::ostream &os) const;
 

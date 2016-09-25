@@ -60,3 +60,14 @@
  . make var variables undeletable
  . improve property lookup for lvalue to include more parent data and calculaet value on demand
  . support function direct call on declaration
+
+# 9/25/2016
+ . Add enumerable, deletable for properties
+ . Create object for {} not dictionary
+ . Add statement for semi-colon separated tokens
+ . Add escape, encodeURI, encodeURIComponent, unescape, decodeURI, decodeURIComponent global funcs
+ . Support indent in json stringify
+ . Support base in parseInt
+ . Add Object.defineProperties
+ . Improve UTF8 encoding/decoding support for strings
+ . Use fpclassiify for NaN, Infinity checks

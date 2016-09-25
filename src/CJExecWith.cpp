@@ -19,7 +19,17 @@ exec(CJavaScript *js)
 
   CJValueP value;
 
-  if (varValue && varValue->type() == CJToken::Type::Dictionary) {
+  if      (varValue && varValue->type() == CJToken::Type::Object) {
+    CJObjectP obj = std::static_pointer_cast<CJObject>(varValue);
+
+    js->startScope(obj);
+
+    if (block_)
+      value = block_->exec(js);
+
+    js->endScope();
+  }
+  else if (varValue && varValue->type() == CJToken::Type::Dictionary) {
     CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(varValue);
 
     js->startScope(dict);

@@ -203,26 +203,50 @@ setCanDeleteProperty(const std::string &key, bool b)
 
 bool
 CJNameSpace::
-isReadOnlyProperty(const std::string &key) const
+isWritableProperty(const std::string &key) const
 {
   auto p = propertyMap_.find(key);
 
   if (p != propertyMap_.end())
-    return (*p).second.readOnly.getValue(false);
+    return (*p).second.writable.getValue(true);
 
-  return false;
+  return true;
 }
 
 void
 CJNameSpace::
-setReadOnlyProperty(const std::string &key, bool b)
+setWritableProperty(const std::string &key, bool b)
 {
   auto p = propertyMap_.find(key);
 
   if (p == propertyMap_.end())
     p = propertyMap_.insert(p, PropertyMap::value_type(key, PropertyData()));
 
-  (*p).second.readOnly = b;
+  (*p).second.writable = b;
+}
+
+bool
+CJNameSpace::
+isEnumerableProperty(const std::string &key) const
+{
+  auto p = propertyMap_.find(key);
+
+  if (p != propertyMap_.end())
+    return (*p).second.enumerable.getValue(true);
+
+  return true;
+}
+
+void
+CJNameSpace::
+setEnumerableProperty(const std::string &key, bool b)
+{
+  auto p = propertyMap_.find(key);
+
+  if (p == propertyMap_.end())
+    p = propertyMap_.insert(p, PropertyMap::value_type(key, PropertyData()));
+
+  (*p).second.enumerable = b;
 }
 
 void

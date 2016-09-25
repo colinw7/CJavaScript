@@ -44,9 +44,7 @@ class CStrParse;
 #include <CJDictionaryRef.h>
 #include <CJObject.h>
 #include <CJTypeValue.h>
-#include <CJObjectValue.h>
 #include <CJUserObject.h>
-#include <CJNameSpaceValue.h>
 #include <CJTypeFunction.h>
 
 //------
@@ -111,6 +109,7 @@ class CJavaScript {
 
   CJValueP setProperty(const std::string &name, CJValueP value);
 
+  bool hasIndexValue(CJValueP value, CJValueP ivalue) const;
   bool indexValue(CJValueP value, CJValueP ivalue, CJValueP &rvalue) const;
   bool setIndexValue(CJValueP value, CJValueP ivalue, CJValueP rvalue);
   bool deleteIndexValue(CJValueP value, CJValueP ivalue);
@@ -213,6 +212,8 @@ class CJavaScript {
 
   CJFunctionBaseP valueToFunction(CJValueP value) const;
 
+  CJValueP valueToObject(CJValueP value) const;
+
   COptInt cmp(CJValueP value1, CJValueP value2);
 
   CJValueP execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2);
@@ -286,6 +287,17 @@ class CJavaScript {
   virtual long setInterval(const std::string & /*proc*/, double /*msecs*/) { return -1; }
 
   virtual void clearInterval(int /*timer*/) { }
+
+  //---
+
+  bool isUndefinedValue(CJValueP value) const {
+    return (! value || value->type() == CJToken::Type::Undefined);
+  }
+
+  bool isUndefinedOrNullValue(CJValueP value) const {
+    return (! value || value->type() == CJToken::Type::Undefined ||
+                       value->type() == CJToken::Type::Null);
+  }
 
   //---
 
@@ -367,13 +379,15 @@ class CJavaScript {
   CJExecQuestionP        interpExecQuestion(CJExecExpressionP bexpr);
   CJExecReturnP          interpExecReturn();
   CJExecSwitchP          interpExecSwitch();
-  CJExecThisP            interpExecThis();
   CJExecThrowP           interpExecThrow();
   CJExecTryP             interpExecTry();
   CJExecVarP             interpExecVar();
   CJExecWhileP           interpExecWhile();
   CJExecWithP            interpExecWith();
   CJFunctionP            interpUserFunction(bool named);
+
+  void pushExecData(CJExecData &execData);
+  void popExecData();
 
   bool interpExecKeyword(CJKeyword::Type type);
   bool isExecKeyword    (CJKeyword::Type type) const;

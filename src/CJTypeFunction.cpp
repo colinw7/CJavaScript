@@ -69,6 +69,7 @@ exec(CJavaScript *js, const Values &values)
     value = objType->exec(js, name(), values);
   }
   else if (ovalue->type() == CJToken::Type::Dictionary) {
+#if 0
     if (name_ == "getOwnPropertyNames") {
       CJArrayP array(new CJArray(js));
 
@@ -85,6 +86,8 @@ exec(CJavaScript *js, const Values &values)
     else {
       js->errorMsg("Invalid dictionary type function");
     }
+#endif
+    js->errorMsg("Invalid dictionary type function");
   }
   else {
     js->errorMsg("Invalid object function type");

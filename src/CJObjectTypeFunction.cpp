@@ -23,10 +23,12 @@ exec(CJavaScript *js, const Values &values)
 
   CJValueP ovalue = values[0];
 
-  if      (ovalue->type() == CJToken::Type::Object) {
+#if 0
+  if (ovalue->type() == CJToken::Type::Object) {
     value = ovalue->cast<CJObj>()->execNameFn(js, name(), values);
   }
-  else if (ovalue->isObject()) {
+#endif
+  if (ovalue->isObject()) {
     CJObj *obj = ovalue->cast<CJObj>();
 
     if (! obj)

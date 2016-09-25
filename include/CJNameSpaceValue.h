@@ -19,8 +19,8 @@ class CJNameSpaceValue : public CJLValue {
   CJValueP value() const override;
   void setValue(CJValueP value) override;
 
-  bool isReadOnly() const override;
-  void setReadOnly(bool b) override;
+  bool isWritable() const override;
+  void setWritable(bool b) override;
 
   void print(std::ostream &os) const override;
 

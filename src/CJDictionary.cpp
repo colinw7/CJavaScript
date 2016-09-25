@@ -25,6 +25,13 @@ CJDictionaryType(CJavaScript *js) :
 
 CJValueP
 CJDictionaryType::
+execType(CJavaScript *, const std::string &, const Values &)
+{
+  return CJValueP();
+}
+
+CJValueP
+CJDictionaryType::
 exec(CJavaScript *, const std::string &, const Values &)
 {
   return CJValueP();
@@ -143,25 +150,6 @@ CJDictionary::
 deletePropertyValue(const std::string &key)
 {
   CJNameSpace::deleteProperty(key);
-}
-
-bool
-CJDictionary::
-isReadOnlyProperty(const std::string &ind) const
-{
-  auto p = readOnly_.find(ind);
-
-  return (p != readOnly_.end());
-}
-
-void
-CJDictionary::
-setReadOnlyProperty(const std::string &ind, bool b)
-{
-  if (b)
-    readOnly_.erase(ind);
-  else
-    readOnly_.insert(ind);
 }
 
 std::vector<std::string>

@@ -71,20 +71,55 @@ exec(CJavaScript *js, const Values &values)
         replacer_ = js->valueToFunction(values[1]);
     }
 
-    CJValueP indent;
+    Indent indent;
 
-    if (values.size() >= 3)
-      indent = values[2];
+    if (values.size() >= 3) {
+      // ignore bad types
+      if      (values[2]->type() == CJToken::Type::Number) {
+        CJNumberP number = std::static_pointer_cast<CJNumber>(values[2]);
+
+        long i = number->toInteger();
+
+        if (i > 0)
+          indent.setInteger(std::min(i, 10L));
+      }
+      else if (values[2]->type() == CJToken::Type::String) {
+        CJStringP str = std::static_pointer_cast<CJString>(values[2]);
+
+        int len = str->length();
+
+        if (len > 0) {
+          std::string str1;
+
+          if (len > 10)
+            str1 = str->substr(0, 10);
+          else
+            str1 = str->text();
+
+          indent.setString(str1);
+        }
+      }
+    }
 
     //---
 
     // Check for toJSON function
     toJSON_ = CJFunctionBaseP();
 
-    if ( value && value->type() == CJToken::Type::Dictionary) {
-      CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(value);
+    if (value && (value->type() == CJToken::Type::Object ||
+                  value->type() == CJToken::Type::Dictionary)) {
+      CJValueP value1;
 
-      CJValueP value1 = dict->getProperty(js, "toJSON");
+      if (value->type() == CJToken::Type::Object) {
+        CJObjectP obj = std::static_pointer_cast<CJObject>(value);
+
+        value1 = obj->getProperty(js, "toJSON");
+      }
+      else {
+        CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(value);
+
+        value1 = dict->getProperty(js, "toJSON");
+      }
 
       if (value1)
         toJSON_ = js->valueToFunction(value1);
@@ -92,7 +127,7 @@ exec(CJavaScript *js, const Values &values)
 
     //---
 
-    if (value->type() == CJToken::Type::Undefined)
+    if (js->isUndefinedValue(value))
       return js->createUndefinedValue();
 
     //---
@@ -104,7 +139,7 @@ exec(CJavaScript *js, const Values &values)
     std::string str;
     bool        skip = false;
 
-    if (! stringify(js, key, value, str, skip))
+    if (! stringify(js, key, value, indent, 1, str, skip))
       return js->createUndefinedValue();
 
     return js->createStringValue(str);
@@ -223,7 +258,8 @@ parseCallFunc(CJavaScript *js, CJValueP key, CJValueP value, CJFunctionBaseP rev
 
 bool
 CJJSONFunction::
-stringify(CJavaScript *js, CJValueP key, CJValueP value, std::string &str, bool &skip) const
+stringify(CJavaScript *js, CJValueP key, CJValueP value, const Indent &indent,
+          int depth, std::string &str, bool &skip) const
 {
   if (toJSON_) {
     CJFunctionBase::Values values;
@@ -239,7 +275,7 @@ stringify(CJavaScript *js, CJValueP key, CJValueP value, std::string &str, bool 
 
   //---
 
-  if (replacer_) {
+  if (key && replacer_) {
     CJFunctionBase::Values values;
 
     values.push_back(CJValueP());
@@ -263,15 +299,18 @@ stringify(CJavaScript *js, CJValueP key, CJValueP value, std::string &str, bool 
 
   //---
 
-  if      (value->type() == CJToken::Type::Dictionary) {
-    CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(value);
+  if      (value->type() == CJToken::Type::Object) {
+    CJObjectP obj = std::static_pointer_cast<CJObject>(value);
 
     std::string str1;
 
-    for (const auto &name : dict->propertyNames()) {
-      CJValueP value = dict->propertyValue(name);
+    for (const auto &name : obj->propertyNames()) {
+      if (! obj->isEnumerableProperty(name))
+        continue;
 
-      if (! value || value->type() == CJToken::Type::Undefined)
+      CJValueP value = obj->propertyValue(name);
+
+      if (js->isUndefinedValue(value))
         continue;
 
       //---
@@ -282,7 +321,58 @@ stringify(CJavaScript *js, CJValueP key, CJValueP value, std::string &str, bool 
       bool        skip = false;
 
       if (value != ivalue_) {
-        if (! stringify(js, key, value, str2, skip))
+        if (! stringify(js, key, value, indent, depth + 1, str2, skip))
+          continue;
+
+        if (skip)
+          continue;
+      }
+      else
+        str2 = "[Circular]";
+
+      //---
+
+      if (str1 != "") {
+        str1 += ",";
+
+        if (indent.isValid())
+          str1 += "\n" + indent.depthStr(depth);
+      }
+
+      if (indent.isValid())
+        str1 += "\"" + name + "\": " + str2;
+      else
+        str1 += "\"" + name + "\":" + str2;
+    }
+
+    if (indent.isValid())
+      str = "{\n" + indent.depthStr(depth) + str1 + "\n" + indent.depthStr(depth - 1) + "}";
+    else
+      str = "{" + str1 + "}";
+  }
+  else if (value->type() == CJToken::Type::Dictionary) {
+    CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(value);
+
+    std::string str1;
+
+    for (const auto &name : dict->propertyNames()) {
+      if (! dict->isEnumerableProperty(name))
+        continue;
+
+      CJValueP value = dict->propertyValue(name);
+
+      if (js->isUndefinedValue(value))
+        continue;
+
+      //---
+
+      CJValueP key = js->createStringValue(name);
+
+      std::string str2;
+      bool        skip = false;
+
+      if (value != ivalue_) {
+        if (! stringify(js, key, value, indent, depth + 1, str2, skip))
           return false;
 
         if (skip)
@@ -293,13 +383,23 @@ stringify(CJavaScript *js, CJValueP key, CJValueP value, std::string &str, bool 
 
       //---
 
-      if (str1 != "")
+      if (str1 != "") {
         str1 += ",";
 
-      str1 += "\"" + name + "\":" + str2;
+        if (indent.isValid())
+          str1 += "\n" + indent.depthStr(depth);
+      }
+
+      if (indent.isValid())
+        str1 += "\"" + name + "\": " + str2;
+      else
+        str1 += "\"" + name + "\":" + str2;
     }
 
-    str = "{" + str1 + "}";
+    if (indent.isValid())
+      str = "{\n" + indent.depthStr(depth) + str1 + "\n" + indent.depthStr(depth - 1) + "}";
+    else
+      str = "{" + str1 + "}";
   }
   else if (value->type() == CJToken::Type::Array) {
     CJArrayP array = std::static_pointer_cast<CJArray>(value);
@@ -320,7 +420,7 @@ stringify(CJavaScript *js, CJValueP key, CJValueP value, std::string &str, bool 
       bool        skip = false;
 
       if (value != ivalue_) {
-        if (! stringify(js, key, value, str2, skip))
+        if (! stringify(js, key, value, indent, depth + 1, str2, skip))
           return false;
 
         if (skip)
@@ -331,16 +431,26 @@ stringify(CJavaScript *js, CJValueP key, CJValueP value, std::string &str, bool 
 
       //---
 
-      if (str1 != "")
+      if (str1 != "") {
         str1 += ",";
+
+        if (indent.isValid())
+          str1 += "\n" + indent.depthStr(depth);
+      }
 
       str1 += str2;
     }
 
-    str = "[" + str1 + "]";
+    if (indent.isValid())
+      str = "[\n" + indent.depthStr(depth) + str1 + "\n" + indent.depthStr(depth - 1) + "]";
+    else
+      str = "[" + str1 + "]";
   }
-  else if (value->type() == CJToken::Type::Number) {
-    str = value->toString();
+  else if (value->isNumber()) {
+    str = std::static_pointer_cast<CJNumber>(value)->realString();
+  }
+  else if (value->type() == CJToken::Type::Boolean) {
+    str = (value->toBoolean() ? "true" : "false");
   }
   else if (value->type() == CJToken::Type::True) {
     str = "true";
@@ -355,9 +465,7 @@ stringify(CJavaScript *js, CJValueP key, CJValueP value, std::string &str, bool 
     str = "null";
   }
   else if (value->type() == CJToken::Type::String) {
-    std::string str1 = encodeString(value->toString());
-
-    str = "\"" + str1 + "\"";
+    str = encodeString(std::static_pointer_cast<CJString>(value)->text());
   }
   else {
     return false;
@@ -374,6 +482,8 @@ encodeString(const std::string &s) const
 
   std::string str;
 
+  str += '"';
+
   int  i   = 0;
   uint len = s.size();
 
@@ -381,32 +491,45 @@ encodeString(const std::string &s) const
     ulong c = CUtf8::readNextChar(s, i, len);
 
     if (c <= 0x7f) {
-      if (c <= 0x1f) {
-        if      (c == '\b')
+      char c1 = char(c);
+
+      if      (c1 <= 0x1f) {
+        if      (c1 == '\b')
           str += "\\b";
-        else if (c == '\f')
+        else if (c1 == '\f')
           str += "\\f";
-        else if (c == '\n')
+        else if (c1 == '\n')
           str += "\\n";
-        else if (c == '\r')
+        else if (c1 == '\r')
           str += "\\r";
-        else if (c == '\t')
+        else if (c1 == '\t')
           str += "\\t";
-        else if (c == '\v')
+        else if (c1 == '\v')
           str += "\\v";
         else {
-          int i = (c & 0xff);
-
-          ::sprintf(buffer, "%02x", i);
+          ::sprintf(buffer, "%02x", int(c1));
 
           str += "\\x" + std::string(&buffer[0]);
         }
       }
+      else if (c1 == '\'' || c1 == '"') {
+        str += '\\';
+
+        str += c1;
+      }
       else {
-        str += char(c);
+        str += c1;
       }
     }
     else {
+      int len1;
+
+      CUtf8::encode(c, buffer, len1);
+
+      for (int j = 0; j < len1; ++j)
+        str += buffer[j];
+
+#if 0
       int i1 = (c >> 12) & 0xF;
       int i2 = (c >> 8 ) & 0xF;
       int i3 = (c >> 4 ) & 0xF;
@@ -420,8 +543,11 @@ encodeString(const std::string &s) const
       ::sprintf(buffer, "%x", i4); str2 += buffer;
 
       str += "\\u" + str2;
+#endif
     }
   }
+
+  str += '"';
 
   return str;
 }

@@ -27,6 +27,7 @@ $(CDEBUG) \
 -I../../CReadLine/include \
 -I../../CUtil/include \
 -I../../CRegExp/include \
+-I../../COS/include \
 
 LFLAGS = \
 $(LDEBUG) \

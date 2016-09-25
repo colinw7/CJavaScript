@@ -75,6 +75,4 @@ print(std::ostream &os) const
       else if (v.value) os << *v.value;
     }
   }
-
-  os << ";";
 }

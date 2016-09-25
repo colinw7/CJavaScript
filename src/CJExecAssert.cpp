@@ -27,7 +27,7 @@ exec(CJavaScript *js)
   if (value && value->toBoolean())
     return js->createTrueValue();
 
-  std::cerr << "Assert: ";
+  std::cerr << "Assert" << "@" << exprList_->lineNum() << ": ";
 
   for (uint i = 0; i < n; ++i) {
     if (i > 0) std::cerr << " ";
@@ -48,6 +48,4 @@ print(std::ostream &os) const
 
   if (exprList_)
     os << " " << *exprList_;
-
-  os << ";";
 }

@@ -30,7 +30,9 @@ CJArrayType(CJavaScript *js) :
   addTypeFunction(js, "unobserve"); // obsolete
   addTypeFunction(js, "toString");
 
+  addObjectFunction(js, "propertyIsEnumerable"); // TODO: move to base class
   addObjectFunction(js, "hasOwnProperty"); // TODO: move to base class
+
   addObjectFunction(js, "toString");
   addObjectFunction(js, "concat");
   addObjectFunction(js, "join");
@@ -62,8 +64,7 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
     if (values.size() > 1)
       value1 = values[1];
 
-    if (value1 && value1->type() != CJToken::Type::Null &&
-                  value1->type() != CJToken::Type::Undefined) {
+    if (! js->isUndefinedOrNullValue(value1)) {
       CJArray *array = new CJArray(js);
 
       if      (value1->hasIndex()) {
@@ -244,7 +245,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     return values[0];
   }
-  else if (name == "hasOwnProperty") {
+  else if (name == "propertyIsEnumerable") {
     if (values.size() != 2) {
       js->errorMsg("Invalid number of arguments for " + name);
       return CJValueP();
@@ -252,7 +253,17 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     int ind = values[1]->toInteger();
 
-    return js->createBoolValue(array->hasIndexValue(ind));
+    bool b = array->isEnumerableIndex(ind);
+
+    return js->createBoolValue(b);
+  }
+  else if (name == "hasOwnProperty") {
+    if (values.size() != 2) {
+      js->errorMsg("Invalid number of arguments for " + name);
+      return CJValueP();
+    }
+
+    return js->createBoolValue(js->hasIndexValue(values[0], values[1]));
   }
   else {
     js->errorMsg("Invalid array object function " + name);
@@ -367,7 +378,7 @@ setIndexValue(int ind, CJValueP value)
   if (ind < 0)
     return;
 
-  if (isReadOnlyIndex(ind))
+  if (! isWritableIndex(ind))
     return;
 
   while (ind >= int(values_.size()))
@@ -385,21 +396,75 @@ deleteIndexValue(int ind)
 
 bool
 CJArray::
-isReadOnlyIndex(int ind) const
+canDeleteIndex(int ind) const
 {
-  auto p = readOnly_.find(ind);
+  auto p = propertyMap_.find(ind);
 
-  return (p != readOnly_.end());
+  if (p != propertyMap_.end())
+    return (*p).second.canDelete.getValue(true);
+
+  return true;
 }
 
 void
 CJArray::
-setReadOnlyIndex(int ind, bool b)
+setCanDeleteIndex(int ind, bool b)
 {
-  if (b)
-    readOnly_.erase(ind);
-  else
-    readOnly_.insert(ind);
+  auto p = propertyMap_.find(ind);
+
+  if (p == propertyMap_.end())
+    p = propertyMap_.insert(p, PropertyMap::value_type(ind, PropertyData()));
+
+  (*p).second.canDelete = b;
+}
+
+bool
+CJArray::
+isWritableIndex(int ind) const
+{
+  auto p = propertyMap_.find(ind);
+
+  if (p != propertyMap_.end())
+    return (*p).second.writable.getValue(true);
+
+  return true;
+}
+
+void
+CJArray::
+setWritableIndex(int ind, bool b)
+{
+  auto p = propertyMap_.find(ind);
+
+  if (p == propertyMap_.end())
+    p = propertyMap_.insert(p, PropertyMap::value_type(ind, PropertyData()));
+
+  (*p).second.writable = b;
+}
+
+
+bool
+CJArray::
+isEnumerableIndex(int ind) const
+{
+  auto p = propertyMap_.find(ind);
+
+  if (p != propertyMap_.end())
+    return (*p).second.enumerable.getValue(true);
+
+  return true;
+}
+
+void
+CJArray::
+setEnumerableIndex(int ind, bool b)
+{
+  auto p = propertyMap_.find(ind);
+
+  if (p == propertyMap_.end())
+    p = propertyMap_.insert(p, PropertyMap::value_type(ind, PropertyData()));
+
+  (*p).second.enumerable = b;
 }
 
 void
@@ -481,6 +546,20 @@ print(std::ostream &os) const
 
     if (v)
       os << *v;
+
+    ++i;
+  }
+
+  for (auto &kv : keyValues()) {
+    if (i > 0)
+      os << ",";
+
+    os << " '" << kv.first << "': ";
+
+    if (kv.second)
+      os << *kv.second;
+    else
+      os << "<null>";
 
     ++i;
   }

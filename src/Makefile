@@ -55,8 +55,8 @@ CJExecLabel.cpp \
 CJExecNew.cpp \
 CJExecQuestion.cpp \
 CJExecReturn.cpp \
+CJExecStatement.cpp \
 CJExecSwitch.cpp \
-CJExecThis.cpp \
 CJExecThrow.cpp \
 CJExecTry.cpp \
 CJExecVar.cpp \

@@ -61,8 +61,6 @@ class CJFunctionBase : public CJObj {
 
   bool isFunction() const override { return true; }
 
-  bool isProtoValue() const override { return true; }
-
   const std::string &name() const { return name_; }
 
   std::string toString() const override { return name_; }

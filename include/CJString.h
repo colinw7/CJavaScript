@@ -25,7 +25,8 @@ class CJStringType : public CJObjType {
 class CJString : public CJObj {
  public:
   static COptReal parseFloat(const std::string &text, bool extraChars=false);
-  static COptLong parseInt  (const std::string &text, bool extraChars=false);
+  static COptLong parseInt  (const std::string &text, const COptInt &base=COptInt(),
+                             bool extraChars=false);
   static COptBool parseBool (const std::string &text, bool extraChars=false);
 
  public:
@@ -33,10 +34,10 @@ class CJString : public CJObj {
 
   CJString *dup(CJavaScript *js) const override { return new CJString(js, text_, c_); }
 
-  bool isBasic() const { return isBasic_; }
-  void setIsBasic(bool b) { isBasic_ = b; }
+  bool isPrimitive() const override { return primitive_; }
+  void setIsPrimitive(bool b) { primitive_ = b; }
 
-  bool isProtoValue() const override { return true; }
+  bool isString() const override { return true; }
 
   const std::string &text() const { return text_; }
   void setText(const std::string &str) { text_ = str; }
@@ -53,7 +54,12 @@ class CJString : public CJObj {
   void setIndexValue(int ind, CJValueP value) override;
   void deleteIndexValue(int ind) override;
 
-  long length() const override { return text_.size(); }
+  long length() const override;
+
+  std::string substr(int ind) const;
+  std::string substr(int ind, int n) const;
+
+  bool hasProperty() const override { return ! isPrimitive(); }
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
   void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
@@ -63,7 +69,7 @@ class CJString : public CJObj {
  private:
   std::string text_;
   char        c_ { '\"' };
-  bool        isBasic_ { true };
+  bool        primitive_ { true };
 };
 
 #endif

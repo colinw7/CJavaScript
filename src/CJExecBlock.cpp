@@ -65,13 +65,13 @@ print(std::ostream &os) const
 
   if (! etokens_.empty()) {
     for (auto &t : etokens_)
-      os << " " << *t;
+      os << *t;
   }
   else {
     for (auto &t : tokens_)
-      os << " " << *t;
+      os << *t;
   }
 
-  os << std::endl << "}";
+  os << "}";
 }
 

@@ -19,8 +19,12 @@ class CJValue : public CJToken, public std::enable_shared_from_this<CJValue> {
 
   virtual bool isObject    () const { return false; }
   virtual bool isDictionary() const { return false; }
+  virtual bool isArray     () const { return false; }
   virtual bool isFunction  () const { return false; }
   virtual bool isError     () const { return false; }
+  virtual bool isNumber    () const { return false; }
+  virtual bool isString    () const { return false; }
+  virtual bool isPrimitive () const { return false; }
 
   virtual std::string toString() const override = 0;
 
@@ -38,8 +42,10 @@ class CJValue : public CJToken, public std::enable_shared_from_this<CJValue> {
   virtual void setIndexValue(int, CJValueP) { assert(false); }
   virtual void deleteIndexValue(int) { assert(false); }
 
-  virtual bool isReadOnlyIndex(int) const { return false; }
-  virtual void setReadOnlyIndex(int, bool =true) { assert(false); }
+  virtual bool isWritableIndex(int) const { return true; }
+  virtual void setWritableIndex(int, bool) { assert(false); }
+  virtual bool isEnumerableIndex(int) const { return true; }
+  virtual void setEnumerableIndex(int, bool) { assert(false); }
 
   virtual bool hasProperty() const { return false; }
   virtual bool hasPropertyValue(const std::string &) const { return false; }
@@ -48,9 +54,6 @@ class CJValue : public CJToken, public std::enable_shared_from_this<CJValue> {
   virtual void deletePropertyValue(const std::string &) { assert(false); }
 
   virtual KeyNames propertyNames() const { return KeyNames(); }
-
-  virtual bool isReadOnlyProperty(const std::string &) const { return false; }
-  virtual void setReadOnlyProperty(const std::string &, bool =true) { assert(false); }
 
   virtual long length() const { return 0; }
 

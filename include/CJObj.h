@@ -38,11 +38,17 @@ class CJObj : public CJDictionary {
 
   void addVariable(CJavaScript *js, const std::string &name);
 
+  bool hasPropertyValue(const std::string &key) const override;
   CJValueP propertyValue(const std::string &key) const override;
   void setPropertyValue(const std::string &key, CJValueP value) override;
 
-  CJValueP getProperty(CJavaScript *js, const std::string &name) const override;
-  void setProperty(CJavaScript *js, const std::string &name, CJValueP value) override;
+  bool hasProperty(CJavaScript *js, const std::string &key) const override;
+  CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
+  void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
+
+  bool isEnumerableProperty(const std::string &key) const override;
+
+  CJValue::KeyNames propertyNames() const override;
 
   virtual CJValueP execNameFn(CJavaScript *, const std::string &, const Values &);
 
@@ -53,6 +59,9 @@ class CJObj : public CJDictionary {
 
     return os;
   }
+
+ private:
+  CJValueP protoValue() const;
 
  protected:
   CJObjTypeP objType_;

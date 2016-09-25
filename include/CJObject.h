@@ -32,6 +32,9 @@ class CJObject : public CJObj {
   const std::string &typeName() const { return typeName_; }
   void setTypeName(const std::string &v) { typeName_ = v; }
 
+  CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
+  void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
+
   std::string toString() const override;
 
   void print(std::ostream &os) const override;

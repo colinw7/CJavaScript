@@ -25,8 +25,14 @@ class CJArrayType : public CJObjType {
 // Array Value
 class CJArray : public CJObj {
  public:
-  typedef std::deque<CJValueP> Values;
-  typedef std::set<int>        ReadOnly;
+  struct PropertyData {
+    COptBool canDelete;
+    COptBool writable;
+    COptBool enumerable;
+  };
+
+  typedef std::deque<CJValueP>       Values;
+  typedef std::map<int,PropertyData> PropertyMap;
 
  public:
   CJArray(CJavaScript *js, int n=0);
@@ -35,7 +41,7 @@ class CJArray : public CJObj {
 
   CJArray *dup(CJavaScript *js) const override { return new CJArray(js, values_); }
 
-  bool isProtoValue() const override { return true; }
+  bool isArray() const override { return true; }
 
   Values values() const { return values_; }
   void setValues(const Values &values) { values_ = values; }
@@ -66,8 +72,14 @@ class CJArray : public CJObj {
   void setIndexValue(int ind, CJValueP value) override;
   void deleteIndexValue(int ind) override;
 
-  bool isReadOnlyIndex(int ind) const override;
-  void setReadOnlyIndex(int ind, bool b) override;
+  bool canDeleteIndex(int ind) const;
+  void setCanDeleteIndex(int ind, bool b);
+
+  bool isWritableIndex(int ind) const override;
+  void setWritableIndex(int ind, bool b) override;
+
+  bool isEnumerableIndex(int ind) const;
+  void setEnumerableIndex(int ind, bool b=true);
 
   bool hasValue(CJValueP value) const;
 
@@ -83,8 +95,8 @@ class CJArray : public CJObj {
   void print(std::ostream &os) const override;
 
  protected:
-  Values   values_;
-  ReadOnly readOnly_;
+  Values      values_;
+  PropertyMap propertyMap_;
 };
 
 #endif

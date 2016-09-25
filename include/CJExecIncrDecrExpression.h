@@ -9,21 +9,15 @@ class CJExecIncrDecrExpression : public CJExecExpression {
  public:
   CJExecIncrDecrExpression();
 
-  void setIdentifiers(CJExecIdentifiersP identifiers) {
-    identifiers_ = identifiers;
-  }
+  void setIdentifiers(CJExecIdentifiersP identifiers) { identifiers_ = identifiers; }
 
-  void setExpression(CJExecExpressionP expr) {
-    expr_ = expr;
-  }
+  void setExpression(CJExecExpressionP expr) { expr_ = expr; }
 
-  void setOperator(CJOperatorP op) {
-    op_ = op;
-  }
+  CJOperatorP getOperator() const { return op_; }
+  void setOperator(CJOperatorP op) { op_ = op; }
 
-  void setPost(bool b) {
-    post_ = b;
-  }
+  bool isPost() const { return post_; }
+  void setPost(bool b) { post_ = b; }
 
   CJValueP exec(CJavaScript *js) override;
 

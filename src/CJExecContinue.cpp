@@ -29,6 +29,4 @@ print(std::ostream &os) const
 
   if (identifiers_)
     os << " " << *identifiers_;
-
-  os << ";";
 }

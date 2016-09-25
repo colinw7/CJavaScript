@@ -123,6 +123,13 @@ addVariable(CJavaScript *js, const std::string &name)
   setProperty(js, name, CJValueP(new CJTypeValue(js, objType(), name)));
 }
 
+bool
+CJObj::
+hasPropertyValue(const std::string &key) const
+{
+  return hasProperty(js_, key);
+}
+
 CJValueP
 CJObj::
 propertyValue(const std::string &key) const
@@ -137,37 +144,119 @@ setPropertyValue(const std::string &key, CJValueP value)
   setProperty(js_, key, value);
 }
 
-CJValueP
+bool
 CJObj::
-getProperty(CJavaScript *js, const std::string &name) const
+hasProperty(CJavaScript *js, const std::string &key) const
 {
   // get direct property
-  if (CJNameSpace::hasProperty(js, name))
-    return CJNameSpace::getProperty(js, name);
+  if (CJNameSpace::hasProperty(js, key))
+    return true;
 
-  // get constructor property
-  CJObjTypeFunctionP typeFn = objType()->typeFunction();
+  // TODO: prototype
+  return false;
+}
 
-  CJValueP value;
+CJValueP
+CJObj::
+getProperty(CJavaScript *js, const std::string &key) const
+{
+  // get direct property
+  if (CJNameSpace::hasProperty(js, key))
+    return CJNameSpace::getProperty(js, key);
 
-  if (typeFn)
-    value = typeFn->getProperty(js, "prototype");
+  // get prototype property
+  CJValueP protoValue = this->protoValue();
 
-  if (value && value->isObject()) {
-    CJObjP obj = std::static_pointer_cast<CJObj>(value);
+  if (protoValue && protoValue->isObject()) {
+    CJObjP obj = std::static_pointer_cast<CJObj>(protoValue);
 
-    if (obj->hasPropertyValue(name))
-      return obj->propertyValue(name);
+    if (obj->hasPropertyValue(key))
+      return obj->propertyValue(key);
   }
 
-  return objType()->getProperty(js, name);
+  return objType()->getProperty(js, key);
 }
 
 void
 CJObj::
-setProperty(CJavaScript *js, const std::string &name, CJValueP value)
+setProperty(CJavaScript *js, const std::string &key, CJValueP value)
 {
-  CJNameSpace::setProperty(js, name, value);
+  CJNameSpace::setProperty(js, key, value);
+}
+
+bool
+CJObj::
+isEnumerableProperty(const std::string &key) const
+{
+  // check direct property
+  if (CJNameSpace::hasProperty(js_, key))
+    return CJNameSpace::isEnumerableProperty(key);
+
+  // check prototype property
+  CJValueP protoValue = this->protoValue();
+
+  if (protoValue && protoValue->isObject()) {
+    CJObjP obj = std::static_pointer_cast<CJObj>(protoValue);
+
+    if (obj->CJNameSpace::hasProperty(js_, key))
+      return obj->isEnumerableProperty(key);
+  }
+
+  if (objType()->CJNameSpace::hasProperty(js_, key))
+    return objType()->CJNameSpace::isEnumerableProperty(key);
+
+  return false;
+}
+
+CJValue::KeyNames
+CJObj::
+propertyNames() const
+{
+  std::set<std::string> nameSet;
+
+  CJValue::KeyNames names1 = CJDictionary::propertyNames();
+
+  CJValueP protoValue = this->protoValue();
+
+  if (! protoValue)
+    return names1;
+
+  CJValue::KeyNames names2 = protoValue->propertyNames();
+
+  if (names2.empty())
+    return names1;
+
+  //---
+
+  CJValue::KeyNames names;
+
+  for (const auto &n : names1)
+    nameSet.insert(n);
+
+  for (const auto &n : names2)
+    nameSet.insert(n);
+
+  for (const auto &n : nameSet)
+    names.push_back(n);
+
+  return names;
+}
+
+CJValueP
+CJObj::
+protoValue() const
+{
+  CJObjTypeFunctionP typeFn = objType()->typeFunction();
+
+  if (! typeFn)
+    return CJValueP();
+
+  CJValueP protoValue = typeFn->getProperty(js_, "prototype");
+
+  if (! protoValue || protoValue.get() == this)
+    return CJValueP();
+
+  return protoValue;
 }
 
 CJValueP

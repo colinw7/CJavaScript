@@ -13,6 +13,8 @@ class CJDictionaryType : public CJObjType {
 
   CJDictionaryType(CJavaScript *js);
 
+  CJValueP execType(CJavaScript *js, const std::string &name, const Values &values) override;
+
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
@@ -63,9 +65,6 @@ class CJDictionary : public CJValue, public CJNameSpace {
   void setPropertyValue(const std::string &key, CJValueP value) override;
   void deletePropertyValue(const std::string &key) override;
 
-  bool isReadOnlyProperty(const std::string &ind) const override;
-  void setReadOnlyProperty(const std::string &ind, bool b) override;
-
   CJValue::KeyNames propertyNames() const override;
 
   //---
@@ -85,12 +84,10 @@ class CJDictionary : public CJValue, public CJNameSpace {
 
  protected:
   typedef std::map<std::string, CJValueP> Properties;
-  typedef std::set<std::string>           ReadOnly;
 
   CJavaScript*  js_ { 0 };
   std::string   name_;
   CJDictionaryP parent_;
-  ReadOnly      readOnly_;
 };
 
 #endif

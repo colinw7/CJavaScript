@@ -77,22 +77,33 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
       return CJValueP();
   }
   else if (name == "parseInt") {
-    if (values.size() > 1) {
-      COptLong integer = CJString::parseInt(values[1]->toString());
+    if (values.size() <= 1)
+      return js->createNumberValue(CJUtil::getNaN());
 
-      return js->createNumberValue(integer.getValue(0));
-    }
+    std::string str = (values[1] ? values[1]->toString() : std::string());
+
+    COptInt base;
+
+    if (values.size() > 1 && values[1])
+      base = values[1]->toInteger();
+
+    if (base.isValid() && (base.getValue() < 2 || base.getValue() > 36))
+      return js->createNumberValue(CJUtil::getNaN());
+
+    COptLong integer = CJString::parseInt(values[1]->toString(), base, /*extraChars*/true);
+
+    if (integer.isValid())
+      return js->createNumberValue(integer.getValue());
     else
-      return CJValueP();
+      return js->createNumberValue(CJUtil::getNaN());
   }
   else if (name == "parseFloat") {
-    if (values.size() > 1) {
-      COptReal real = CJString::parseFloat(values[1]->toString());
+    if (values.size() <= 1)
+      return js->createNumberValue(CJUtil::getNaN());
 
-      return js->createNumberValue(real.getValue(CJUtil::getNaN()));
-    }
-    else
-      return CJValueP();
+    COptReal real = CJString::parseFloat(values[1]->toString(), /*extraChars*/true);
+
+    return js->createNumberValue(real.getValue(CJUtil::getNaN()));
   }
   else if (name == "toString") {
     return js->createStringValue("function Number() { }");
@@ -148,8 +159,15 @@ std::string
 CJNumber::
 toString() const
 {
-  if (! isBasic())
-    return "[Number: " + CJUtil::realToString(real_) + "]";
+  if (! isPrimitive())
+    return "[Number: " + realString() + "]";
   else
-    return CJUtil::realToString(real_);
+    return realString();
+}
+
+std::string
+CJNumber::
+realString() const
+{
+  return CJUtil::realToString(real_);
 }

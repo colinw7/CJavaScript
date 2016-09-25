@@ -54,7 +54,7 @@ exec(CJavaScript *js)
 
       CJPropertyData data(js);
 
-      if (js->lookupValuePropertyData(evalue1, identifiers, data, 0)) {
+      if (evalue1 && js->lookupValuePropertyData(evalue1, identifiers, data, 0)) {
         fnValue = data.value();
       }
 
@@ -151,8 +151,9 @@ exec(CJavaScript *js)
 
     js->popThis();
   }
-  else
+  else {
     res = fn->cast<CJFunctionBase>()->exec(js, values);
+  }
 
   //--
 

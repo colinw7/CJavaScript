@@ -49,8 +49,8 @@
 #include <CJExecNew.h>
 #include <CJExecQuestion.h>
 #include <CJExecReturn.h>
+#include <CJExecStatement.h>
 #include <CJExecSwitch.h>
-#include <CJExecThis.h>
 #include <CJExecThrow.h>
 #include <CJExecTry.h>
 #include <CJExecVar.h>
@@ -133,11 +133,17 @@ CJavaScript()
 
   //------
 
-  setProperty("eval"      , CJValueP(new CJGlobalFunction(this, "eval"      )));
-  setProperty("isFinite"  , CJValueP(new CJGlobalFunction(this, "isFinite"  )));
-  setProperty("isNaN"     , CJValueP(new CJGlobalFunction(this, "isNaN"     )));
-  setProperty("parseFloat", CJValueP(new CJGlobalFunction(this, "parseFloat")));
-  setProperty("parseInt"  , CJValueP(new CJGlobalFunction(this, "parseInt"  )));
+  setProperty("escape"            , CJValueP(new CJGlobalFunction(this, "escape"            )));
+  setProperty("encodeURI"         , CJValueP(new CJGlobalFunction(this, "encodeURI"         )));
+  setProperty("encodeURIComponent", CJValueP(new CJGlobalFunction(this, "encodeURIComponent")));
+  setProperty("eval"              , CJValueP(new CJGlobalFunction(this, "eval"              )));
+  setProperty("isFinite"          , CJValueP(new CJGlobalFunction(this, "isFinite"          )));
+  setProperty("isNaN"             , CJValueP(new CJGlobalFunction(this, "isNaN"             )));
+  setProperty("parseFloat"        , CJValueP(new CJGlobalFunction(this, "parseFloat"        )));
+  setProperty("parseInt"          , CJValueP(new CJGlobalFunction(this, "parseInt"          )));
+  setProperty("unescape"          , CJValueP(new CJGlobalFunction(this, "unescape"          )));
+  setProperty("decodeURI"         , CJValueP(new CJGlobalFunction(this, "decodeURI"         )));
+  setProperty("decodeURIComponent", CJValueP(new CJGlobalFunction(this, "decodeURIComponent")));
 
   //------
 
@@ -178,17 +184,23 @@ defineObject(const std::string &name, CJObjTypeFunctionP typeFn, CJObjP prototyp
   //  typeFn->getProperty(this, "prototype"));
 
   // <Object>.prototype.constructor = <ObjectConstructor>
-  if (prototype)
+  if (prototype) {
     prototype->setProperty(this, "constructor", typeFn);
+
+    prototype->setEnumerableProperty("constructor", false);
+  }
 
   typeFn->objectType()->setTypeFunction(typeFn);
 
   CJObjTypeP typeFnObjType = typeFn->objectType();
 
   // add object functions to prototype
-  for (const auto &f : typeFnObjType->objFunctions()) {
-    if (prototype)
+  if (prototype) {
+    for (const auto &f : typeFnObjType->objFunctions()) {
       prototype->setProperty(this, f.first, f.second);
+
+      prototype->setEnumerableProperty(f.first, false);
+    }
   }
 }
 
@@ -541,14 +553,62 @@ setProperty(const std::string &name, CJValueP value)
 
 bool
 CJavaScript::
+hasIndexValue(CJValueP value, CJValueP ivalue) const
+{
+  if      (value->hasIndex()) {
+    // special code for array integer value indices
+    if (ivalue->isNumber()) {
+      CJNumberP inumber = std::static_pointer_cast<CJNumber>(ivalue);
+
+      if (inumber->isInteger()) {
+        long ind = ivalue->toInteger();
+
+        if (ind >= 0)
+          return value->hasIndexValue(ind);
+      }
+    }
+
+    // use value string as dictionary key
+    std::string ind = ivalue->toString();
+
+    return value->hasPropertyValue(ind);
+  }
+  else if (value->hasProperty()) {
+    // use value string as dictionary key
+    std::string ind = ivalue->toString();
+
+    return value->hasPropertyValue(ind);
+  }
+  else
+    return false;
+}
+
+bool
+CJavaScript::
 indexValue(CJValueP value, CJValueP ivalue, CJValueP &rvalue) const
 {
   if      (value->hasIndex()) {
-    long ind = ivalue->toInteger();
+    // special code for array integer value indices
+    if (ivalue->isNumber()) {
+      CJNumberP inumber = std::static_pointer_cast<CJNumber>(ivalue);
 
-    rvalue = value->indexValue(ind);
+      if (inumber->isInteger()) {
+        long ind = ivalue->toInteger();
+
+        if (ind >= 0) {
+          rvalue = value->indexValue(ind);
+          return true;
+        }
+      }
+    }
+
+    // use value string as dictionary key
+    std::string ind = ivalue->toString();
+
+    rvalue = value->propertyValue(ind);
   }
   else if (value->hasProperty()) {
+    // use value string as dictionary key
     std::string ind = ivalue->toString();
 
     rvalue = value->propertyValue(ind);
@@ -566,17 +626,36 @@ CJavaScript::
 setIndexValue(CJValueP value, CJValueP ivalue, CJValueP rvalue)
 {
   if      (value->hasIndex()) {
-    long ind = ivalue->toInteger();
+    // special code for array integer value indices
+    if (ivalue->isNumber()) {
+      CJNumberP inumber = std::static_pointer_cast<CJNumber>(ivalue);
 
-    value->setIndexValue(ind, rvalue);
+      if (inumber->isInteger()) {
+        long ind = inumber->toInteger();
+
+        if (ind >= 0) {
+          value->setIndexValue(ind, rvalue);
+          return true;
+        }
+      }
+    }
+
+    // use value string as dictionary key
+    std::string ind = ivalue->toString();
+
+    value->setPropertyValue(ind, rvalue);
+
+    return true;
   }
   else if (value->hasProperty()) {
+    // use value string as dictionary key
     std::string ind = ivalue->toString();
 
     value->setPropertyValue(ind, rvalue);
   }
-  else
+  else {
     return false;
+  }
 
   return true;
 }
@@ -787,6 +866,9 @@ CJavaScript::
 lookupValuePropertyData(CJValueP value, const Identifiers &identifiers,
                         CJPropertyData &data, int ind)
 {
+  if (! value)
+    return false;
+
   int len = identifiers.size();
 
   if (ind >= len)
@@ -1102,7 +1184,28 @@ deleteProperty(CJDictionaryP scope, const Identifiers &identifiers, const Values
       if (varValue) {
         ++i;
 
-        if (varValue->type() == CJToken::Type::Dictionary) {
+        if      (varValue->type() == CJToken::Type::Object) {
+          CJObjectP obj = std::static_pointer_cast<CJObject>(varValue);
+
+          CJValueP value = obj->getProperty(this, identifiers[i]->name());
+
+          while (value && value->type() == CJToken::Type::Object && i < len - 1) {
+            ++i;
+
+            obj = std::static_pointer_cast<CJObject>(value);
+
+            value = obj->getProperty(this, identifiers[i]->name());
+          }
+
+          if (i < len - 1)
+            throwSyntaxError(0, "Invalid value named index");
+
+          if (obj) {
+            obj->deleteProperty(this, identifiers[i]->name(), values);
+            return true;
+          }
+        }
+        else if (varValue->type() == CJToken::Type::Dictionary) {
           CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(varValue);
 
           CJValueP value = dict->getProperty(this, identifiers[i]->name());
@@ -1229,6 +1332,9 @@ isCompleteLine(const std::string &str) const
       parse.skipChar();
   }
 
+  if (numBraces < 0 || numSBracket < 0 || numRBracket < 0 || numComment < 0)
+    return 0;
+
   return (numBraces + numSBracket + numRBracket + numComment);
 }
 
@@ -1325,13 +1431,13 @@ parseString(const std::string &str)
       else if (opType == CJOperator::Type::In) {
         parse.skipChars("in");
 
-        op = CJOperatorP(new CJOperator(CJOperator::Type::In, 11,
+        op = CJOperatorP(new CJOperator(CJOperator::Type::In, 5,
           CJOperator::Associativty::Left, CJOperator::Ary::Binary));
       }
       else if (opType == CJOperator::Type::InstanceOf) {
         parse.skipChars("instanceof");
 
-        op = CJOperatorP(new CJOperator(CJOperator::Type::InstanceOf, 11,
+        op = CJOperatorP(new CJOperator(CJOperator::Type::InstanceOf, 5,
           CJOperator::Associativty::Left, CJOperator::Ary::Binary));
       }
       else if (opType == CJOperator::Type::TypeOf) {
@@ -1466,9 +1572,7 @@ interpFunctionBlock(const std::string &str)
 
   execData.initExec(tokens_);
 
-  execDataStack_.push_back(execData_);
-
-  execData_ = &execData;
+  pushExecData(execData);
 
   //---
 
@@ -1494,9 +1598,7 @@ interpFunctionBlock(const std::string &str)
 
   //---
 
-  execData_ = execDataStack_.back();
-
-  execDataStack_.pop_back();
+  popExecData();
 
   return block;
 }
@@ -1537,9 +1639,7 @@ void
 CJavaScript::
 interp(CJExecData &execData)
 {
-  execDataStack_.push_back(execData_);
-
-  execData_ = &execData;
+  pushExecData(execData);
 
   while (! execData_->eof()) {
     CJTokenP token = execData_->token();
@@ -1547,7 +1647,10 @@ interp(CJExecData &execData)
     CJToken::Type type = token->type();
 
     if      (type == CJToken::Type::Identifier) {
+      // <label>:
       if (isExecLabel()) {
+        // TODO: interp labelled expression
+
         CJExecLabelP label = interpExecLabel();
 
         if (! label) {
@@ -1558,6 +1661,7 @@ interp(CJExecData &execData)
 
         execData_->addEToken(std::static_pointer_cast<CJToken>(label));
       }
+      // <expression>
       else {
         CJExecExpressionListP exprList = interpExpressionList();
 
@@ -1567,14 +1671,39 @@ interp(CJExecData &execData)
           break;
         }
 
-        execData_->addEToken(std::static_pointer_cast<CJToken>(exprList));
+        if (isExecOperator(CJOperator::Type::SemiColon)) {
+          execData_->next();
+
+          CJExecStatementP estatement(new CJExecStatement(exprList));
+
+          execData_->addEToken(estatement);
+        }
+        else
+          execData_->addEToken(std::static_pointer_cast<CJToken>(exprList));
       }
     }
+    // <operator>
     else if (type == CJToken::Type::Operator) {
       CJOperator *op = token->cast<CJOperator>();
 
       CJOperator::Type opType = op->type();
 
+      //---
+
+      // empty statement: ;
+      if (opType == CJOperator::Type::SemiColon) {
+        execData_->next();
+
+        CJExecStatementP estatement(new CJExecStatement());
+
+        execData_->addEToken(estatement);
+
+        break;
+      }
+
+      //---
+
+      // key value: <name> : <value>
       if (opType == CJOperator::Type::Colon) {
         if (! execData_->isBlock()) {
           std::ostringstream ss; ss << *token;
@@ -1649,12 +1778,15 @@ interp(CJExecData &execData)
       //---
 
       if (opType == CJOperator::Type::Comma ||
+          opType == CJOperator::Type::SemiColon ||
           opType == CJOperator::Type::CloseRBracket ||
           opType == CJOperator::Type::CloseSBracket) {
         std::ostringstream ss; ss << *token;
         throwSyntaxError(token, "Interp failed at operator: " + ss.str());
         break;
       }
+
+      //---
 
       CJExecExpressionListP exprList = interpExpressionList();
 
@@ -1664,8 +1796,17 @@ interp(CJExecData &execData)
         break;
       }
 
-      execData_->addEToken(std::static_pointer_cast<CJToken>(exprList));
+      if (isExecOperator(CJOperator::Type::SemiColon)) {
+        execData_->next();
+
+        CJExecStatementP estatement(new CJExecStatement(exprList));
+
+        execData_->addEToken(estatement);
+      }
+      else
+        execData_->addEToken(std::static_pointer_cast<CJToken>(exprList));
     }
+    // value
     else if (type == CJToken::Type::Number || type == CJToken::Type::String ||
              type == CJToken::Type::Undefined || type == CJToken::Type::Null ||
              type == CJToken::Type::True || type == CJToken::Type::False) {
@@ -1677,15 +1818,39 @@ interp(CJExecData &execData)
         break;
       }
 
-      execData_->addEToken(std::static_pointer_cast<CJToken>(exprList));
+      if (isExecOperator(CJOperator::Type::SemiColon)) {
+        execData_->next();
+
+        CJExecStatementP estatement(new CJExecStatement(exprList));
+
+        execData_->addEToken(estatement);
+      }
+      else
+        execData_->addEToken(std::static_pointer_cast<CJToken>(exprList));
     }
+    // keyword
     else if (type == CJToken::Type::Keyword) {
       CJKeyword *keyword = token->cast<CJKeyword>();
 
+      // this expression
       if      (keyword->type() == CJKeyword::Type::This) {
-        CJExecThisP ethis = interpExecThis();
+        CJExecExpressionListP exprList = interpExpressionList();
 
-        execData_->addEToken(std::static_pointer_cast<CJToken>(ethis));
+        if (! exprList) {
+          std::ostringstream ss; ss << *token;
+          throwSyntaxError(token, "Interp failed at token: " + ss.str());
+          break;
+        }
+
+        if (isExecOperator(CJOperator::Type::SemiColon)) {
+          execData_->next();
+
+          CJExecStatementP estatement(new CJExecStatement(exprList));
+
+          execData_->addEToken(estatement);
+        }
+        else
+          execData_->addEToken(std::static_pointer_cast<CJToken>(exprList));
       }
       // for ( <LexicalDeclaration> <Expression>(opt) ; <Expression>(opt) <Statement>
       else if (keyword->type() == CJKeyword::Type::For) {
@@ -1696,7 +1861,9 @@ interp(CJExecData &execData)
           break;
         }
 
-        execData_->addEToken(std::static_pointer_cast<CJToken>(efor));
+        CJExecStatementP estatement(new CJExecStatement(efor));
+
+        execData_->addEToken(estatement);
       }
       // if (<expression>) <statement>
       //   [ else [ if (<expression>) <statement> ... ]
@@ -1709,7 +1876,9 @@ interp(CJExecData &execData)
           break;
         }
 
-        execData_->addEToken(std::static_pointer_cast<CJToken>(eif));
+        CJExecStatementP estatement(new CJExecStatement(eif));
+
+        execData_->addEToken(estatement);
       }
       // while ( <expression> ) <statement>
       else if (keyword->type() == CJKeyword::Type::While) {
@@ -1720,7 +1889,9 @@ interp(CJExecData &execData)
           break;
         }
 
-        execData_->addEToken(CJTokenP(ewhile));
+        CJExecStatementP estatement(new CJExecStatement(ewhile));
+
+        execData_->addEToken(estatement);
       }
       // do <statement> while ( <expression> )
       else if (keyword->type() == CJKeyword::Type::Do) {
@@ -1731,7 +1902,9 @@ interp(CJExecData &execData)
           break;
         }
 
-        execData_->addEToken(CJTokenP(edo));
+        CJExecStatementP estatement(new CJExecStatement(edo));
+
+        execData_->addEToken(estatement);
       }
       // switch ( <expression> ) {
       //   [ case <expression> : <statementList> ]
@@ -1745,8 +1918,11 @@ interp(CJExecData &execData)
           break;
         }
 
-        execData_->addEToken(std::static_pointer_cast<CJToken>(eswitch));
+        CJExecStatementP estatement(new CJExecStatement(eswitch));
+
+        execData_->addEToken(estatement);
       }
+      // var <name> [=value>, ...
       else if (keyword->type() == CJKeyword::Type::Var) {
         execData_->next();
 
@@ -1757,8 +1933,15 @@ interp(CJExecData &execData)
           break;
         }
 
-        execData_->addEToken(std::static_pointer_cast<CJToken>(evar));
+        if (isExecOperator(CJOperator::Type::SemiColon)) {
+          execData_->next();
+        }
+
+        CJExecStatementP estatement(new CJExecStatement(evar));
+
+        execData_->addEToken(estatement);
       }
+      // const <name> [=value>, ...
       else if (keyword->type() == CJKeyword::Type::Const) {
         CJExecConstP econst = interpExecConst();
 
@@ -1767,7 +1950,9 @@ interp(CJExecData &execData)
           break;
         }
 
-        execData_->addEToken(std::static_pointer_cast<CJToken>(econst));
+        CJExecStatementP estatement(new CJExecStatement(econst));
+
+        execData_->addEToken(estatement);
       }
       // with ( <expression> ) <statement>
       else if (keyword->type() == CJKeyword::Type::With) {
@@ -1778,7 +1963,9 @@ interp(CJExecData &execData)
           break;
         }
 
-        execData_->addEToken(std::static_pointer_cast<CJToken>(ewith));
+        CJExecStatementP estatement(new CJExecStatement(ewith));
+
+        execData_->addEToken(estatement);
       }
       else if (keyword->type() == CJKeyword::Type::New) {
         CJExecNewP enew = interpExecNew();
@@ -1799,7 +1986,9 @@ interp(CJExecData &execData)
           break;
         }
 
-        execData_->addEToken(std::static_pointer_cast<CJToken>(eassert));
+        CJExecStatementP estatement(new CJExecStatement(eassert));
+
+        execData_->addEToken(estatement);
       }
       // break [<label>]
       else if (keyword->type() == CJKeyword::Type::Break) {
@@ -1810,7 +1999,9 @@ interp(CJExecData &execData)
           break;
         }
 
-        execData_->addEToken(std::static_pointer_cast<CJToken>(ebreak));
+        CJExecStatementP estatement(new CJExecStatement(ebreak));
+
+        execData_->addEToken(estatement);
       }
       // continue [<label>]
       else if (keyword->type() == CJKeyword::Type::Continue) {
@@ -1821,7 +2012,9 @@ interp(CJExecData &execData)
           break;
         }
 
-        execData_->addEToken(std::static_pointer_cast<CJToken>(econt));
+        CJExecStatementP estatement(new CJExecStatement(econt));
+
+        execData_->addEToken(estatement);
       }
       // return [<expression>]
       else if (keyword->type() == CJKeyword::Type::Return) {
@@ -1832,7 +2025,9 @@ interp(CJExecData &execData)
           break;
         }
 
-        execData_->addEToken(std::static_pointer_cast<CJToken>(eret));
+        CJExecStatementP estatement(new CJExecStatement(eret));
+
+        execData_->addEToken(estatement);
       }
       // function [<identifier>] ( <parameters> ) { <body> }
       else if (keyword->type() == CJKeyword::Type::Function) {
@@ -1863,7 +2058,9 @@ interp(CJExecData &execData)
           break;
         }
 
-        execData_->addEToken(std::static_pointer_cast<CJToken>(etry));
+        CJExecStatementP estatement(new CJExecStatement(etry));
+
+        execData_->addEToken(estatement);
       }
       // throw <expression>
       else if (keyword->type() == CJKeyword::Type::Throw) {
@@ -1874,7 +2071,9 @@ interp(CJExecData &execData)
           break;
         }
 
-        execData_->addEToken(std::static_pointer_cast<CJToken>(ethrow));
+        CJExecStatementP estatement(new CJExecStatement(ethrow));
+
+        execData_->addEToken(estatement);
       }
       else {
         throwSyntaxError(keyword, "Interp failed at keyword: " + keyword->name());
@@ -1888,9 +2087,19 @@ interp(CJExecData &execData)
     }
   }
 
-  execData_ = execDataStack_.back();
+  //---
 
-  execDataStack_.pop_back();
+  if (isInterpDebug()) {
+    std::cout << "--- interp ---" << std::endl;
+    for (const auto &t : execData_->etokens()) {
+      std::cout << *t;
+    }
+    std::cout << "---" << std::endl;
+  }
+
+  //---
+
+  popExecData();
 }
 
 CJExecFunctionP
@@ -1968,7 +2177,7 @@ interpExecFor()
 
       isIn = true;
     }
-    // var <Expression>
+    // var <Expression> ;
     else {
       CJExecVarP evar = interpExecVar();
 
@@ -1978,6 +2187,13 @@ interpExecFor()
       }
 
       efor->setVar(evar);
+
+      if (! isExecOperator(CJOperator::Type::SemiColon)) {
+        throwSyntaxError(efor, "Missing semi-colon for expression");
+        return CJExecForP();
+      }
+
+      execData_->next();
     }
   }
   else {
@@ -1994,13 +2210,20 @@ interpExecFor()
 
       isIn = true;
     }
-    // <Expression>
+    // <Expression> ;
     else {
       CJExecExpressionListP exprList1 = interpExpressionList();
 
       if (! exprList1) {
         return CJExecForP();
       }
+
+      if (! isExecOperator(CJOperator::Type::SemiColon)) {
+        throwSyntaxError(efor, "Missing semi-colon for expression");
+        return CJExecForP();
+      }
+
+      execData_->next();
 
       efor->setExprList1(exprList1);
     }
@@ -2030,6 +2253,17 @@ interpExecFor()
     }
 
     efor->setExprList2(exprList2);
+
+    //---
+
+    if (! isExecOperator(CJOperator::Type::SemiColon)) {
+      throwSyntaxError(efor, "Missing semi-colon for expression");
+      return CJExecForP();
+    }
+
+    execData_->next();
+
+    //---
 
     CJExecExpressionListP exprList3 = interpExpressionList();
 
@@ -2315,7 +2549,7 @@ interpExecDo()
 
   // ( <expression> )
   if (! interpExecOperator(CJOperator::Type::OpenRBracket)) {
-    throwSyntaxError(edo, "Missing open bracket for do");
+    throwSyntaxError(edo, "Missing open bracket for do while");
     return CJExecDoP();
   }
 
@@ -2328,9 +2562,18 @@ interpExecDo()
   edo->setExprList(exprList);
 
   if (! interpExecOperator(CJOperator::Type::CloseRBracket)) {
-    throwSyntaxError(edo, "Missing close bracket for do");
+    throwSyntaxError(edo, "Missing close bracket for do while");
     return CJExecDoP();
   }
+
+  //---
+
+  if (! isExecOperator(CJOperator::Type::SemiColon)) {
+    throwSyntaxError(edo, "Missing semi-colon for do while");
+    return CJExecDoP();
+  }
+
+  execData_->next();
 
   //---
 
@@ -2492,8 +2735,9 @@ interpExecSwitch()
             defBlock = CJExecBlockP();
           }
 
-          if (isExecOperator(CJOperator::Type::SemiColon))
+          if (isExecOperator(CJOperator::Type::SemiColon)) {
             execData_->next();
+          }
 
           continue;
         }
@@ -2620,10 +2864,6 @@ interpExecVar()
       break;
     }
 
-    execData_->next();
-  }
-
-  if (isExecOperator(CJOperator::Type::SemiColon)) {
     execData_->next();
   }
 
@@ -3125,6 +3365,11 @@ interpExecDictionary()
       break;
 
     execData_->next();
+
+    // allow ,}
+    if (isExecOperator(CJOperator::Type::CloseBrace)) {
+      break;
+    }
   }
 
   //---
@@ -3168,6 +3413,8 @@ interpExecNew()
 
   execData_->next();
 
+  //---
+
   // get args (optional)
   if (isExecOperator(CJOperator::Type::OpenRBracket)) {
     execData_->next();
@@ -3207,6 +3454,8 @@ interpExecAssert()
   if (! interpExecKeyword(CJKeyword::Type::Assert))
     return CJExecAssertP();
 
+  //---
+
   // <expression_list>
   CJExecExpressionListP exprList = interpExpressionList();
 
@@ -3214,6 +3463,12 @@ interpExecAssert()
     return CJExecAssertP();
 
   eassert->setExprList(exprList);
+
+  //---
+
+  if (isExecOperator(CJOperator::Type::SemiColon)) {
+    execData_->next();
+  }
 
   //---
 
@@ -3246,6 +3501,12 @@ interpExecBreak()
       return CJExecBreakP();
 
     ebreak->setIdentifiers(identifiers);
+  }
+
+  //---
+
+  if (isExecOperator(CJOperator::Type::SemiColon)) {
+    execData_->next();
   }
 
   //---
@@ -3283,6 +3544,12 @@ interpExecContinue()
 
   //---
 
+  if (isExecOperator(CJOperator::Type::SemiColon)) {
+    execData_->next();
+  }
+
+  //---
+
   if (isInterpDebug())
     std::cerr << "interpExecContinue: " << *econt << std::endl;
 
@@ -3309,6 +3576,12 @@ interpExecReturn()
 
   if (expr)
     eret->setExpr(expr);
+
+  //---
+
+  if (isExecOperator(CJOperator::Type::SemiColon)) {
+    execData_->next();
+  }
 
   //---
 
@@ -3421,6 +3694,11 @@ interpExecThrow()
     return CJExecThrowP();
 
   ethrow->setExpression(expr);
+
+  // optional semi-colon
+  if (isExecOperator(CJOperator::Type::SemiColon)) {
+    execData_->next();
+  }
 
   //---
 
@@ -3621,8 +3899,11 @@ interpExpressionList()
 
   //---
 
-  if (isExecOperator(CJOperator::Type::SemiColon))
+#if 0
+  if (isExecOperator(CJOperator::Type::SemiColon)) {
     execData_->next();
+  }
+#endif
 
   if (isInterpDebug()) {
     std::cerr << "interpExpressionList: " << *exprList << std::endl;
@@ -3805,6 +4086,7 @@ interpExpression()
 
       execData_->next();
 
+#if 0
       // TODO: needed
       if (token->isProtoValue() && isExecOperator(CJOperator::Type::Scope)) {
         execData_->next();
@@ -3836,6 +4118,9 @@ interpExpression()
       else {
         expr->addToken(token);
       }
+#else
+      expr->addToken(token);
+#endif
     }
     else if (token->type() == CJToken::Type::Operator) {
       CJOperatorP op = std::static_pointer_cast<CJOperator>(token);
@@ -3880,16 +4165,6 @@ interpExpression()
 
           expr->addToken(std::static_pointer_cast<CJToken>(incrDecr));
         }
-#if 0
-        else if (isExecKeyword(CJKeyword::Type::This)) {
-          CJExecThisP ethis = interpExecThis();
-
-          ethis->setIncrDecr(op, /*postOp*/false);
-
-          // TODO: disallow pre and post op
-          execData_->addEToken(std::static_pointer_cast<CJToken>(ethis));
-        }
-#endif
         else {
           throwSyntaxError(expr, "invalid increment/decrement rhs");
           return CJExecExpressionP();
@@ -4118,7 +4393,7 @@ interpExpression()
         expr->addToken(value);
       }
       else {
-        throwSyntaxError(keyword, "Interp failed at keyword: " + keyword->name());
+        //throwSyntaxError(keyword, "Interp failed at keyword: " + keyword->name());
         break;
       }
     }
@@ -4135,65 +4410,6 @@ interpExpression()
     std::cerr << "interpExpression: " << *expr << std::endl;
 
   return expr;
-}
-
-CJExecThisP
-CJavaScript::
-interpExecThis()
-{
-  if (! interpExecKeyword(CJKeyword::Type::This)) {
-    throwSyntaxError(execData_->token(), "Missing keyword this");
-    return CJExecThisP();
-  }
-
-  CJExecThisP ethis(new CJExecThis);
-
-  ethis->setLineNum(execLineNum());
-
-  //---
-
-  if      (isExecOperator(CJOperator::Type::Scope)) {
-    execData_->next();
-
-    CJExecIdentifiersP identifiers = interpIdentifiers();
-
-    ethis->setIdentifiers(identifiers);
-  }
-  else if (isExecOperator(CJOperator::Type::OpenSBracket)) {
-    CJExecIndexExpressionP iexpr = interpIndexExpression();
-
-    ethis->setIndexExpression(iexpr);
-  }
-
-  if      (isExecOperator(CJOperator::Type::Assign)) {
-    execData_->next();
-
-    CJExecExpressionP expr = interpExpression();
-
-    if (! expr) {
-      throwSyntaxError(execData_->token(), "Missing expression for assign");
-      return CJExecThisP();
-    }
-
-    ethis->setAssignExpression(expr);
-  }
-  else if (isExecOperator(CJOperator::Type::Increment) ||
-           isExecOperator(CJOperator::Type::Decrement)) {
-    CJTokenP token1 = execData_->token();
-
-    execData_->next();
-
-    CJOperatorP op1 = std::static_pointer_cast<CJOperator>(token1);
-
-    ethis->setIncrDecr(op1, /*postOp*/true);
-  }
-
-  //---
-
-  if (isInterpDebug())
-    std::cerr << "interpExecThis: " << *ethis << std::endl;
-
-  return ethis;
 }
 
 CJExecIndexExpressionP
@@ -4338,8 +4554,9 @@ interpExecBlock(CJExecBlock::Type type)
       execData_->next();
     }
 
-    if (isExecOperator(CJOperator::Type::SemiColon))
+    if (isExecOperator(CJOperator::Type::SemiColon)) {
       execData_->next();
+    }
   }
 
   block->interp(this);
@@ -4349,6 +4566,24 @@ interpExecBlock(CJExecBlock::Type type)
   }
 
   return block;
+}
+
+void
+CJavaScript::
+pushExecData(CJExecData &execData)
+{
+  execDataStack_.push_back(execData_);
+
+  execData_ = &execData;
+}
+
+void
+CJavaScript::
+popExecData()
+{
+  execData_ = execDataStack_.back();
+
+  execDataStack_.pop_back();
 }
 
 bool
@@ -4447,6 +4682,14 @@ valueToFunction(CJValueP value) const
 
     fn = std::static_pointer_cast<CJFunctionBase>(userObj->userFn());
   }
+  else if (value->type() == CJToken::Type::Object) {
+    CJObjectP obj = std::static_pointer_cast<CJObject>(value);
+
+    CJValueP cvalue = obj->getProperty(const_cast<CJavaScript *>(this), "constructor");
+
+    if (cvalue)
+      fn = valueToFunction(cvalue);
+  }
   else if (value->type() == CJToken::Type::Dictionary) {
     CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(value);
 
@@ -4457,6 +4700,30 @@ valueToFunction(CJValueP value) const
   }
 
   return fn;
+}
+
+CJValueP
+CJavaScript::
+valueToObject(CJValueP value) const
+{
+  assert(value->isPrimitive());
+
+  CJavaScript *th = const_cast<CJavaScript *>(this);
+
+  if (value->type() == CJToken::Type::False || value->type() == CJToken::Type::True) {
+    bool b = (value->type() == CJToken::Type::True);
+
+    return CJValueP(new CJBoolean(th, b));
+  }
+
+  CJObjTypeFunctionP typeFn = value->valueType()->typeFunction();
+
+  if (! typeFn)
+    return CJValueP();
+
+  CJFunction::Values values;
+
+  return typeFn->exec(th, values);
 }
 
 COptInt
@@ -4472,7 +4739,7 @@ cmp(CJValueP value1, CJValueP value2)
 
     return COptInt(0);
   }
-  else if (value1->type() == CJValue::Type::Number && value2->type() == CJValue::Type::Number) {
+  else if (value1->isNumber() && value2->isNumber()) {
     double r1 = value1->toReal();
     double r2 = value2->toReal();
 
@@ -4519,7 +4786,7 @@ cmp(CJValueP value1, CJValueP value2)
 
     return COptInt(0);
   }
-  else if (value1->type() == CJValue::Type::Number || value2->type() == CJValue::Type::Number) {
+  else if (value1->isNumber() || value2->isNumber()) {
     double r1 = value1->toReal();
     double r2 = value2->toReal();
 
@@ -4592,8 +4859,7 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
 
         return createStringValue(s1 + s2);
       }
-      else if (value1->type() == CJValue::Type::Number &&
-               value2->type() == CJValue::Type::Number) {
+      else if (value1->isNumber() && value2->isNumber()) {
         double r1 = value1->toReal();
         double r2 = value2->toReal();
 
@@ -4606,8 +4872,7 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
 
         return createStringValue(s1 + s2);
       }
-      else if (value1->type() == CJValue::Type::Number ||
-               value2->type() == CJValue::Type::Number) {
+      else if (value1->isNumber() || value2->isNumber()) {
         double r1 = value1->toReal();
         double r2 = value2->toReal();
 
@@ -4622,8 +4887,7 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
 
       break;
     case CJOperator::Type::Minus:
-      if (value1->type() == CJValue::Type::Number ||
-          value2->type() == CJValue::Type::Number) {
+      if (value1->isNumber() || value2->isNumber()) {
         double r1 = value1->toReal();
         double r2 = value2->toReal();
 
@@ -4646,8 +4910,7 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
 
       break;
     case CJOperator::Type::Times:
-      if (value1->type() == CJValue::Type::Number ||
-          value2->type() == CJValue::Type::Number) {
+      if (value1->isNumber() || value2->isNumber()) {
         double r1 = value1->toReal();
         double r2 = value2->toReal();
 
@@ -4656,8 +4919,7 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
 
       break;
     case CJOperator::Type::Divide:
-      if (value1->type() == CJValue::Type::Number ||
-          value2->type() == CJValue::Type::Number) {
+      if (value1->isNumber() || value2->isNumber() ) {
         double r1 = value1->toReal();
         double r2 = value2->toReal();
 
@@ -4671,8 +4933,7 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
 
       break;
     case CJOperator::Type::Modulus:
-      if (value1->type() == CJValue::Type::Number ||
-          value2->type() == CJValue::Type::Number) {
+      if (value1->isNumber() || value2->isNumber()) {
         double r1 = value1->toReal();
         double r2 = value2->toReal();
 
@@ -4768,7 +5029,7 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
     }
 
     case CJOperator::Type::BitwiseAnd:
-      if (value1->type() == CJValue::Type::Number && value2->type() == CJValue::Type::Number) {
+      if (value1->isNumber() && value2->isNumber()) {
         long i1 = value1->toInteger();
         long i2 = value2->toInteger();
 
@@ -4779,7 +5040,7 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
 
       break;
     case CJOperator::Type::BitwiseOr:
-      if (value1->type() == CJValue::Type::Number && value2->type() == CJValue::Type::Number) {
+      if (value1->isNumber() && value2->isNumber()) {
         long i1 = value1->toInteger();
         long i2 = value2->toInteger();
 
@@ -4790,7 +5051,7 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
 
       break;
     case CJOperator::Type::BitwiseXor:
-      if (value1->type() == CJValue::Type::Number && value2->type() == CJValue::Type::Number) {
+      if (value1->isNumber() && value2->isNumber()) {
         long i1 = value1->toInteger();
         long i2 = value2->toInteger();
 
@@ -4802,7 +5063,7 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
       break;
 
     case CJOperator::Type::LeftShift: {
-      if (value1->type() == CJValue::Type::Number && value2->type() == CJValue::Type::Number) {
+      if (value1->isNumber() && value2->isNumber()) {
         long i1 = value1->toInteger();
         long i2 = value2->toInteger();
 
@@ -4814,7 +5075,7 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
       break;
     }
     case CJOperator::Type::RightShift: {
-      if (value1->type() == CJValue::Type::Number && value2->type() == CJValue::Type::Number) {
+      if (value1->isNumber() && value2->isNumber()) {
         long i1 = value1->toInteger();
         long i2 = value2->toInteger();
 
@@ -4826,7 +5087,7 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
       break;
     }
     case CJOperator::Type::UnsignedRightShift: {
-      if (value1->type() == CJValue::Type::Number && value2->type() == CJValue::Type::Number) {
+      if (value1->isNumber() && value2->isNumber()) {
         ulong i1 = value1->toInteger();
         long  i2 = value2->toInteger();
 
@@ -4912,7 +5173,7 @@ execUnaryOp(CJOperator::Type op, CJValueP value)
 
   if (! value) {
     if      (op == CJOperator::Type::TypeOf)
-      return createUndefinedValue();
+      return createStringValue("undefined");
     else if (op == CJOperator::Type::Void)
       return createUndefinedValue();
     else if (op == CJOperator::Type::Delete)
@@ -4936,7 +5197,7 @@ execUnaryOp(CJOperator::Type op, CJValueP value)
     }
 
     case CJOperator::Type::Increment:
-      if (value->type() == CJValue::Type::Number) {
+      if (value->isNumber()) {
         double r = value->cast<CJNumber>()->real();
 
         return createNumberValue(r + 1);
@@ -4944,7 +5205,7 @@ execUnaryOp(CJOperator::Type op, CJValueP value)
 
       break;
     case CJOperator::Type::Decrement:
-      if (value->type() == CJValue::Type::Number) {
+      if (value->isNumber()) {
         double r = value->cast<CJNumber>()->real();
 
         return createNumberValue(r - 1);
@@ -4964,7 +5225,7 @@ execUnaryOp(CJOperator::Type op, CJValueP value)
     }
 
     case CJOperator::Type::BitwiseNot:
-      if (value->type() == CJValue::Type::Number) {
+      if (value->isNumber()) {
         long i = value->toInteger();
 
         long res = ~ i;
@@ -4980,6 +5241,8 @@ execUnaryOp(CJOperator::Type op, CJValueP value)
       if      (value->isFunction())
         res = "function";
       else if (value->valueType()->type() == CJToken::Type::Dictionary)
+        res = "dictionary";
+      else if (value->valueType()->type() == CJToken::Type::Object)
         res = "object";
       else if (value->valueType()->type() == CJToken::Type::Array)
         res = "object";
@@ -5686,7 +5949,7 @@ readDoubleString(CStrParse &parse)
             break;
           }
           case 'x': {
-            //2 hexadecimal digits
+            // 2 hexadecimal digits
             int c1 = 0;
             int c2 = 0;
 
@@ -5799,7 +6062,7 @@ readSingleString(CStrParse &parse)
             break;
           }
           case 'x': {
-            //2 hexadecimal digits
+            // 2 hexadecimal digits
             int c1 = 0;
             int c2 = 0;
 

@@ -21,7 +21,7 @@ exec(CJavaScript *js, const Values &values)
     number = new CJNumber(js, r);
   }
 
-  number->setIsBasic(false);
+  number->setIsPrimitive(false);
 
   return CJValueP(number);
 }

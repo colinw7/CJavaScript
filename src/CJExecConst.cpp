@@ -42,7 +42,7 @@ exec(CJavaScript *js)
 
       idValue->setValue(value);
 
-      idValue->setReadOnly();
+      idValue->setWritable(false);
     }
   }
 

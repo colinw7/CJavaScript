@@ -5,11 +5,17 @@
 
 namespace CJUtil {
   inline double getNaN() {
-    double r;
+    static COptReal nanValue;
 
-    COSNaN::set_nan(&r);
+    if (! nanValue.isValid()) {
+      double r;
 
-    return r;
+      COSNaN::set_nan(&r);
+
+      nanValue = r;
+    }
+
+    return nanValue.getValue();
   }
 
   inline bool isNaN(double r) {
@@ -53,6 +59,34 @@ namespace CJUtil {
 
     return (tolower(c) - 'a' + 10);
   }
+
+  //---
+
+  inline bool isBaseChar(char c, int base) {
+    int d = -1;
+
+    if      (isdigit(c))
+      d = (c - '0');
+    else if (isalpha(c))
+      d = (tolower(c) - 'a' + 10);
+
+    return (d >= 0 && d < base);
+  }
+
+  inline int baseCharValue(char c, int base) {
+    int d = -1;
+
+    if      (isdigit(c))
+      d = (c - '0');
+    else if (isalpha(c))
+      d = (tolower(c) - 'a' + 10);
+
+    assert(d >= 0 && d < base);
+
+    return d;
+  }
+
+  //---
 
   inline double realModulus(double real1, double real2, int *error_code=0) {
     if (error_code) *error_code = 0;

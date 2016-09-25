@@ -40,24 +40,51 @@ exec(CJavaScript *js)
   }
 
   CJFunctionBaseP fn, typeFn;
+  CJDictionaryP   protoDict;
+  CJObjectP       protoObj;
 
   if (typeValue->isFunction()) {
     typeFn = std::static_pointer_cast<CJFunctionBase>(typeValue);
 
-    CJValueP protoValue = typeFn->getProperty(js, "prototype");
+    if (typeFn->type() == CJFunctionBase::Type::ObjType) {
+      CJValueP protoValue = typeFn->getProperty(js, "prototype");
 
-    if (! protoValue) {
-      js->errorMsg("No prototype for type name '" + typeName_ + "'");
-      return CJValueP();
+      if (! protoValue) {
+        js->errorMsg("No prototype for type name '" + typeName_ + "'");
+        return CJValueP();
+      }
+
+      if      (protoValue->type() == CJToken::Type::Object) {
+        protoObj = std::static_pointer_cast<CJObject>(protoValue);
+
+        CJValueP constructor = protoObj->getProperty(js, "constructor");
+
+        if (constructor && constructor->isFunction())
+          fn = std::static_pointer_cast<CJFunctionBase>(constructor);
+      }
+      else if (protoValue->type() == CJToken::Type::Dictionary) {
+        protoDict = std::static_pointer_cast<CJDictionary>(protoValue);
+
+        CJValueP constructor = protoDict->getProperty(js, "constructor");
+
+        if (constructor && constructor->isFunction())
+          fn = std::static_pointer_cast<CJFunctionBase>(constructor);
+      }
     }
+    else {
+      CJValueP protoValue = typeFn->getProperty(js, "prototype");
 
-    if (protoValue->type() == CJToken::Type::Dictionary) {
-      CJDictionaryP protoDict = std::static_pointer_cast<CJDictionary>(protoValue);
+      if (! protoValue) {
+        js->errorMsg("No prototype for type name '" + typeName_ + "'");
+        return CJValueP();
+      }
 
-      CJValueP constructor = protoDict->getProperty(js, "constructor");
-
-      if (constructor && constructor->isFunction())
-        fn = std::static_pointer_cast<CJFunctionBase>(constructor);
+      if      (protoValue->type() == CJToken::Type::Object) {
+        protoObj = std::static_pointer_cast<CJObject>(protoValue);
+      }
+      else if (protoValue->type() == CJToken::Type::Dictionary) {
+        protoDict = std::static_pointer_cast<CJDictionary>(protoValue);
+      }
     }
   }
 
@@ -94,6 +121,27 @@ exec(CJavaScript *js)
 
     obj->setTypeName(typeName_);
 
+    if      (protoDict) {
+      for (const auto &name : protoDict->propertyNames()) {
+        if (! protoDict->isEnumerableProperty(name))
+          continue;
+
+        CJValueP value = protoDict->getProperty(js, name);
+
+        obj->setProperty(js, name, value);
+      }
+    }
+    else if (protoObj) {
+      for (const auto &name : protoObj->propertyNames()) {
+        if (! protoObj->isEnumerableProperty(name))
+          continue;
+
+        CJValueP value = protoObj->getProperty(js, name);
+
+        obj->setProperty(js, name, value);
+      }
+    }
+
     newValue = CJValueP(obj);
   }
 
@@ -126,7 +174,7 @@ exec(CJavaScript *js)
 
   js->popThis();
 
-  if (! fnValue)
+  if (js->isUndefinedValue(fnValue))
     fnValue = newObj;
 
   return fnValue;

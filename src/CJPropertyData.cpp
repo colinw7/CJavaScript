@@ -1,4 +1,6 @@
 #include <CJPropertyData.h>
+#include <CJNameSpaceValue.h>
+#include <CJObjectValue.h>
 #include <CJavaScript.h>
 
 CJValueP

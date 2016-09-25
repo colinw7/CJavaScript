@@ -12,8 +12,8 @@ class CJLValue : public CJValue {
   virtual CJValueP value() const = 0;
   virtual void setValue(CJValueP value) = 0;
 
-  virtual bool isReadOnly() const { return false; }
-  virtual void setReadOnly(bool =true) { }
+  virtual bool isWritable() const { return true; }
+  virtual void setWritable(bool) { }
 };
 
 #endif

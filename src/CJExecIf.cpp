@@ -72,6 +72,4 @@ print(std::ostream &os) const
   if (elseBlock_.block) {
     os << " else " << *elseBlock_.block;
   }
-
-  os << std::endl;
 }

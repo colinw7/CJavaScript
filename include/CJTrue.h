@@ -25,10 +25,10 @@ class CJTrue : public CJValue {
  private:
   CJTrue(CJavaScript *js);
 
+  bool isPrimitive() const override { return true; }
+
  public:
   CJValue *dup(CJavaScript *js) const override { return new CJTrue(js); }
-
-  bool isProtoValue() const override { return true; }
 
   std::string toString() const override { return "true"; }
 
