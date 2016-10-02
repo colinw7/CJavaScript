@@ -46,7 +46,7 @@ long
 CQJWindow::
 addTimer(CJFunctionBaseP timerFn, double t)
 {
-  CQJWindowP window = std::static_pointer_cast<CQJWindow>(shared_from_this());
+  CQJWindowP window = CJValue::cast<CQJWindow>(shared_from_this());
 
   CQJWindowTimer *timer = new CQJWindowTimer(window, timerFn);
 
@@ -75,7 +75,7 @@ void
 CQJWindow::
 addOneShotTimer(CJFunctionBaseP timerFn, double t)
 {
-  CQJWindowP window = std::static_pointer_cast<CQJWindow>(shared_from_this());
+  CQJWindowP window = CJValue::cast<CQJWindow>(shared_from_this());
 
   CQJWindowTimer *timer = new CQJWindowTimer(window, timerFn);
 
@@ -117,10 +117,10 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
       double   t       = values[2]->toReal();
 
       if (fnValue->type() == CJToken::Type::Function) {
-        CJFunctionBaseP timerFn = std::static_pointer_cast<CJFunctionBase>(fnValue);
+        CJFunctionBaseP timerFn = CJValue::cast<CJFunctionBase>(fnValue);
 
         if (! timer_) {
-          CQJWindowP window = std::static_pointer_cast<CQJWindow>(shared_from_this());
+          CQJWindowP window = CJValue::cast<CQJWindow>(shared_from_this());
 
           timer_ = new CQJWindowTimer(window, timerFn);
         }

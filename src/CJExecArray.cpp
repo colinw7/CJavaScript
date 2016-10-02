@@ -1,6 +1,7 @@
 #include <CJExecArray.h>
 #include <CJArray.h>
 #include <CJExecExpression.h>
+#include <CJavaScript.h>
 
 CJExecArray::
 CJExecArray() :
@@ -12,7 +13,7 @@ CJValueP
 CJExecArray::
 exec(CJavaScript *js)
 {
-  CJArray *array = new CJArray(js);
+  CJArrayP array = js->createArrayValue();
 
   for (const auto &v : values_) {
     CJValueP value = v->exec(js);
@@ -20,7 +21,16 @@ exec(CJavaScript *js)
     array->addValue(value);
   }
 
-  return CJValueP(array);
+  return array;
+}
+
+std::string
+CJExecArray::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
 }
 
 void

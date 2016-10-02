@@ -5,16 +5,18 @@
 #include <sys/time.h>
 #include <cstring>
 
-CJObjTypeP CJDateType::type_;
+CJDateTypeP CJDateType::type_;
 
-CJObjTypeP
+CJDateTypeP
 CJDateType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjTypeP(new CJDateType(js));
+    type_ = CJDateTypeP(new CJDateType(js));
 
-    js->addObjectType("date", type_);
+    type_->init();
+
+    js->addObjectType(type_->name(), type_);
 
     js->addTypeObject(CJToken::Type::Date, type_);
   }
@@ -24,61 +26,65 @@ instance(CJavaScript *js)
 
 CJDateType::
 CJDateType(CJavaScript *js) :
- CJObjType(js, CJToken::Type::Date, "date")
+ CJObjType(js, CJToken::Type::Date, "Date")
 {
-  addTypeFunction(js, "UTC");
-  addTypeFunction(js, "now");
-  addTypeFunction(js, "parse");
-  addTypeFunction(js, "toString");
+}
 
-  addObjectFunction(js, "getDate");
-  addObjectFunction(js, "getDay");
-  addObjectFunction(js, "getFullYear");
-  addObjectFunction(js, "getHours");
-  addObjectFunction(js, "getMilliseconds");
-  addObjectFunction(js, "getMinutes");
-  addObjectFunction(js, "getMonth");
-  addObjectFunction(js, "getSeconds");
-  addObjectFunction(js, "getTime");
-  addObjectFunction(js, "getTimezoneOffset");
-  addObjectFunction(js, "getUTCDate");
-  addObjectFunction(js, "getUTCDay");
-  addObjectFunction(js, "getUTCFullYear");
-  addObjectFunction(js, "getUTCHours");
-  addObjectFunction(js, "getUTCMilliseconds");
-  addObjectFunction(js, "getUTCMinutes");
-  addObjectFunction(js, "getUTCMonth");
-  addObjectFunction(js, "getUTCSeconds");
-  addObjectFunction(js, "getYear");
+void
+CJDateType::
+init()
+{
+  addTypeFunction(js_, "UTC"     , type_);
+  addTypeFunction(js_, "now"     , type_);
+  addTypeFunction(js_, "parse"   , type_);
+  addTypeFunction(js_, "toString", type_);
 
-  addObjectFunction(js, "setDate");
-  addObjectFunction(js, "setFullYear");
-  addObjectFunction(js, "setHours");
-  addObjectFunction(js, "setMilliseconds");
-  addObjectFunction(js, "setMinutes");
-  addObjectFunction(js, "setMonth");
-  addObjectFunction(js, "setSeconds");
-  addObjectFunction(js, "setTime");
-  addObjectFunction(js, "setUTCDate");
-  addObjectFunction(js, "setUTCFullYear");
-  addObjectFunction(js, "setUTCHours");
-  addObjectFunction(js, "setUTCMilliseconds");
-  addObjectFunction(js, "setUTCMinutes");
-  addObjectFunction(js, "setUTCMonth");
-  addObjectFunction(js, "setUTCSeconds");
-  addObjectFunction(js, "setYear");
-
-  addObjectFunction(js, "toDateString");
-  addObjectFunction(js, "toGMTString");
-  addObjectFunction(js, "toISOString");
-  addObjectFunction(js, "toJSON");
-  addObjectFunction(js, "toLocaleDateString");
-  addObjectFunction(js, "toLocaleString");
-  addObjectFunction(js, "toLocaleTimeString");
-  addObjectFunction(js, "toString");
-  addObjectFunction(js, "toTimeString");
-  addObjectFunction(js, "toUTCString");
-  addObjectFunction(js, "valueOf");
+  addObjectFunction(js_, "getDate"           , type_);
+  addObjectFunction(js_, "getDay"            , type_);
+  addObjectFunction(js_, "getFullYear"       , type_);
+  addObjectFunction(js_, "getHours"          , type_);
+  addObjectFunction(js_, "getMilliseconds"   , type_);
+  addObjectFunction(js_, "getMinutes"        , type_);
+  addObjectFunction(js_, "getMonth"          , type_);
+  addObjectFunction(js_, "getSeconds"        , type_);
+  addObjectFunction(js_, "getTime"           , type_);
+  addObjectFunction(js_, "getTimezoneOffset" , type_);
+  addObjectFunction(js_, "getUTCDate"        , type_);
+  addObjectFunction(js_, "getUTCDay"         , type_);
+  addObjectFunction(js_, "getUTCFullYear"    , type_);
+  addObjectFunction(js_, "getUTCHours"       , type_);
+  addObjectFunction(js_, "getUTCMilliseconds", type_);
+  addObjectFunction(js_, "getUTCMinutes"     , type_);
+  addObjectFunction(js_, "getUTCMonth"       , type_);
+  addObjectFunction(js_, "getUTCSeconds"     , type_);
+  addObjectFunction(js_, "getYear"           , type_);
+  addObjectFunction(js_, "setDate"           , type_);
+  addObjectFunction(js_, "setFullYear"       , type_);
+  addObjectFunction(js_, "setHours"          , type_);
+  addObjectFunction(js_, "setMilliseconds"   , type_);
+  addObjectFunction(js_, "setMinutes"        , type_);
+  addObjectFunction(js_, "setMonth"          , type_);
+  addObjectFunction(js_, "setSeconds"        , type_);
+  addObjectFunction(js_, "setTime"           , type_);
+  addObjectFunction(js_, "setUTCDate"        , type_);
+  addObjectFunction(js_, "setUTCFullYear"    , type_);
+  addObjectFunction(js_, "setUTCHours"       , type_);
+  addObjectFunction(js_, "setUTCMilliseconds", type_);
+  addObjectFunction(js_, "setUTCMinutes"     , type_);
+  addObjectFunction(js_, "setUTCMonth"       , type_);
+  addObjectFunction(js_, "setUTCSeconds"     , type_);
+  addObjectFunction(js_, "setYear"           , type_);
+  addObjectFunction(js_, "toDateString"      , type_);
+  addObjectFunction(js_, "toGMTString"       , type_);
+  addObjectFunction(js_, "toISOString"       , type_);
+  addObjectFunction(js_, "toJSON"            , type_);
+  addObjectFunction(js_, "toLocaleDateString", type_);
+  addObjectFunction(js_, "toLocaleString"    , type_);
+  addObjectFunction(js_, "toLocaleTimeString", type_);
+  addObjectFunction(js_, "toString"          , type_);
+  addObjectFunction(js_, "toTimeString"      , type_);
+  addObjectFunction(js_, "toUTCString"       , type_);
+  addObjectFunction(js_, "valueOf"           , type_);
 }
 
 CJValueP
@@ -128,7 +134,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return CJValueP();
   }
 
-  CJDate *date = values[0]->cast<CJDate>();
+  CJDateP date = CJValue::cast<CJDate>(values[0]);
   assert(date);
 
   //---
@@ -438,11 +444,11 @@ setProperty(CJavaScript *js, const std::string &key, CJValueP value)
   CJObj::setProperty(js, key, value);
 }
 
-void
+std::string
 CJDate::
-print(std::ostream &os) const
+toString() const
 {
-  os << getTimeString(t_);
+  return getTimeString(t_);
 }
 
 long

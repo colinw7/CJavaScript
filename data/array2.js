@@ -1,43 +1,40 @@
-animals = ["cat", "dog", "tiger"]; // Initialization
-console.log(animals);
+var a = {};
 
-fruits = [["apple", "orange"], ["pear"]]; // Initialization of a nested array
-console.log(fruits);
+var i = 0;
+while (i < 10) {
+  a[i] = i*i;
+  i++;
+}
+a.length = i;
 
-cat = animals[0]; // Indexed access
-console.log(cat);
-
-apple = fruits[0][0]; // Indexed access, nested
-console.log(apple);
-
-animals[0] = "fox"; // Write indexed access
-console.log(animals);
-
-for (var i = 0; i < animals.length; ++i) {
-  item = animals[i]; // For each loop
-  console.log(item);
+var total = 0;
+for (var j = 0; j < a.length; ++j) {
+  total += a[j];
 }
 
-animals = animals.concat("mouse"); // Append
-console.log(animals);
+assert(total==285);
 
-animals = animals.concat(["horse", "ox"]); // Expand
-console.log(animals);
+//----
 
-animals.pop(); // Yields "ox", removing it from animals
-console.log(animals);
+var a = {"0":"a", "1":"b", "2":"c", length:3};
+var b = Array.from(a);
+assert(b == ['a','b','c']);
 
-animals.push("ox"); // Push ox back to the end
-console.log(animals);
+//----
 
-animals.shift(); // Yields "fox", removing it from animals
-console.log(animals);
+var a = {"0":"a", "1":"b", "2":"c", length:3};
+b = Array.prototype.join.call(a, "+");
+assert(b == "a+b+c");
 
-animals.unshift("fox"); // Place fox back to the beginning
-console.log(animals);
+b = Array.prototype.slice.call(a, 0);
+assert(b == ['a','b','c']);
 
-mytext = [1, 2, 3].join("-"); // Yields "1-2-3" via join
-console.log(mytext);
+b = Array.prototype.map.call(a, function(x) { return x.toUpperCase(); });
+assert(b == ['A','B','C']);
 
-items = mytext.split("-"); // Splits
-console.log(items);
+var s = "JavaScript";
+b = Array.prototype.join.call(s, " ");
+assert(b == 'J a v a S c r i p t');
+
+b = Array.prototype.filter.call(s, function(x) { return x.match(/[^aeiou]/); }).join("");
+assert(b == 'JvScrpt');

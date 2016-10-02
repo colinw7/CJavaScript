@@ -35,6 +35,8 @@ class CJExecIndexExpression : public CJExecExpression {
 
   CJValueP indValue(CJavaScript *js);
 
+  std::string toString() const override;
+
   void print(std::ostream &os) const override;
 
  private:

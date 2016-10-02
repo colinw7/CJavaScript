@@ -34,9 +34,9 @@ exec(CJavaScript *js)
       CJValueP evalue;
 
       if (error->type() == CJToken::Type::Error)
-        evalue = std::static_pointer_cast<CJError>(error)->value();
+        evalue = CJValue::cast<CJError>(error)->value();
       else
-        evalue = std::static_pointer_cast<CJValue>(error);
+        evalue = error;
 
       evar->setValue(evalue);
     }
@@ -58,6 +58,15 @@ exec(CJavaScript *js)
   }
 
   return value;
+}
+
+std::string
+CJExecTry::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
 }
 
 void

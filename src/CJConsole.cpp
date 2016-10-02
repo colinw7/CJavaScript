@@ -52,7 +52,7 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
 
       if (values[i]) {
         if (values[i]->type() == CJToken::Type::String)
-          std::cout << values[i]->cast<CJString>()->text();
+          std::cout << CJValue::cast<CJString>(values[i])->text();
         else
           std::cout << *values[i];
       }

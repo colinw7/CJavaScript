@@ -1,6 +1,5 @@
 #include <CJNameSpace.h>
 #include <CJavaScript.h>
-#include <CJCallFunction.h>
 
 void
 CJNameSpace::
@@ -31,36 +30,78 @@ setStringProperty(CJavaScript *js, const std::string &key, const std::string &st
 
 void
 CJNameSpace::
-setFunctionProperty(CJavaScript *js, const std::string &key, CJFunctionBaseP function)
+setBoolProperty(CJavaScript *js, const std::string &key, bool b)
 {
-  CJValueP value = std::static_pointer_cast<CJValue>(function);
+  CJValueP value = js->createBoolValue(b);
 
   setProperty(js, key, value);
-
-  function->setProperty(js, "call", CJValueP(new CJCallFunction(js, function)));
 }
 
 void
 CJNameSpace::
-setFunctionProperty(CJavaScript *js, CJFunctionBaseP function)
+setFunctionProperty(CJavaScript *js, const std::string &key, CJFunctionBaseP function)
 {
-  CJValueP value = std::static_pointer_cast<CJValue>(function);
+  CJValueP value = function;
+
+  setProperty(js, key, value);
+
+  CJFunctionBase::addFunctionMethods(js, function, CJObjTypeP());
+}
+
+void
+CJNameSpace::
+setFunctionProperty(CJavaScript *js, CJFunctionBaseP function, CJObjTypeP objType)
+{
+  CJValueP value = function;
 
   setProperty(js, function->name(), value);
 
-  function->setProperty(js, "call", CJValueP(new CJCallFunction(js, function)));
+  CJFunctionBase::addFunctionMethods(js, function, objType);
+}
+
+bool
+CJNameSpace::
+getPropertyData(CJavaScript *, const std::string &key, PropertyData &data)
+{
+  auto p = keyValues_.find(key);
+
+  if (p == keyValues_.end())
+    return false;
+
+  data = (*p).second;
+
+  return true;
+}
+
+void
+CJNameSpace::
+setPropertyData(CJavaScript *js, const std::string &key, const PropertyData &data)
+{
+  auto p = keyValues_.find(key);
+
+  if (p == keyValues_.end())
+    p = keyValues_.insert(p, KeyValues::value_type(key, PropertyData()));
+
+  (*p).second = data;
+
+  setProperty(js, key, data.value);
 }
 
 void
 CJNameSpace::
 setProperty(CJavaScript *, const std::string &key, CJValueP value)
 {
-  keyValues_[key] = value;
+  auto p = keyValues_.find(key);
+
+  if (p == keyValues_.end())
+    p = keyValues_.insert(p, KeyValues::value_type(key, PropertyData()));
+
+  (*p).second.value = value;
 }
 
 bool
 CJNameSpace::
-hasProperty(CJavaScript *, const std::string &key) const
+hasProperty(CJavaScript *, const std::string &key, bool /*inherit*/) const
 {
   if (keyValues_.find(key) != keyValues_.end())
     return true;
@@ -80,7 +121,7 @@ getProperty(CJavaScript *, const std::string &key) const
   if (p == keyValues_.end())
     return CJValueP();
 
-  CJValueP value = (*p).second;
+  CJValueP value = (*p).second.value;
 
   return value;
 }
@@ -138,7 +179,7 @@ deleteProperty(CJavaScript *js, const std::string &key, const Values &ivalues)
     if (p == keyValues_.end())
       return false;
 
-    CJValueP value = (*p).second;
+    CJValueP value = (*p).second.value;
 
     if (! value)
       return false;
@@ -179,48 +220,24 @@ addPseudoProperty(const std::string &key)
 
 bool
 CJNameSpace::
-canDeleteProperty(const std::string &key) const
-{
-  auto p = propertyMap_.find(key);
-
-  if (p != propertyMap_.end())
-    return (*p).second.canDelete.getValue(true);
-
-  return true;
-}
-
-void
-CJNameSpace::
-setCanDeleteProperty(const std::string &key, bool b)
-{
-  auto p = propertyMap_.find(key);
-
-  if (p == propertyMap_.end())
-    p = propertyMap_.insert(p, PropertyMap::value_type(key, PropertyData()));
-
-  (*p).second.canDelete = b;
-}
-
-bool
-CJNameSpace::
 isWritableProperty(const std::string &key) const
 {
-  auto p = propertyMap_.find(key);
+  auto p = keyValues_.find(key);
 
-  if (p != propertyMap_.end())
-    return (*p).second.writable.getValue(true);
+  if (p == keyValues_.end())
+    return true;
 
-  return true;
+  return (*p).second.writable.getValue(true);
 }
 
 void
 CJNameSpace::
 setWritableProperty(const std::string &key, bool b)
 {
-  auto p = propertyMap_.find(key);
+  auto p = keyValues_.find(key);
 
-  if (p == propertyMap_.end())
-    p = propertyMap_.insert(p, PropertyMap::value_type(key, PropertyData()));
+  if (p == keyValues_.end())
+    p = keyValues_.insert(p, KeyValues::value_type(key, PropertyData()));
 
   (*p).second.writable = b;
 }
@@ -229,24 +246,56 @@ bool
 CJNameSpace::
 isEnumerableProperty(const std::string &key) const
 {
-  auto p = propertyMap_.find(key);
+  auto p = keyValues_.find(key);
 
-  if (p != propertyMap_.end())
-    return (*p).second.enumerable.getValue(true);
+  if (p == keyValues_.end())
+    return true;
 
-  return true;
+  return (*p).second.enumerable.getValue(true);
 }
 
 void
 CJNameSpace::
 setEnumerableProperty(const std::string &key, bool b)
 {
-  auto p = propertyMap_.find(key);
+  auto p = keyValues_.find(key);
 
-  if (p == propertyMap_.end())
-    p = propertyMap_.insert(p, PropertyMap::value_type(key, PropertyData()));
+  if (p == keyValues_.end())
+    p = keyValues_.insert(p, KeyValues::value_type(key, PropertyData()));
 
   (*p).second.enumerable = b;
+}
+
+bool
+CJNameSpace::
+isConfigurableProperty(const std::string &key) const
+{
+  auto p = keyValues_.find(key);
+
+  if (p == keyValues_.end())
+    return true;
+
+  return (*p).second.configurable.getValue(true);
+}
+
+void
+CJNameSpace::
+setConfigurableProperty(const std::string &key, bool b)
+{
+  auto p = keyValues_.find(key);
+
+  if (p == keyValues_.end())
+    p = keyValues_.insert(p, KeyValues::value_type(key, PropertyData()));
+
+  (*p).second.configurable = b;
+}
+
+std::string
+CJNameSpace::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+  return ss.str();
 }
 
 void
@@ -258,7 +307,7 @@ print(std::ostream &os) const
   for (const auto &kv : keyValues_) {
     if (i > 0) os << " ";
 
-    os << kv.first << ": " << *kv.second;
+    os << kv.first << ": " << *kv.second.value;
 
     ++i;
   }

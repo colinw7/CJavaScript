@@ -44,7 +44,7 @@ exec(CJavaScript *js, const Values &values)
   CJValueP ovalue = values[0];
 
   if      (ovalue->type() == CJToken::Type::Object) {
-    value = ovalue->cast<CJObj>()->execNameFn(js, name(), values);
+    value = CJValue::cast<CJObj>(ovalue)->execNameFn(js, name(), values);
   }
   else if (ovalue->type() == CJToken::Type::String) {
     CJObjTypeP stringType = CJStringType::instance(js);
@@ -62,31 +62,13 @@ exec(CJavaScript *js, const Values &values)
     value = dateType->exec(js, name(), values);
   }
   else if (ovalue->isFunction()) {
-    CJTypeFunctionP typeFn = std::static_pointer_cast<CJTypeFunction>(ovalue);
+    CJTypeFunctionP typeFn = CJValue::cast<CJTypeFunction>(ovalue);
 
     CJObjTypeP objType = typeFn->objectType();
 
     value = objType->exec(js, name(), values);
   }
   else if (ovalue->type() == CJToken::Type::Dictionary) {
-#if 0
-    if (name_ == "getOwnPropertyNames") {
-      CJArrayP array(new CJArray(js));
-
-      CJDictionary *dict = ovalue->cast<CJDictionary>();
-
-      for (auto &kv : dict->keyValues()) {
-        std::string key = kv.first;
-
-        array->addValue(js->createStringValue(key));
-      }
-
-      value = std::static_pointer_cast<CJValue>(array);
-    }
-    else {
-      js->errorMsg("Invalid dictionary type function");
-    }
-#endif
     js->errorMsg("Invalid dictionary type function");
   }
   else {
@@ -94,4 +76,20 @@ exec(CJavaScript *js, const Values &values)
   }
 
   return value;
+}
+
+std::string
+CJTypeFunction::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
+}
+
+void
+CJTypeFunction::
+print(std::ostream &os) const
+{
+  os << "[Function: " + name_ + "]";
 }

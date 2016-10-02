@@ -9,3 +9,19 @@ exec(CJavaScript *js, const Values &)
 
   return js->createNumberValue(res);
 }
+
+std::string
+CJRandFunction::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
+}
+
+void
+CJRandFunction::
+print(std::ostream &os) const
+{
+  os << "double random()";
+}

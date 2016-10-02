@@ -61,7 +61,7 @@ main(int argc, char **argv)
     if (! parse) {
       CJValueP value = js.exec();
 
-      if (value) {
+      if (value && value->type() != CJValue::Type::Undefined) {
         value->print(std::cout);
         std::cout << std::endl;
       }
@@ -95,13 +95,15 @@ main(int argc, char **argv)
       depth = js.isCompleteLine(line);
 
       if (depth == 0) {
-        js.loadString(line);
+        if (! js.isEmptyLine(line)) {
+          js.loadString(line);
 
-        CJValueP value = js.exec();
+          CJValueP value = js.exec();
 
-        if (value) {
-          value->print(std::cout);
-          std::cout << std::endl;
+          if (value) {
+            value->print(std::cout);
+            std::cout << std::endl;
+          }
         }
 
         line = "";

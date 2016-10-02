@@ -21,11 +21,11 @@ class CJTypeValue : public CJLValue {
 
   bool hasValue() const;
 
-  std::string toString() const override { return hasValue() ? value()->toString() : ""; }
-
   double toReal() const override { return hasValue() ? value()->toReal() : 0.0; }
 
   bool toBoolean() const override { return hasValue() ? value()->toBoolean() : false; }
+
+  std::string toString() const override { return hasValue() ? value()->toString() : ""; }
 
   void print(std::ostream &os) const override;
 

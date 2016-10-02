@@ -26,9 +26,9 @@ class CJJSONFunction : public CJFunctionBase {
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 
-  void print(std::ostream &os) const override {
-    os << "parse";
-  }
+  std::string toString() const override;
+
+  void print(std::ostream &os) const override;
 
  private:
   class Indent {

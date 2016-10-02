@@ -55,6 +55,8 @@ class CJExecSwitch : public CJToken {
 
   bool execBlock(CJavaScript *js, CJExecBlockP block);
 
+  std::string toString() const override;
+
   void print(std::ostream &os) const override;
 
  private:

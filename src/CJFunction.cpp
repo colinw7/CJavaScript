@@ -64,7 +64,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return CJValueP();
   }
 
-  CJFunction *fn = values[0]->cast<CJFunction>();
+  CJFunctionP fn = CJValue::cast<CJFunction>(values[0]);
   assert(fn);
 
   //---
@@ -116,34 +116,6 @@ setScopeProperty(const std::string &name, CJValueP value)
     scope_->setProperty(js_, name, value);
 }
 
-std::string
-CJFunction::
-toString() const
-{
-  std::ostringstream ss;
-
-  ss << "function " << name() << "(";
-
-  int i = 0;
-
-  for (const auto &arg : args_) {
-    if (i > 0)
-      ss << ", ";
-
-    ss << arg;
-
-    ++i;
-  }
-
-  ss << ")";
-
-  if (block_) {
-    ss << " " << *block_;
-  }
-
-  return ss.str();
-}
-
 CJValueP
 CJFunction::
 exec(CJavaScript *js, const Values &values)
@@ -178,7 +150,7 @@ exec(CJavaScript *js, const Values &values)
 
   //--
 
-  CJFunctionP fn = std::static_pointer_cast<CJFunction>(shared_from_this());
+  CJFunctionP fn = CJValue::cast<CJFunction>(shared_from_this());
 
   arguments->setCallee(fn);
 
@@ -211,9 +183,54 @@ exec(CJavaScript *js, const Values &values)
   return retVal;
 }
 
+std::string
+CJFunction::
+toString() const
+{
+  std::string str;
+
+  str += "function " + name() + "(";
+
+  int i = 0;
+
+  for (const auto &arg : args_) {
+    if (i > 0)
+      str += ", ";
+
+    str += arg;
+
+    ++i;
+  }
+
+  str += ")";
+
+  if (block_) {
+    str += " " + block_->toString();
+  }
+
+  return str;
+}
+
 void
 CJFunction::
 print(std::ostream &os) const
 {
-  os << toString();
+  os << "function " << name() << "(";
+
+  int i = 0;
+
+  for (const auto &arg : args_) {
+    if (i > 0)
+      os << ", ";
+
+    os << arg;
+
+    ++i;
+  }
+
+  os << ")";
+
+  if (block_) {
+    os << " " << *block_;
+  }
 }

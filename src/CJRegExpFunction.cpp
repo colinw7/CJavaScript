@@ -24,3 +24,26 @@ exec(CJavaScript *js, const Values &values)
 
   return js->createRegExpValue(s, f);
 }
+
+CJValueP
+CJRegExpFunction::
+execNew(CJavaScript *js, const Values &values)
+{
+  return exec(js, values);
+}
+
+std::string
+CJRegExpFunction::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
+}
+
+void
+CJRegExpFunction::
+print(std::ostream &os) const
+{
+  os << "[Function: RegExp]";
+}

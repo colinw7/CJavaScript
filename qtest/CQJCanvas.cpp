@@ -37,7 +37,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return CJValueP();
   }
 
-  CQJCanvas *canvas = values[0]->cast<CQJCanvas>();
+  CQJCanvas *canvas = values[0]->castP<CQJCanvas>();
   assert(canvas);
 
   return CJValueP();

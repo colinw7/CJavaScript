@@ -11,7 +11,7 @@ CJJSON(CJavaScript *js)
   // TODO: mark as internal ? different behavior than user dictionary
   dict_ = CJDictionaryP(new CJDictionary(js));
 
-  js->setProperty("JSON", std::static_pointer_cast<CJValue>(dict_));
+  js->setProperty("JSON", dict_);
 
   dict_->setFunctionProperty(js, CJFunctionBaseP(new CJJSONFunction(js, "parse")));
   dict_->setFunctionProperty(js, CJFunctionBaseP(new CJJSONFunction(js, "stringify")));
@@ -66,7 +66,7 @@ exec(CJavaScript *js, const Values &values)
 
     if (values.size() >= 2 && values[1]) {
       if (values[1]->type() == CJToken::Type::Array)
-        filter_ = std::static_pointer_cast<CJArray>(values[1]);
+        filter_ = CJValue::cast<CJArray>(values[1]);
       else
         replacer_ = js->valueToFunction(values[1]);
     }
@@ -76,7 +76,7 @@ exec(CJavaScript *js, const Values &values)
     if (values.size() >= 3) {
       // ignore bad types
       if      (values[2]->type() == CJToken::Type::Number) {
-        CJNumberP number = std::static_pointer_cast<CJNumber>(values[2]);
+        CJNumberP number = CJValue::cast<CJNumber>(values[2]);
 
         long i = number->toInteger();
 
@@ -84,7 +84,7 @@ exec(CJavaScript *js, const Values &values)
           indent.setInteger(std::min(i, 10L));
       }
       else if (values[2]->type() == CJToken::Type::String) {
-        CJStringP str = std::static_pointer_cast<CJString>(values[2]);
+        CJStringP str = CJValue::cast<CJString>(values[2]);
 
         int len = str->length();
 
@@ -111,12 +111,12 @@ exec(CJavaScript *js, const Values &values)
       CJValueP value1;
 
       if (value->type() == CJToken::Type::Object) {
-        CJObjectP obj = std::static_pointer_cast<CJObject>(value);
+        CJObjectP obj = CJValue::cast<CJObject>(value);
 
         value1 = obj->getProperty(js, "toJSON");
       }
       else {
-        CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(value);
+        CJDictionaryP dict = CJValue::cast<CJDictionary>(value);
 
         value1 = dict->getProperty(js, "toJSON");
       }
@@ -221,7 +221,7 @@ parseToValue(CJavaScript *js, CJValueP key, CJson::Value *value, CJFunctionBaseP
   else if (value->isArray()) {
     CJson::Array *array = value->cast<CJson::Array>();
 
-    CJArray *array1 = new CJArray(js);
+    CJArrayP array1 = js->createArrayValue();
 
     std::vector<CJson::Value *> values;
 
@@ -237,9 +237,9 @@ parseToValue(CJavaScript *js, CJValueP key, CJson::Value *value, CJFunctionBaseP
       ++i;
     }
 
-    value1 = CJValueP(array1);
+    value1 = array1;
 
-    parseCallFunc(js, key, value1, reviver);
+    parseCallFunc(js, key, array1, reviver);
   }
 
   return value1;
@@ -300,7 +300,7 @@ stringify(CJavaScript *js, CJValueP key, CJValueP value, const Indent &indent,
   //---
 
   if      (value->type() == CJToken::Type::Object) {
-    CJObjectP obj = std::static_pointer_cast<CJObject>(value);
+    CJObjectP obj = CJValue::cast<CJObject>(value);
 
     std::string str1;
 
@@ -351,7 +351,7 @@ stringify(CJavaScript *js, CJValueP key, CJValueP value, const Indent &indent,
       str = "{" + str1 + "}";
   }
   else if (value->type() == CJToken::Type::Dictionary) {
-    CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(value);
+    CJDictionaryP dict = CJValue::cast<CJDictionary>(value);
 
     std::string str1;
 
@@ -402,7 +402,7 @@ stringify(CJavaScript *js, CJValueP key, CJValueP value, const Indent &indent,
       str = "{" + str1 + "}";
   }
   else if (value->type() == CJToken::Type::Array) {
-    CJArrayP array = std::static_pointer_cast<CJArray>(value);
+    CJArrayP array = CJValue::cast<CJArray>(value);
 
     std::string str1;
 
@@ -447,7 +447,7 @@ stringify(CJavaScript *js, CJValueP key, CJValueP value, const Indent &indent,
       str = "[" + str1 + "]";
   }
   else if (value->isNumber()) {
-    str = std::static_pointer_cast<CJNumber>(value)->realString();
+    str = CJValue::cast<CJNumber>(value)->realString();
   }
   else if (value->type() == CJToken::Type::Boolean) {
     str = (value->toBoolean() ? "true" : "false");
@@ -465,7 +465,7 @@ stringify(CJavaScript *js, CJValueP key, CJValueP value, const Indent &indent,
     str = "null";
   }
   else if (value->type() == CJToken::Type::String) {
-    str = encodeString(std::static_pointer_cast<CJString>(value)->text());
+    str = encodeString(CJValue::cast<CJString>(value)->text());
   }
   else {
     return false;
@@ -550,4 +550,22 @@ encodeString(const std::string &s) const
   str += '"';
 
   return str;
+}
+
+std::string
+CJJSONFunction::
+toString() const
+{
+  std::stringstream ss;
+
+  ss << *this;
+
+  return ss.str();
+}
+
+void
+CJJSONFunction::
+print(std::ostream &os) const
+{
+  os << name_;
 }

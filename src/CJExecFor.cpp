@@ -46,7 +46,7 @@ exec(CJavaScript *js)
       CJArrayP valueArray;
 
       if (value->isArray())
-        valueArray = std::static_pointer_cast<CJArray>(value);
+        valueArray = CJValue::cast<CJArray>(value);
 
       int len = value->length();
 
@@ -110,7 +110,7 @@ exec(CJavaScript *js)
       CJDictionaryP valueDict;
 
       if (value->isDictionary())
-        valueDict = std::static_pointer_cast<CJDictionary>(value);
+        valueDict = CJValue::cast<CJDictionary>(value);
 
       for (auto &ind : value->propertyNames()) {
         if (valueDict && ! valueDict->isEnumerableProperty(ind))
@@ -194,6 +194,15 @@ exec(CJavaScript *js)
   }
 
   return CJValueP();
+}
+
+std::string
+CJExecFor::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
 }
 
 void

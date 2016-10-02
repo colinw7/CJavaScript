@@ -45,8 +45,6 @@ class CJDictionary : public CJValue, public CJNameSpace {
 
   bool isDictionary() const override { return true; }
 
-  std::string toString() const override;
-
   bool toBoolean() const override { return ! keyValues_.empty(); }
 
   double toReal() const override { return toBoolean(); }
@@ -60,9 +58,10 @@ class CJDictionary : public CJValue, public CJNameSpace {
 
   bool hasProperty() const override { return true; }
 
-  bool hasPropertyValue(const std::string &key) const override;
+  bool hasPropertyValue(const std::string &key, bool inherit=true) const override;
   CJValueP propertyValue(const std::string &key) const override;
   void setPropertyValue(const std::string &key, CJValueP value) override;
+  void configPropertyValue(const std::string &key, CJValueP value) override;
   void deletePropertyValue(const std::string &key) override;
 
   CJValue::KeyNames propertyNames() const override;
@@ -73,6 +72,8 @@ class CJDictionary : public CJValue, public CJNameSpace {
   std::vector<std::string> getVariableNames() const;
 
   //---
+
+  std::string toString() const override;
 
   void print(std::ostream &os) const override;
 

@@ -84,3 +84,17 @@ name() const
 
   return "";
 }
+
+std::string
+CJKeyword::
+toString() const
+{
+  return name();
+}
+
+void
+CJKeyword::
+print(std::ostream &os) const
+{
+  os << name();
+}

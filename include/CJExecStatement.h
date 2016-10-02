@@ -12,7 +12,9 @@ class CJExecStatement : public CJToken {
 
   CJValueP exec(CJavaScript *js) override;
 
-  void print(std::ostream &os) const;
+  std::string toString() const override;
+
+  void print(std::ostream &os) const override;
 
  private:
   CJTokenP token_;

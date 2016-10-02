@@ -16,9 +16,9 @@ class CJObjFunction : public CJFunctionBase {
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 
-  void print(std::ostream &os) const override {
-    os << "object fn";
-  }
+  std::string toString() const override;
+
+  void print(std::ostream &os) const override;
 };
 
 #endif

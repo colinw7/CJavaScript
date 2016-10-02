@@ -42,13 +42,13 @@ class CJGetterSetter : public CJValue, public CJNameSpace {
   CJValueP getValue() const;
   void setValue(CJValueP value);
 
-  std::string toString() const override { return ""; }
-
   bool toBoolean() const override { return false; }
 
   double toReal() const override { return toBoolean(); }
 
   //---
+
+  std::string toString() const override { return ""; }
 
   void print(std::ostream &os) const override;
 

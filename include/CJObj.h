@@ -25,9 +25,13 @@ class CJObj : public CJDictionary {
 
   const std::string &name() const;
 
-  std::string toString() const override;
-
   bool toBoolean() const override { return true; }
+
+  virtual bool isNative() const { return true; }
+
+  virtual bool isHost() const { return false; }
+
+  virtual bool isUserDefined() const { return false; }
 
   virtual int cmp(CJObjP obj) const {
     if (this < obj.get()) return -1;
@@ -38,11 +42,12 @@ class CJObj : public CJDictionary {
 
   void addVariable(CJavaScript *js, const std::string &name);
 
-  bool hasPropertyValue(const std::string &key) const override;
+  bool hasPropertyValue(const std::string &key, bool inherit=true) const override;
   CJValueP propertyValue(const std::string &key) const override;
   void setPropertyValue(const std::string &key, CJValueP value) override;
+  void configPropertyValue(const std::string &key, CJValueP value) override;
 
-  bool hasProperty(CJavaScript *js, const std::string &key) const override;
+  bool hasProperty(CJavaScript *js, const std::string &key, bool inherit=true) const override;
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
   void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
 
@@ -50,7 +55,23 @@ class CJObj : public CJDictionary {
 
   CJValue::KeyNames propertyNames() const override;
 
+  bool isProtoValue(CJValueP value) const;
+
+  CJValueP protoValue() const;
+  void setProtoValue(CJValueP value);
+
+  bool isExtensible() const { return extensible_; }
+  void setExtensible(bool b) { extensible_ = b; }
+
+  bool isFrozen() const { return frozen_; }
+  void setFrozen(bool b) { frozen_ = b; }
+
+  bool isSealed() const { return sealed_; }
+  void setSealed(bool b) { sealed_ = b; }
+
   virtual CJValueP execNameFn(CJavaScript *, const std::string &, const Values &);
+
+  std::string toString() const override;
 
   void print(std::ostream &os) const override;
 
@@ -60,11 +81,12 @@ class CJObj : public CJDictionary {
     return os;
   }
 
- private:
-  CJValueP protoValue() const;
-
  protected:
   CJObjTypeP objType_;
+  CJValueP   protoValue_;
+  bool       extensible_ { true };
+  bool       frozen_ { false };
+  bool       sealed_ { false };
 };
 
 #endif

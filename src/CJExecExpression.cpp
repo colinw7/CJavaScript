@@ -157,7 +157,7 @@ exec(CJavaScript *js)
         state.pushValue(value);
     }
     else if (type == CJToken::Type::Operator) {
-      CJOperator *op = token->cast<CJOperator>();
+      CJOperator *op = token->castP<CJOperator>();
 
       bool unstack = false;
 
@@ -226,7 +226,7 @@ exec(CJavaScript *js)
       state.pushOperator(op);
     }
     else if (type == CJToken::Type::Identifiers) {
-      CJExecIdentifiers *identifiers = token->cast<CJExecIdentifiers>();
+      CJExecIdentifiers *identifiers = token->castP<CJExecIdentifiers>();
 
       if      (lastOp && lastOp->type() == CJOperator::Type::Scope) {
         if (! state.anyValues()) {
@@ -268,7 +268,7 @@ exec(CJavaScript *js)
 
       //---
 
-      CJExecFunction *fn = token->cast<CJExecFunction>();
+      CJExecFunction *fn = token->castP<CJExecFunction>();
 
       if (lastOp && lastOp->type() == CJOperator::Type::Scope) {
         if (! state.anyValues()) {
@@ -293,7 +293,7 @@ exec(CJavaScript *js)
       }
     }
     else if (type == CJToken::Type::IndexExpression) {
-      CJExecIndexExpression *iexec = token->cast<CJExecIndexExpression>();
+      CJExecIndexExpression *iexec = token->castP<CJExecIndexExpression>();
 
       if (! iexec->isBound()) {
         if (! state.anyValues()) {
@@ -411,4 +411,32 @@ isShortCircuit(const Operators &operators, const Values &values)
   }
   else
     return false;
+}
+
+std::string
+CJExecExpression::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
+}
+
+void
+CJExecExpression::
+print(std::ostream &os) const
+{
+  int i = 0;
+
+  for (auto &t : tokens_) {
+    if (i > 0)
+      os << " ";
+
+    if (t)
+      os << *t;
+    else
+      os << "null";
+
+    ++i;
+  }
 }

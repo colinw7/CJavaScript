@@ -159,3 +159,17 @@ typeName(Type type)
 
   return "";
 }
+
+std::string
+CJOperator::
+toString() const
+{
+  return name();
+}
+
+void
+CJOperator::
+print(std::ostream &os) const
+{
+  os << name();
+}

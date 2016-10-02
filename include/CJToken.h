@@ -88,17 +88,16 @@ class CJToken {
 
   bool isBoolType() const { return type_ == Type::True || type_ == Type::False; }
 
-  template<typename T> T *cast() { return static_cast<T *>(this); }
+  template<typename T> T *castP() { return static_cast<T *>(this); }
 
   virtual bool isValue() const { return false; }
 
   virtual CJValueP exec(CJavaScript *) { return CJValueP(); }
 
-  virtual std::string toString() const {
-    std::ostringstream ss; ss << *this;
-    return ss.str();
-  }
+  // string representation
+  virtual std::string toString() const = 0;
 
+  // print details
   virtual void print(std::ostream &os) const = 0;
 
   friend std::ostream &operator<<(std::ostream &os, const CJToken &rhs) {

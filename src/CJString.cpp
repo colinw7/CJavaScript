@@ -1,19 +1,22 @@
 #include <CJString.h>
+#include <CJRegExp.h>
 #include <CJavaScript.h>
 #include <CJUtil.h>
 #include <CUtf8.h>
 #include <cstring>
 
-CJObjTypeP CJStringType::type_;
+CJStringTypeP CJStringType::type_;
 
 CJObjTypeP
 CJStringType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjTypeP(new CJStringType(js));
+    type_ = CJStringTypeP(new CJStringType(js));
 
-    js->addObjectType("string", type_);
+    type_->init();
+
+    js->addObjectType(type_->name(), type_);
 
     js->addTypeObject(CJToken::Type::String, type_);
   }
@@ -23,7 +26,13 @@ instance(CJavaScript *js)
 
 CJStringType::
 CJStringType(CJavaScript *js) :
- CJObjType(js, CJToken::Type::String, "string")
+ CJObjType(js, CJToken::Type::String, "String")
+{
+}
+
+void
+CJStringType::
+init()
 {
   // String properties
   //   length, fromCharCode, fromCodePoint, raw
@@ -31,10 +40,10 @@ CJStringType(CJavaScript *js) :
   //   arguments, caller, displayName, length, name, prototype
   // Object
   //   __proto__, constructor
-  addTypeFunction(js, "fromCharCode");
-  addTypeFunction(js, "fromCodePoint");
-  addTypeFunction(js, "raw");
-  addTypeFunction(js, "toString");
+  addTypeFunction(js_, "fromCharCode" , type_);
+  addTypeFunction(js_, "fromCodePoint", type_);
+  addTypeFunction(js_, "raw"          , type_);
+  addTypeFunction(js_, "toString"     , type_);
 
   // String.prototype properties
   //  anchor, charAt, charCodeAt, codePointAt, concat, endsWith,
@@ -47,18 +56,35 @@ CJStringType(CJavaScript *js) :
   // Object.prototype properties
   //  hasOwnProperty, isPrototypeOf, propertyIsEnumerable,
   //  toLocalString,  toSource, toString, unwatch, valueOf, watch
-  addObjectFunction(js, "toString");
-  addObjectFunction(js, "charAt");
-  addObjectFunction(js, "concat");
-  addObjectFunction(js, "indexOf");
-  addObjectFunction(js, "lastIndexOf");
-  addObjectFunction(js, "replace");
-  addObjectFunction(js, "slice");
-  addObjectFunction(js, "split");
-  addObjectFunction(js, "substr");
-  addObjectFunction(js, "substring");
-  addObjectFunction(js, "toLowerCase");
-  addObjectFunction(js, "toUpperCase");
+  addObjectFunction(js_, "anchor"           , type_);
+  addObjectFunction(js_, "charAt"           , type_);
+  addObjectFunction(js_, "charCodeAt"       , type_);
+  addObjectFunction(js_, "codePointAt"      , type_);
+  addObjectFunction(js_, "concat"           , type_);
+  addObjectFunction(js_, "endsWith"         , type_);
+  addObjectFunction(js_, "includes"         , type_);
+  addObjectFunction(js_, "indexOf"          , type_);
+  addObjectFunction(js_, "lastIndexOf"      , type_);
+  addObjectFunction(js_, "link"             , type_);
+  addObjectFunction(js_, "localeCompare"    , type_);
+  addObjectFunction(js_, "match"            , type_);
+  addObjectFunction(js_, "normalize"        , type_);
+  addObjectFunction(js_, "repeat"           , type_);
+  addObjectFunction(js_, "replace"          , type_);
+  addObjectFunction(js_, "search"           , type_);
+  addObjectFunction(js_, "slice"            , type_);
+  addObjectFunction(js_, "split"            , type_);
+  addObjectFunction(js_, "startsWith"       , type_);
+  addObjectFunction(js_, "substr"           , type_);
+  addObjectFunction(js_, "substring"        , type_);
+  addObjectFunction(js_, "toLocaleLowerCase", type_);
+  addObjectFunction(js_, "toLocaleUpperCase", type_);
+  addObjectFunction(js_, "toLowerCase"      , type_);
+  addObjectFunction(js_, "toString"         , type_);
+  addObjectFunction(js_, "toUpperCase"      , type_);
+  addObjectFunction(js_, "trimLeft"         , type_);
+  addObjectFunction(js_, "trimRight"        , type_);
+  addObjectFunction(js_, "valueOf"          , type_);
 }
 
 CJValueP
@@ -70,7 +96,11 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
     return CJValueP();
   }
 
-  // values[0] is CJStringFunction
+  // values[0] is CJObjectTypeFunction
+  CJFunctionBaseP fn;
+
+  if (values[0] && values[0]->isFunction())
+    fn = CJValue::cast<CJFunctionBase>(values[0]);
 
   // type functions
   if      (name == "fromCharCode") {
@@ -99,7 +129,10 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
     return CJValueP();
   }
   else if (name == "toString") {
-    return js->createStringValue("function String() { }");
+    if (fn)
+      return js->createStringValue(fn->toString());
+    else
+      return js->createStringValue("function String() { }");
   }
   else {
     js->errorMsg("Invalid string function " + name);
@@ -117,16 +150,14 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return CJValueP();
   }
 
-  CJString *cstr = values[0]->cast<CJString>();
+  CJStringP cstr = CJValue::cast<CJString>(values[0]);
   assert(cstr);
 
   //---
 
   // object functions
-  if      (name == "toString") {
-    std::string str = cstr->text();
-
-    return js->createStringValue(str);
+  if      (name == "anchor") {
+    return CJValueP();
   }
   else if (name == "charAt") {
     if (values.size() != 2) {
@@ -140,6 +171,12 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       return js->createStringValue(cstr->substr(ind, 1));
     }
   }
+  else if (name == "charCodeAt") {
+    return CJValueP();
+  }
+  else if (name == "codePointAt") {
+    return CJValueP();
+  }
   else if (name == "concat") {
     if (values.size() != 2) {
       js->errorMsg("Invalid number of arguments for " + name);
@@ -152,16 +189,22 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     return js->createStringValue(str + str1);
   }
+  else if (name == "endsWith") {
+    return CJValueP();
+  }
+  else if (name == "includes") {
+    return CJValueP();
+  }
   else if (name == "indexOf") {
     if (values.size() != 2) {
       js->errorMsg("Invalid number of arguments for " + name);
       return CJValueP();
     }
 
-    CJString *key = 0;
+    CJStringP key;
 
     if (values[1] && values[1]->type() == CJToken::Type::String)
-      key = values[1]->cast<CJString>();
+      key = CJValue::cast<CJString>(values[1]);
 
     if (! key) {
       js->errorMsg("Invalid key for " + name);
@@ -183,10 +226,10 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       return CJValueP();
     }
 
-    CJString *key = 0;
+    CJStringP key;
 
     if (values[1] && values[1]->type() == CJToken::Type::String)
-      key = values[1]->cast<CJString>();
+      key = CJValue::cast<CJString>(values[1]);
 
     if (! key) {
       js->errorMsg("Invalid key for " + name);
@@ -201,6 +244,39 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       return js->createNumberValue(long(-1));
 
     return js->createNumberValue(long(p));
+  }
+  else if (name == "link") {
+    return CJValueP();
+  }
+  else if (name == "localeCompare") {
+    return CJValueP();
+  }
+  else if (name == "match") {
+    if (values.size() != 2) {
+      js->errorMsg("Invalid number of arguments for " + name);
+      return CJValueP();
+    }
+
+    CJValueP rvalue = values[1];
+
+    if (rvalue->type() != CJToken::Type::RegExp)
+      rvalue = CJValueP(new CJRegExp(js, rvalue->toString()));
+
+    CJRegExpP regexp = CJValue::cast<CJRegExp>(rvalue);
+
+    std::string str = cstr->text();
+
+    CJRegExp::MatchData data;
+
+    bool b = regexp->find(str, data);
+
+    return js->createBoolValue(b);
+  }
+  else if (name == "normalize") {
+    return CJValueP();
+  }
+  else if (name == "repeat") {
+    return CJValueP();
   }
   else if (name == "replace") {
     if (values.size() != 3) {
@@ -220,6 +296,28 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     return js->createStringValue(str);
   }
+  else if (name == "search") {
+    if (values.size() != 2) {
+      js->errorMsg("Invalid number of arguments for " + name);
+      return CJValueP();
+    }
+
+    CJValueP rvalue = values[1];
+
+    if (rvalue->type() != CJToken::Type::RegExp)
+      rvalue = CJValueP(new CJRegExp(js, rvalue->toString()));
+
+    CJRegExpP regexp = CJValue::cast<CJRegExp>(rvalue);
+
+    std::string str = cstr->text();
+
+    CJRegExp::MatchData data;
+
+    if (! regexp->find(str, data) || data.ranges.empty())
+      return js->createNumberValue(-1L);
+
+    return js->createNumberValue(long(data.ranges[0].first));
+  }
   else if (name == "slice") {
     if (values.size() != 2 && values.size() != 3) {
       js->errorMsg("Invalid number of arguments for " + name);
@@ -232,6 +330,9 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       long ind2 = (values[2] ? values[2]->toInteger() : 0);
 
       int len = cstr->length();
+
+      if (ind2 < 0)
+        ind2 = len + ind2;
 
       if ((ind1 >= 0 && ind1 < len) && (ind2 >= 0 && ind2 < len) && ind1 <= ind2) {
         std::string str1 = cstr->substr(ind1, ind2 - ind1);
@@ -277,7 +378,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     //---
 
-    CJArrayP array(new CJArray(js));
+    CJArrayP array = js->createArrayValue();
 
     for (const auto &s : strs) {
       CJValueP value = js->createStringValue(s);
@@ -285,7 +386,10 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       array->addValue(value);
     }
 
-    return std::static_pointer_cast<CJValue>(array);
+    return array;
+  }
+  else if (name == "startsWith") {
+    return CJValueP();
   }
   else if (name == "substr") {
     if (values.size() != 2 && values.size() != 3) {
@@ -339,21 +443,66 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       }
     }
   }
+  else if (name == "toLocalLowerCase") {
+    return CJValueP();
+  }
+  else if (name == "toLocalUpperCase") {
+    return CJValueP();
+  }
   else if (name == "toLowerCase") {
     std::string str = cstr->text();
 
-    for (auto & elem : str)
-      elem = tolower(elem);
+    int pos = 0;
+    int len = str.size();
+
+    std::string str1;
+
+    while (pos < len) {
+      ulong c = CUtf8::readNextChar(str, pos, len);
+
+      if (c < 0x7f)
+        c = tolower(c);
+
+      CUtf8::append(str1, c);
+    }
+
+    return js->createStringValue(str1);
+  }
+  else if (name == "toString") {
+    std::string str = cstr->text();
 
     return js->createStringValue(str);
   }
   else if (name == "toUpperCase") {
     std::string str = cstr->text();
 
-    for (auto & elem : str)
-      elem = toupper(elem);
+    int pos = 0;
+    int len = str.size();
 
-    return js->createStringValue(str);
+    std::string str1;
+
+    while (pos < len) {
+      ulong c = CUtf8::readNextChar(str, pos, len);
+
+      if (c < 0x7f)
+        c = toupper(c);
+
+      CUtf8::append(str1, c);
+    }
+
+    return js->createStringValue(str1);
+  }
+  else if (name == "trim") {
+    return CJValueP();
+  }
+  else if (name == "trimLeft") {
+    return CJValueP();
+  }
+  else if (name == "trimRight") {
+    return CJValueP();
+  }
+  else if (name == "valueOf") {
+    return CJValueP();
   }
   else {
     js->errorMsg("Invalid string function " + name);
@@ -634,7 +783,7 @@ indexValue(int ind) const
   if (! CUtf8::indexChar(text_, ind, i1, i2))
     return CJValueP();
 
-  return CJValueP(new CJString(js_, text_.substr(i1, i2 - i1)));
+  return js_->createStringValue(text_.substr(i1, i2 - i1));
 }
 
 void
@@ -688,19 +837,26 @@ std::string
 CJString::
 toString() const
 {
-  if (! isPrimitive())
-    return "[String: '" + text_ + "']";
-  else
-    return text_;
+  return text_;
 }
 
 void
 CJString::
 print(std::ostream &os) const
 {
+  if (! isPrimitive())
+    os << "[String: '" << encodeText() << "']";
+  else
+    os << "'" << encodeText() << "'";
+}
+
+std::string
+CJString::
+encodeText() const
+{
   static char buffer[16];
 
-  os << "\'";
+  std::string str;
 
   int  i   = 0;
   uint len = text_.size();
@@ -711,27 +867,27 @@ print(std::ostream &os) const
     if (c <= 0x7f) {
       if (c <= 0x1f) {
         if      (c == '\b')
-          os << "\\b";
+          str += "\\b";
         else if (c == '\f')
-          os << "\\f";
+          str += "\\f";
         else if (c == '\n')
-          os << "\\n";
+          str += "\\n";
         else if (c == '\r')
-          os << "\\r";
+          str += "\\r";
         else if (c == '\t')
-          os << "\\t";
+          str += "\\t";
         else if (c == '\v')
-          os << "\\v";
+          str += "\\v";
         else {
           int i = (c & 0xff);
 
           ::sprintf(buffer, "%02x", i);
 
-          os << "\\x" << buffer;
+          str += "\\x" + std::string(&buffer[0]);
         }
       }
       else {
-        os << char(c);
+        str += char(c);
       }
     }
     else {
@@ -740,7 +896,7 @@ print(std::ostream &os) const
       CUtf8::encode(c, buffer, len1);
 
       for (int j = 0; j < len1; ++j)
-        os << buffer[j];
+        str += buffer[j];
 
 #if 0
       int i1 = (c >> 12) & 0xF;
@@ -755,10 +911,10 @@ print(std::ostream &os) const
       ::sprintf(buffer, "%x", i3); str2 += buffer;
       ::sprintf(buffer, "%x", i4); str2 += buffer;
 
-      os << "\\u" << str2;
+      str += "\\u" << str2;
 #endif
     }
   }
 
-  os << "\'";
+  return str;
 }

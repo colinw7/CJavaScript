@@ -40,6 +40,15 @@ exec(CJavaScript *js)
   return js->createFalseValue();
 }
 
+std::string
+CJExecAssert::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
+}
+
 void
 CJExecAssert::
 print(std::ostream &os) const

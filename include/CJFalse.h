@@ -32,13 +32,13 @@ class CJFalse : public CJValue {
  public:
   CJValue *dup(CJavaScript *js) const override { return new CJFalse(js); }
 
-  std::string toString() const override { return "false"; }
-
   double toReal() const override { return 0; }
 
   bool toBoolean() const override { return false; }
 
-  void print(std::ostream &os) const override { os << "false"; }
+  std::string toString() const override { return "false"; }
+
+  void print(std::ostream &os) const override;
 };
 
 #endif

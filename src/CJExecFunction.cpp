@@ -98,7 +98,7 @@ exec(CJavaScript *js)
     CJavaScript::ValuePair valuePair = js->lookupObjectProperty(identifiers);
 
     if (valuePair.first && valuePair.first->isObject())
-      obj = std::static_pointer_cast<CJObj>(valuePair.first);
+      obj = CJValue::cast<CJObj>(valuePair.first);
 
     CJValueP fnValue = valuePair.second;
 
@@ -147,12 +147,12 @@ exec(CJavaScript *js)
   if (obj) {
     js->pushThis(obj);
 
-    res = fn->cast<CJFunctionBase>()->exec(js, values);
+    res = fn->exec(js, values);
 
     js->popThis();
   }
   else {
-    res = fn->cast<CJFunctionBase>()->exec(js, values);
+    res = fn->exec(js, values);
   }
 
   //--
@@ -166,6 +166,15 @@ exec(CJavaScript *js)
   //--
 
   return res;
+}
+
+std::string
+CJExecFunction::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
 }
 
 void

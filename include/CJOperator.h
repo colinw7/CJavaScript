@@ -93,7 +93,9 @@ class CJOperator : public CJToken {
 
   static bool isAllowUnary(Type type);
 
-  void print(std::ostream &os) const override { os << name(); }
+  std::string toString() const override;
+
+  void print(std::ostream &os) const override;
 
   std::string name() const;
 

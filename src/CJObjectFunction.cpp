@@ -18,3 +18,26 @@ exec(CJavaScript *js, const Values &values)
     return CJValueP(values[1]->dup(js));
   }
 }
+
+CJValueP
+CJObjectFunction::
+execNew(CJavaScript *js, const Values &values)
+{
+  return exec(js, values);
+}
+
+std::string
+CJObjectFunction::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
+}
+
+void
+CJObjectFunction::
+print(std::ostream &os) const
+{
+  os << "[Function: Object]";
+}

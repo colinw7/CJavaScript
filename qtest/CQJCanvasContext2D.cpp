@@ -220,10 +220,10 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
       CQJImage *image = 0;
 
       if (imageVal && imageVal->type() == CJValue::Type::Object) {
-        CJObjP imageObj = std::static_pointer_cast<CJObj>(imageVal);
+        CJObjP imageObj = CJValue::cast<CJObj>(imageVal);
 
         if (imageObj->objType()->name() == "Image") {
-          image = imageObj->cast<CQJImage>();
+          image = imageObj->castP<CQJImage>();
         }
       }
 
@@ -423,10 +423,10 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
         repeat = CQJCanvasPattern::Repeat::Y;
 
       if (patternVal->type() == CJValue::Type::Object) {
-        CJObjP patternObj = std::static_pointer_cast<CJObj>(patternVal);
+        CJObjP patternObj = CJValue::cast<CJObj>(patternVal);
 
         if      (patternObj->objType()->name() == "Image") {
-          CQJImage *image = patternObj->cast<CQJImage>();
+          CQJImage *image = patternObj->castP<CQJImage>();
 
           return CJValueP(new CQJCanvasPattern(qjs_, image->qimage(), repeat));
         }
@@ -460,10 +460,10 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
       double   y        = (values[3] ? values[3]->toReal() : 0);
 
       if (imageVal->type() == CJValue::Type::Object) {
-        CJObjP imageObj = std::static_pointer_cast<CJObj>(imageVal);
+        CJObjP imageObj = CJValue::cast<CJObj>(imageVal);
 
         if      (imageObj->objType()->name() == "Image") {
-          CQJImage *image = imageObj->cast<CQJImage>();
+          CQJImage *image = imageObj->castP<CQJImage>();
 
           qjs_->canvas()->putImageData(image->qimage(), x, y);
         }
@@ -485,20 +485,20 @@ initFill()
   CJValueP fillStyle = getProperty(js_, "fillStyle");
 
   if (fillStyle->type() == CJValue::Type::Object) {
-    CJObjP fillStyleObj = std::static_pointer_cast<CJObj>(fillStyle);
+    CJObjP fillStyleObj = CJValue::cast<CJObj>(fillStyle);
 
     if      (fillStyleObj->objType()->name() == "CanvasLinearGradient") {
-      CQJCanvasLinearGradient *lg = fillStyle->cast<CQJCanvasLinearGradient>();
+      CQJCanvasLinearGradient *lg = fillStyle->castP<CQJCanvasLinearGradient>();
 
       qjs_->canvas()->setFillGradient(lg->lg());
     }
     else if (fillStyleObj->objType()->name() == "CanvasRadialGradient") {
-      CQJCanvasRadialGradient *rg = fillStyle->cast<CQJCanvasRadialGradient>();
+      CQJCanvasRadialGradient *rg = fillStyle->castP<CQJCanvasRadialGradient>();
 
       qjs_->canvas()->setFillGradient(rg->rg());
     }
     else if (fillStyleObj->objType()->name() == "CanvasPattern") {
-      CQJCanvasPattern *pattern = fillStyle->cast<CQJCanvasPattern>();
+      CQJCanvasPattern *pattern = fillStyle->castP<CQJCanvasPattern>();
 
       qjs_->canvas()->setFillPattern(pattern->qimage());
     }
@@ -523,15 +523,15 @@ initStroke()
   CJValueP strokeStyle = getProperty(js_, "strokeStyle");
 
   if (strokeStyle->type() == CJValue::Type::Object) {
-    CJObjP strokeStyleObj = std::static_pointer_cast<CJObj>(strokeStyle);
+    CJObjP strokeStyleObj = CJValue::cast<CJObj>(strokeStyle);
 
     if      (strokeStyleObj->objType()->name() == "CanvasLinearGradient") {
-      CQJCanvasLinearGradient *lg = strokeStyle->cast<CQJCanvasLinearGradient>();
+      CQJCanvasLinearGradient *lg = strokeStyle->castP<CQJCanvasLinearGradient>();
 
       qjs_->canvas()->setStrokeGradient(lg->lg());
     }
     else if (strokeStyleObj->objType()->name() == "CanvasRadialGradient") {
-      CQJCanvasRadialGradient *rg = strokeStyle->cast<CQJCanvasRadialGradient>();
+      CQJCanvasRadialGradient *rg = strokeStyle->castP<CQJCanvasRadialGradient>();
 
       qjs_->canvas()->setStrokeGradient(rg->rg());
     }

@@ -16,3 +16,24 @@ exec(CJavaScript *js, const Values &)
 
   return js->createStringValue(res);
 }
+
+CJValueP
+CJDateFunction::
+execNew(CJavaScript *js, const Values &values)
+{
+  return CJValueP(new CJDate(js, values));
+}
+
+std::string
+CJDateFunction::
+toString() const
+{
+  return "[Function: Date]";
+}
+
+void
+CJDateFunction::
+print(std::ostream &os) const
+{
+  os << "[Function: Date]";
+}

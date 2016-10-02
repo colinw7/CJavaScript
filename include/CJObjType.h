@@ -26,8 +26,8 @@ class CJObjType : public CJNameSpace, public std::enable_shared_from_this<CJObjT
 
   const NameFunctions &objFunctions() const { return objFunctions_; }
 
-  void addTypeFunction(CJavaScript *js, const std::string &name);
-  void addObjectFunction(CJavaScript *js, const std::string &name);
+  void addTypeFunction(CJavaScript *js, const std::string &name, CJObjTypeP type=CJObjTypeP());
+  void addObjectFunction(CJavaScript *js, const std::string &name, CJObjTypeP type=CJObjTypeP());
 
   virtual CJValueP construct(CJavaScript *, const Values &) { return CJValueP(); }
 
@@ -47,9 +47,9 @@ class CJObjType : public CJNameSpace, public std::enable_shared_from_this<CJObjT
     return CJValueP();
   }
 
-  virtual void print(std::ostream &os) const {
-    os << name_;
-  }
+  std::string toString() const;
+
+  virtual void print(std::ostream &os) const;
 
   friend std::ostream &operator<<(std::ostream &os, const CJObjType &rhs) {
     rhs.print(os);

@@ -19,9 +19,9 @@ exec(CJavaScript *, const Values &values)
   CJValueP fnValue = values[0];
 
   if (fnValue->type() == CJToken::Type::Function) {
-    CJFunctionBaseP fn = std::static_pointer_cast<CJFunctionBase>(fnValue);
+    CJFunctionBaseP fn = CJValue::cast<CJFunctionBase>(fnValue);
 
-    CQJWindowP window = std::static_pointer_cast<CQJWindow>(qjs_->jsWindow());
+    CQJWindowP window = CJValue::cast<CQJWindow>(qjs_->jsWindow());
 
     window->addOneShotTimer(fn, 10);
     //fn->exec(js, values);

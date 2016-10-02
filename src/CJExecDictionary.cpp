@@ -1,5 +1,6 @@
 #include <CJExecDictionary.h>
 #include <CJObject.h>
+#include <CJString.h>
 #include <CJGetterSetter.h>
 #include <CJExecExpression.h>
 
@@ -44,8 +45,10 @@ exec(CJavaScript *js)
   for (const auto &v : values_) {
     CJValueP value = v.expr->exec(js);
 
-    if (v.key)
-      dict->setProperty(js, v.key->toString(), value);
+    if (! v.key)
+      continue;
+
+    dict->setProperty(js, v.key->toString(), value);
   }
 
   for (const auto &gs : gsMap_) {
@@ -53,6 +56,29 @@ exec(CJavaScript *js)
   }
 
   return CJValueP(dict);
+}
+
+std::string
+CJExecDictionary::
+toString() const
+{
+  std::string str;
+
+  str += "{";
+
+  int i = 0;
+
+  for (const auto &v : values_) {
+    if (i > 0) str += " ";
+
+    str += v.key->toString() + ":" + v.expr->toString();
+
+    ++i;
+  }
+
+  str += "}";
+
+  return str;
 }
 
 void
@@ -66,7 +92,7 @@ print(std::ostream &os) const
   for (const auto &v : values_) {
     if (i > 0) os << " ";
 
-    os << v.key->toString() << ":" << *v.expr;
+    os << *v.key << ":" << *v.expr;
 
     ++i;
   }

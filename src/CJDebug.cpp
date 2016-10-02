@@ -77,3 +77,17 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
 
   return CJValueP();
 }
+
+std::string
+CJDebugObject::
+toString() const
+{
+  return "debug";
+}
+
+void
+CJDebugObject::
+print(std::ostream &os) const
+{
+  os << "debug";
+}

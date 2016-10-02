@@ -48,11 +48,20 @@ exec(CJavaScript *js)
       lvalue->setValue(value);
 
       if (data.scope())
-        data.scope()->setCanDeleteProperty(data.name(), false);
+        data.scope()->setConfigurableProperty(data.name(), false);
     }
   }
 
   return js->createUndefinedValue();
+}
+
+std::string
+CJExecVar::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
 }
 
 void

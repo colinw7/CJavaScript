@@ -58,3 +58,17 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
 
   return CJValueP();
 }
+
+std::string
+CJDocumentObject::
+toString() const
+{
+  return "document";
+}
+
+void
+CJDocumentObject::
+print(std::ostream &os) const
+{
+  os << "document";
+}

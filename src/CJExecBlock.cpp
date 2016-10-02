@@ -34,7 +34,7 @@ exec(CJavaScript *js)
     if      (etoken->type() == CJToken::Type::FunctionBase) {
       CJFunctionBaseP fn = std::static_pointer_cast<CJFunctionBase>(etoken);
 
-      scope->setProperty(js, fn->name(), std::static_pointer_cast<CJValue>(fn));
+      scope->setProperty(js, fn->name(), fn);
     }
     else if (etoken->isValue()) {
       CJValueP value1 = std::static_pointer_cast<CJValue>(etoken);
@@ -57,6 +57,28 @@ exec(CJavaScript *js)
   return value;
 }
 
+std::string
+CJExecBlock::
+toString() const
+{
+  std::string str;
+
+  str += "{";
+
+  if (! etokens_.empty()) {
+    for (auto &t : etokens_)
+      str += " " + t->toString();
+  }
+  else {
+    for (auto &t : tokens_)
+      str += " " + t->toString();
+  }
+
+  str += " }";
+
+  return str;
+}
+
 void
 CJExecBlock::
 print(std::ostream &os) const
@@ -74,4 +96,3 @@ print(std::ostream &os) const
 
   os << "}";
 }
-

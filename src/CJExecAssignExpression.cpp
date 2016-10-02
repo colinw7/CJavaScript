@@ -32,7 +32,7 @@ exec(CJavaScript *js)
       CJTokenP token = lexpr_->token(i);
 
       if (token->type() == CJToken::Type::Operator) {
-        CJOperator *op = token->cast<CJOperator>();
+        CJOperator *op = token->castP<CJOperator>();
 
         if (op->type() == CJOperator::Type::Scope)
           spos = i;
@@ -71,7 +71,7 @@ exec(CJavaScript *js)
   std::vector<CJExecExpressionP> indices;
 
   if      (varToken && varToken->type() == CJToken::Type::IndexExpression) {
-    CJExecIndexExpression *iexpr = varToken->cast<CJExecIndexExpression>();
+    CJExecIndexExpression *iexpr = varToken->castP<CJExecIndexExpression>();
 
     CJExecIdentifiersP identifiers;
 
@@ -83,7 +83,7 @@ exec(CJavaScript *js)
     eidentifiers = identifiers.get();
   }
   else if (varToken && varToken->type() == CJToken::Type::Identifiers) {
-    eidentifiers = varToken->cast<CJExecIdentifiers>();
+    eidentifiers = varToken->castP<CJExecIdentifiers>();
   }
 
   //---
@@ -285,6 +285,19 @@ setIndexValue(CJavaScript *js, CJValueP varValue, const Values &ivalues, CJValue
   }
 
   return true;
+}
+
+std::string
+CJExecAssignExpression::
+toString() const
+{
+  std::string str;
+
+  if (lexpr_ && op_ && rexpr_) {
+    str += lexpr_->toString() + " " + op_->toString() + " " + rexpr_->toString();
+  }
+
+  return str;
 }
 
 void

@@ -17,9 +17,9 @@ class CJMathFunction : public CJFunctionBase {
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 
-  void print(std::ostream &os) const override {
-    os << "double " << name_ << "(double)";
-  }
+  std::string toString() const override;
+
+  void print(std::ostream &os) const override;
 
  protected:
   Fn fn_;
@@ -39,9 +39,9 @@ class CJReal2Function : public CJFunctionBase {
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 
-  void print(std::ostream &os) const override {
-    os << "double " << name_ << "(double, double)";
-  }
+  std::string toString() const override;
+
+  void print(std::ostream &os) const override;
 
  protected:
   Fn fn_;
@@ -58,9 +58,9 @@ class CJMinFunction : public CJFunctionBase {
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 
-  void print(std::ostream &os) const override {
-    os << "double min(...)";
-  }
+  std::string toString() const override;
+
+  void print(std::ostream &os) const override;
 };
 
 // min of values
@@ -74,9 +74,9 @@ class CJMaxFunction : public CJFunctionBase {
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 
-  void print(std::ostream &os) const override {
-    os << "double max(...)";
-  }
+  std::string toString() const override;
+
+  void print(std::ostream &os) const override;
 };
 
 #endif

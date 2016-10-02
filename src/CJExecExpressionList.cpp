@@ -60,6 +60,15 @@ exec(CJavaScript *js)
   return values.back();
 }
 
+std::string
+CJExecExpressionList::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
+}
+
 void
 CJExecExpressionList::
 print(std::ostream &os) const

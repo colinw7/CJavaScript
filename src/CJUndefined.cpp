@@ -48,3 +48,10 @@ CJUndefined(CJavaScript *js) :
  CJValue(CJUndefinedType::instance(js))
 {
 }
+
+void
+CJUndefined::
+print(std::ostream &os) const
+{
+  os << "undefined";
+}

@@ -48,3 +48,10 @@ CJNull(CJavaScript *js) :
  CJValue(CJNullType::instance(js))
 {
 }
+
+void
+CJNull::
+print(std::ostream &os) const
+{
+  os << "null";
+}

@@ -396,7 +396,7 @@ resizeEvent(QResizeEvent *)
 
   ip_->setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 
-  qjs_->jsCanvas()->cast<CQJCanvas>()->updateSize();
+  CJValue::cast<CQJCanvas>(qjs_->jsCanvas())->updateSize();
 }
 
 void
@@ -414,7 +414,7 @@ enterEvent(QEvent *)
 {
   CQJObject::EventArgs args;
 
-  CQJCanvas *canvas = qjs_->jsCanvas()->cast<CQJCanvas>();
+  CQJCanvas *canvas = qjs_->jsCanvas()->castP<CQJCanvas>();
 
   canvas->callEventListener("mouseover", "onmouseover", args);
 }
@@ -425,7 +425,7 @@ leaveEvent(QEvent *)
 {
   CQJObject::EventArgs args;
 
-  CQJCanvas *canvas = qjs_->jsCanvas()->cast<CQJCanvas>();
+  CQJCanvas *canvas = qjs_->jsCanvas()->castP<CQJCanvas>();
 
   canvas->callEventListener("mouseout", "onmouseout", args);
 }
@@ -442,7 +442,7 @@ mousePressEvent(QMouseEvent *e)
   nameValues.push_back(CQJObject::NameValue("mouseX", js->createNumberValue(long(e->x()))));
   nameValues.push_back(CQJObject::NameValue("mouseY", js->createNumberValue(long(e->y()))));
 
-  CQJCanvas *canvas = qjs_->jsCanvas()->cast<CQJCanvas>();
+  CQJCanvas *canvas = qjs_->jsCanvas()->castP<CQJCanvas>();
 
   canvas->callEventListener("mousedown", "onmousedown", args, nameValues);
 }
@@ -459,7 +459,7 @@ mouseMoveEvent(QMouseEvent *e)
   nameValues.push_back(CQJObject::NameValue("mouseX", js->createNumberValue(long(e->x()))));
   nameValues.push_back(CQJObject::NameValue("mouseY", js->createNumberValue(long(e->y()))));
 
-  CQJCanvas *canvas = qjs_->jsCanvas()->cast<CQJCanvas>();
+  CQJCanvas *canvas = qjs_->jsCanvas()->castP<CQJCanvas>();
 
   canvas->callEventListener("mousemove", "onmousemove", args, nameValues);
 }
@@ -476,7 +476,7 @@ mouseReleaseEvent(QMouseEvent *e)
   nameValues.push_back(CQJObject::NameValue("mouseX", js->createNumberValue(long(e->x()))));
   nameValues.push_back(CQJObject::NameValue("mouseY", js->createNumberValue(long(e->y()))));
 
-  CQJCanvas *canvas = qjs_->jsCanvas()->cast<CQJCanvas>();
+  CQJCanvas *canvas = qjs_->jsCanvas()->castP<CQJCanvas>();
 
   canvas->callEventListener("mouseup", "onmouseup", args, nameValues);
 
@@ -495,7 +495,7 @@ mouseDoubleClickEvent(QMouseEvent *e)
   nameValues.push_back(CQJObject::NameValue("mouseX", js->createNumberValue(long(e->x()))));
   nameValues.push_back(CQJObject::NameValue("mouseY", js->createNumberValue(long(e->y()))));
 
-  CQJCanvas *canvas = qjs_->jsCanvas()->cast<CQJCanvas>();
+  CQJCanvas *canvas = qjs_->jsCanvas()->castP<CQJCanvas>();
 
   canvas->callEventListener("dblclick", "ondblclick", args, nameValues);
 }
@@ -512,7 +512,7 @@ contextMenuEvent(QContextMenuEvent *e)
   nameValues.push_back(CQJObject::NameValue("mouseX", js->createNumberValue(long(e->x()))));
   nameValues.push_back(CQJObject::NameValue("mouseY", js->createNumberValue(long(e->y()))));
 
-  CQJCanvas *canvas = qjs_->jsCanvas()->cast<CQJCanvas>();
+  CQJCanvas *canvas = qjs_->jsCanvas()->castP<CQJCanvas>();
 
   canvas->callEventListener("contextmenu", "oncontextmenu", args, nameValues);
 }
@@ -544,12 +544,12 @@ callEventListener(const std::string &name, const std::string &prop, CJValueP eve
 
   args.push_back(event);
 
-  CQJCanvas *canvas = qjs_->jsCanvas()->cast<CQJCanvas>();
+  CQJCanvas *canvas = qjs_->jsCanvas()->castP<CQJCanvas>();
 
   if (canvas->callEventListener(name, prop, args, nameValues))
     return;
 
-  CQJDocument *document = qjs_->jsDocument()->cast<CQJDocument>();
+  CQJDocument *document = qjs_->jsDocument()->castP<CQJDocument>();
 
   document->callEventListener(name, prop, args, nameValues);
 }

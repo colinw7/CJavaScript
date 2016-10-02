@@ -70,21 +70,9 @@ class CJExecExpression : public CJToken {
 
   CJValueP exec(CJavaScript *js) override;
 
-  void print(std::ostream &os) const override {
-    int i = 0;
+  std::string toString() const override;
 
-    for (auto &t : tokens_) {
-      if (i > 0)
-        os << " ";
-
-      if (t)
-        os << *t;
-      else
-        os << "null";
-
-      ++i;
-    }
-  }
+  void print(std::ostream &os) const override;
 
   static bool isShortCircuit(const Operators &operators, const Values &values);
 

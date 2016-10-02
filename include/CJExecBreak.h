@@ -13,6 +13,8 @@ class CJExecBreak : public CJToken {
   CJExecIdentifiersP identifiers() const { return identifiers_; }
   void setIdentifiers(CJExecIdentifiersP identifiers) { identifiers_ = identifiers; }
 
+  std::string toString() const override;
+
   void print(std::ostream &os) const override;
 
  private:

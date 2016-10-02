@@ -64,10 +64,10 @@ callEventListener(CJValueP value, const EventArgs &args, const NameValues &nameV
   if (! value || value->type() != CJToken::Type::Function)
     return false;
 
-  CJFunctionBaseP fn = std::static_pointer_cast<CJFunctionBase>(value);
+  CJFunctionBaseP fn = CJValue::cast<CJFunctionBase>(value);
 
   if (fn->type() == CJFunctionBase::Type::User) {
-    CJFunctionP userFn = std::static_pointer_cast<CJFunction>(value);
+    CJFunctionP userFn = CJValue::cast<CJFunction>(value);
 
     for (auto &nv : nameValues)
       userFn->setProperty(js_, nv.first, nv.second);

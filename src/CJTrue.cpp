@@ -55,3 +55,10 @@ CJTrue(CJavaScript *js) :
  CJValue(CJTrueType::instance(js))
 {
 }
+
+void
+CJTrue::
+print(std::ostream &os) const
+{
+  os << "true";
+}

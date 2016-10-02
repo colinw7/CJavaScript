@@ -55,3 +55,10 @@ CJFalse(CJavaScript *js) :
  CJValue(CJFalseType::instance(js))
 {
 }
+
+void
+CJFalse::
+print(std::ostream &os) const
+{
+  os << "false";
+}

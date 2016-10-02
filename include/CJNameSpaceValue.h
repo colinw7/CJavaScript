@@ -9,8 +9,6 @@ class CJNameSpaceValue : public CJLValue {
 
   CJValue *dup(CJavaScript *js) const override { return new CJNameSpaceValue(js, scope_, name_); }
 
-  std::string toString() const override;
-
   double toReal() const override;
 
   bool toBoolean() const override;
@@ -21,6 +19,8 @@ class CJNameSpaceValue : public CJLValue {
 
   bool isWritable() const override;
   void setWritable(bool b) override;
+
+  std::string toString() const override;
 
   void print(std::ostream &os) const override;
 

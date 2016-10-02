@@ -25,7 +25,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return CJValueP();
   }
 
-  CJErrorBase *error = values[0]->cast<CJErrorBase>();
+  CJErrorBaseP error = CJValue::cast<CJErrorBase>(values[0]);
   assert(error);
 
   //---

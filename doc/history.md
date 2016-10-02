@@ -71,3 +71,13 @@
  . Add Object.defineProperties
  . Improve UTF8 encoding/decoding support for strings
  . Use fpclassiify for NaN, Infinity checks
+
+# 10/1/2016
+ . Pass type to object and type functions
+ . Add more array functions
+ . split print and toString implementations
+ . add apply and bind function methods
+ . add frozen, sealed and extensible APIs - not supported yet
+ . add array-like object support for objects
+ . inherit prototype values
+ . add regexp flags and match index support

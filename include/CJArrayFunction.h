@@ -12,9 +12,11 @@ class CJArrayFunction : public CJObjTypeFunction {
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 
-  void print(std::ostream &os) const override {
-    os << "[Function: Array]";
-  }
+  CJValueP execNew(CJavaScript *js, const Values &values) override;
+
+  std::string toString() const override;
+
+  void print(std::ostream &os) const override;
 };
 
 typedef std::shared_ptr<CJArrayFunction> CJArrayFunctionP;

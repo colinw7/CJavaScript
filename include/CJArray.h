@@ -8,7 +8,7 @@
 // Array Type
 class CJArrayType : public CJObjType {
  public:
-  static CJObjTypeP instance(CJavaScript *js);
+  static CJArrayTypeP instance(CJavaScript *js);
 
   CJArrayType(CJavaScript *js);
 
@@ -16,8 +16,14 @@ class CJArrayType : public CJObjType {
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
+  static bool canCreateArrayFromValue(CJValueP value1);
+  static CJArrayP createArrayFromValue(CJavaScript *js, CJValueP value1);
+
  private:
-  static CJObjTypeP type_;
+  void init();
+
+ private:
+  static CJArrayTypeP type_;
 };
 
 //-------
@@ -26,13 +32,15 @@ class CJArrayType : public CJObjType {
 class CJArray : public CJObj {
  public:
   struct PropertyData {
-    COptBool canDelete;
+    PropertyData(CJValueP v=CJValueP()) : value(v) { }
+
+    CJValueP value;
     COptBool writable;
     COptBool enumerable;
+    COptBool configurable;
   };
 
-  typedef std::deque<CJValueP>       Values;
-  typedef std::map<int,PropertyData> PropertyMap;
+  typedef std::vector<PropertyData> Values;
 
  public:
   CJArray(CJavaScript *js, int n=0);
@@ -47,12 +55,6 @@ class CJArray : public CJObj {
   void setValues(const Values &values) { values_ = values; }
 
   void setValues(const std::vector<CJValueP> &values);
-
-  std::string toString() const override {
-    std::ostringstream ss; ss << *this;
-
-    return ss.str();
-  }
 
   double toReal() const override { return 0; }
 
@@ -72,14 +74,14 @@ class CJArray : public CJObj {
   void setIndexValue(int ind, CJValueP value) override;
   void deleteIndexValue(int ind) override;
 
-  bool canDeleteIndex(int ind) const;
-  void setCanDeleteIndex(int ind, bool b);
-
   bool isWritableIndex(int ind) const override;
   void setWritableIndex(int ind, bool b) override;
 
   bool isEnumerableIndex(int ind) const;
   void setEnumerableIndex(int ind, bool b=true);
+
+  bool isConfigurableIndex(int ind) const;
+  void setConfigurableIndex(int ind, bool b);
 
   bool hasValue(CJValueP value) const;
 
@@ -92,11 +94,12 @@ class CJArray : public CJObj {
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
   void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
 
+  std::string toString() const override;
+
   void print(std::ostream &os) const override;
 
  protected:
-  Values      values_;
-  PropertyMap propertyMap_;
+  Values values_;
 };
 
 #endif

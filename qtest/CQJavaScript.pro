@@ -57,6 +57,7 @@ $(INC_DIR)/CQHistoryLineEdit \
 $(INC_DIR)/CStrParse \
 $(INC_DIR)/CRegExp \
 $(INC_DIR)/COptVal \
+$(INC_DIR)/COS \
 $(INC_DIR)/CAutoPtr \
 
 unix:LIBS += -L$(LIB_DIR) \

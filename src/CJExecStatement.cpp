@@ -16,6 +16,20 @@ exec(CJavaScript *js)
     return CJValueP();
 }
 
+std::string
+CJExecStatement::
+toString() const
+{
+  std::string str;
+
+  if (token_)
+    str += token_->toString();
+
+  str += ";";
+
+  return str;
+}
+
 void
 CJExecStatement::
 print(std::ostream &os) const

@@ -4,6 +4,15 @@
 #include <COSNaN.h>
 
 namespace CJUtil {
+  template<typename T>
+  inline T clamp(T val, T low, T high) {
+    if (val < low ) return low;
+    if (val > high) return high;
+    return val;
+  }
+
+  //---
+
   inline double getNaN() {
     static COptReal nanValue;
 

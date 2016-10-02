@@ -20,7 +20,7 @@ exec(CJavaScript *js)
   CJValueP value;
 
   if      (varValue && varValue->type() == CJToken::Type::Object) {
-    CJObjectP obj = std::static_pointer_cast<CJObject>(varValue);
+    CJObjectP obj = CJValue::cast<CJObject>(varValue);
 
     js->startScope(obj);
 
@@ -30,7 +30,7 @@ exec(CJavaScript *js)
     js->endScope();
   }
   else if (varValue && varValue->type() == CJToken::Type::Dictionary) {
-    CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(varValue);
+    CJDictionaryP dict = CJValue::cast<CJDictionary>(varValue);
 
     js->startScope(dict);
 
@@ -45,6 +45,15 @@ exec(CJavaScript *js)
   }
 
   return value;
+}
+
+std::string
+CJExecWith::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
 }
 
 void

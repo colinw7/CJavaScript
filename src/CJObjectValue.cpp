@@ -23,7 +23,7 @@ void
 CJObjectValue::
 setValue(CJValueP value)
 {
-  obj_->setProperty(js_, name_, value);
+  obj_->setPropertyValue(name_, value);
 }
 
 void

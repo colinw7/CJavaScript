@@ -23,7 +23,7 @@ exec(CJavaScript *js)
   CJErrorBaseP perror;
 
   if (value && value->isError()) {
-    perror = std::static_pointer_cast<CJErrorBase>(value);
+    perror = CJValue::cast<CJErrorBase>(value);
   }
   else {
     CJError *error = new CJError(js);
@@ -37,6 +37,15 @@ exec(CJavaScript *js)
   js->throwError(this, perror);
 
   return CJValueP();
+}
+
+std::string
+CJExecThrow::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
 }
 
 void

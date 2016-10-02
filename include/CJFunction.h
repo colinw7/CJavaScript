@@ -35,6 +35,8 @@ class CJFunction : public CJFunctionBase {
     return new CJFunction(js, name_, args_, block_);
   }
 
+  bool isUserFunction() const override { return true; }
+
   bool hasObjectValue() const override { return true; }
 
   void setScope(CJavaScript *js, CJDictionaryP parentScope=CJDictionaryP());
@@ -51,9 +53,9 @@ class CJFunction : public CJFunctionBase {
   CJValueP getScopeProperty(const std::string &name) const;
   void setScopeProperty(const std::string &name, CJValueP value);
 
-  std::string toString() const override;
-
   CJValueP exec(CJavaScript *js, const Values &values) override;
+
+  std::string toString() const override;
 
   void print(std::ostream &os) const override;
 

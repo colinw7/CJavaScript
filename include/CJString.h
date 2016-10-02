@@ -16,7 +16,10 @@ class CJStringType : public CJObjType {
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjTypeP type_;
+  void init();
+
+ private:
+  static CJStringTypeP type_;
 };
 
 //-------
@@ -42,8 +45,6 @@ class CJString : public CJObj {
   const std::string &text() const { return text_; }
   void setText(const std::string &str) { text_ = str; }
 
-  std::string toString() const override;
-
   double toReal   () const override;
   long   toInteger() const override;
   bool   toBoolean() const override;
@@ -63,6 +64,10 @@ class CJString : public CJObj {
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
   void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
+
+  std::string encodeText() const;
+
+  std::string toString() const override;
 
   void print(std::ostream &os) const override;
 

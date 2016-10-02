@@ -31,6 +31,15 @@ exec(CJavaScript *js)
   return (post_ ? value : value1);
 }
 
+std::string
+CJExecIncrDecrExpression::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
+}
+
 void
 CJExecIncrDecrExpression::
 print(std::ostream &os) const

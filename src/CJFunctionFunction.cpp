@@ -19,7 +19,7 @@ exec(CJavaScript *js, const Values &values)
   std::string name;
   // no name (anonymous function)
 
-  // values[0] is CJUserObjectP
+  // values[0] is prototype
 
   // args are values[1]->values[values.size() - 2]
   CJFunction::Args args;
@@ -45,6 +45,8 @@ exec(CJavaScript *js, const Values &values)
 
   userFn->setScope(js, js->currentUserFunction());
 
+  userFn->addFunctionMethods(js, userFn, CJObjTypeP());
+
   // body is values[values.size() - 1]
   CJExecBlockP block;
 
@@ -65,6 +67,13 @@ exec(CJavaScript *js, const Values &values)
   }
 
   return userFn;
+}
+
+CJValueP
+CJFunctionFunction::
+execNew(CJavaScript *js, const Values &values)
+{
+  return exec(js, values);
 }
 
 bool
@@ -101,4 +110,20 @@ expandArg(const std::string &arg, std::vector<std::string> &args) const
   parse.skipSpace();
 
   return parse.eof();
+}
+
+std::string
+CJFunctionFunction::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
+}
+
+void
+CJFunctionFunction::
+print(std::ostream &os) const
+{
+  os << "[Function: Object]";
 }

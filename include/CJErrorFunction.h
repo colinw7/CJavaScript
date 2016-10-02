@@ -8,9 +8,11 @@ class CJErrorFunctionBase : public CJObjTypeFunction {
  public:
   CJErrorFunctionBase(CJavaScript *js, const std::string &name, CJObjTypeP type);
 
-  void print(std::ostream &os) const override {
-    os << "[Function: " + name_ + "]";
-  }
+  CJValueP execNew(CJavaScript *js, const Values &values) override;
+
+  std::string toString() const override;
+
+  void print(std::ostream &os) const override;
 };
 
 //------

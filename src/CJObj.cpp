@@ -16,23 +16,24 @@ CJObjType(CJavaScript *js, const CJToken::Type type, const std::string &name) :
 
 void
 CJObjType::
-addTypeFunction(CJavaScript *js, const std::string &name)
+addTypeFunction(CJavaScript *js, const std::string &name, CJObjTypeP type)
 {
-  CJFunctionBaseP fn(new CJObjTypeFunction(js, name));
+  CJFunctionBaseP fn(new CJObjTypeFunction(js, name, type));
 
-  setFunctionProperty(js, fn);
+  setFunctionProperty(js, fn, type);
 
   typeFunctions_[name] = fn;
 }
 
 void
 CJObjType::
-addObjectFunction(CJavaScript *js, const std::string &name)
+addObjectFunction(CJavaScript *js, const std::string &name, CJObjTypeP type)
 {
-  CJFunctionBaseP fn(new CJObjectTypeFunction(js, name));
+  CJFunctionBaseP fn(new CJObjectTypeFunction(js, name, type));
 
-  if (! typeFunction())
-    setFunctionProperty(js, fn);
+  //if (! typeFunction()) setFunctionProperty(js, fn, type);
+
+  CJFunctionBase::addFunctionMethods(js, fn, type);
 
   objFunctions_[name] = fn;
 }
@@ -49,7 +50,7 @@ getTypePropertyNames() const
     CJValueP v = getProperty(js_, n);
 
     if (v->isFunction()) {
-      CJFunctionBaseP fn = std::static_pointer_cast<CJFunctionBase>(v);
+      CJFunctionBaseP fn = CJValue::cast<CJFunctionBase>(v);
 
       if (fn->type() != CJFunctionBase::Type::ObjType)
         continue;
@@ -101,6 +102,20 @@ getProperty(CJavaScript *js, const std::string &key) const
   return CJNameSpace::getProperty(js, key);
 }
 
+std::string
+CJObjType::
+toString() const
+{
+  return name_;
+}
+
+void
+CJObjType::
+print(std::ostream &os) const
+{
+  os << name_;
+}
+
 //------
 
 CJObj::
@@ -125,9 +140,9 @@ addVariable(CJavaScript *js, const std::string &name)
 
 bool
 CJObj::
-hasPropertyValue(const std::string &key) const
+hasPropertyValue(const std::string &key, bool inherit) const
 {
-  return hasProperty(js_, key);
+  return hasProperty(js_, key, inherit);
 }
 
 CJValueP
@@ -141,19 +156,51 @@ void
 CJObj::
 setPropertyValue(const std::string &key, CJValueP value)
 {
+  if (! isWritableProperty(key))
+    return;
+
+  setProperty(js_, key, value);
+}
+
+void
+CJObj::
+configPropertyValue(const std::string &key, CJValueP value)
+{
+  if (! isConfigurableProperty(key))
+    return;
+
   setProperty(js_, key, value);
 }
 
 bool
 CJObj::
-hasProperty(CJavaScript *js, const std::string &key) const
+hasProperty(CJavaScript *js, const std::string &key, bool inherit) const
 {
-  // get direct property
+  // check direct property
   if (CJNameSpace::hasProperty(js, key))
     return true;
 
-  // TODO: prototype
-  return false;
+  if (! inherit)
+    return false;
+
+  // check prototype property
+  CJValueP protoValue = this->protoValue();
+
+  while (protoValue && protoValue->isObject()) {
+    CJObjP obj = CJValue::cast<CJObj>(protoValue);
+
+    if (obj->hasProperty(js, key))
+      return true;
+
+    CJValueP protoValue1 = obj->protoValue();
+
+    if (protoValue1 == protoValue)
+      break;
+
+    protoValue = protoValue1;
+  }
+
+  return objType()->hasProperty(js, key);
 }
 
 CJValueP
@@ -167,11 +214,18 @@ getProperty(CJavaScript *js, const std::string &key) const
   // get prototype property
   CJValueP protoValue = this->protoValue();
 
-  if (protoValue && protoValue->isObject()) {
-    CJObjP obj = std::static_pointer_cast<CJObj>(protoValue);
+  while (protoValue && protoValue->isObject()) {
+    CJObjP obj = CJValue::cast<CJObj>(protoValue);
 
-    if (obj->hasPropertyValue(key))
+    if (obj->hasPropertyValue(key, /*inherit*/true))
       return obj->propertyValue(key);
+
+    CJValueP protoValue1 = obj->protoValue();
+
+    if (protoValue1 == protoValue)
+      break;
+
+    protoValue = protoValue1;
   }
 
   return objType()->getProperty(js, key);
@@ -196,7 +250,7 @@ isEnumerableProperty(const std::string &key) const
   CJValueP protoValue = this->protoValue();
 
   if (protoValue && protoValue->isObject()) {
-    CJObjP obj = std::static_pointer_cast<CJObj>(protoValue);
+    CJObjP obj = CJValue::cast<CJObj>(protoValue);
 
     if (obj->CJNameSpace::hasProperty(js_, key))
       return obj->isEnumerableProperty(key);
@@ -242,10 +296,40 @@ propertyNames() const
   return names;
 }
 
+bool
+CJObj::
+isProtoValue(CJValueP value) const
+{
+  // check prototype property
+  CJValueP protoValue = this->protoValue();
+
+  if (protoValue && value == protoValue)
+    return true;
+
+  while (protoValue && protoValue->isObject()) {
+    CJObjP obj = CJValue::cast<CJObj>(protoValue);
+
+    CJValueP protoValue1 = obj->protoValue();
+
+    if (protoValue1 == protoValue)
+      break;
+
+    protoValue = protoValue1;
+
+    if (protoValue && value == protoValue)
+      return true;
+  }
+
+  return false;
+}
+
 CJValueP
 CJObj::
 protoValue() const
 {
+  if (protoValue_)
+    return protoValue_;
+
   CJObjTypeFunctionP typeFn = objType()->typeFunction();
 
   if (! typeFn)
@@ -257,6 +341,19 @@ protoValue() const
     return CJValueP();
 
   return protoValue;
+}
+
+void
+CJObj::
+setProtoValue(CJValueP value)
+{
+  if (value && value->isObject()) {
+    CJObjP obj = CJValue::cast<CJObj>(value);
+
+    obj->setProtoValue(protoValue_);
+  }
+
+  protoValue_ = value;
 }
 
 CJValueP
@@ -277,5 +374,8 @@ void
 CJObj::
 print(std::ostream &os) const
 {
-  os << toString();
+  if (type() == CJToken::Type::String)
+    os << "'" << toString() << "'";
+  else
+    os << toString();
 }

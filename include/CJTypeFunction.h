@@ -20,9 +20,9 @@ class CJTypeFunction : public CJFunctionBase {
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 
-  void print(std::ostream &os) const override {
-    os << "[Function: " + name_ + "]";
-  }
+  std::string toString() const override;
+
+  void print(std::ostream &os) const override;
 
  private:
   CJObjTypeP type_;

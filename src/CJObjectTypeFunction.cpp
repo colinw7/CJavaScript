@@ -29,7 +29,7 @@ exec(CJavaScript *js, const Values &values)
   }
 #endif
   if (ovalue->isObject()) {
-    CJObj *obj = ovalue->cast<CJObj>();
+    CJObjP obj = CJValue::cast<CJObj>(ovalue);
 
     if (! obj)
       return value;
@@ -43,4 +43,18 @@ exec(CJavaScript *js, const Values &values)
   }
 
   return value;
+}
+
+std::string
+CJObjectTypeFunction::
+toString() const
+{
+  return "function " + name_ + "() { [native code] }";
+}
+
+void
+CJObjectTypeFunction::
+print(std::ostream &os) const
+{
+  os << "[Function " + name_ + "]";
 }

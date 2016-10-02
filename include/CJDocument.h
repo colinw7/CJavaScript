@@ -23,9 +23,13 @@ class CJDocumentObject : public CJObj {
 
   CJValue *dup(CJavaScript *js) const override { return new CJDocumentObject(js); }
 
+  bool isHost() const override { return true; }
+
   CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values) override;
 
-  void print(std::ostream &os) const override { os << "document"; }
+  std::string toString() const override;
+
+  void print(std::ostream &os) const override;
 };
 
 #endif

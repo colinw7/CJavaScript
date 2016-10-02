@@ -49,6 +49,15 @@ exec(CJavaScript *js)
   return value;
 }
 
+std::string
+CJExecConst::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
+}
+
 void
 CJExecConst::
 print(std::ostream &os) const

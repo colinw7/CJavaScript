@@ -9,7 +9,9 @@ class CJIdentifier : public CJToken {
 
   const std::string &name() const { return id_; }
 
-  void print(std::ostream &os) const override { os << id_; }
+  std::string toString() const override;
+
+  void print(std::ostream &os) const override;
 
  private:
   std::string id_;

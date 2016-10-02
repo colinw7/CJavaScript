@@ -10,15 +10,34 @@
 class CJNameSpace {
  public:
   struct PropertyData {
-    COptBool canDelete;
+    PropertyData(CJValueP v=CJValueP()) : value(v) { }
+
+    PropertyData(CJValueP v, const std::string &attr) :
+     value(v) {
+      bool b = true;
+
+      for (const auto &c : attr) {
+        switch (c) {
+          case '-': b            = false; break;
+          case '+': b            = true ; break;
+          case 'w': writable     = b    ; break;
+          case 'e': enumerable   = b    ; break;
+          case 'c': configurable = b    ; break;
+        }
+      }
+    }
+
+    CJValueP value;
     COptBool writable;
     COptBool enumerable;
+    COptBool configurable;
+
+    bool isEnumerable() const { return enumerable.getValue(true); }
   };
 
-  typedef std::map<std::string,CJValueP>     KeyValues;
+  typedef std::map<std::string,PropertyData> KeyValues;
   typedef std::set<std::string>              KeyNames;
   typedef std::vector<std::string>           Names;
-  typedef std::map<std::string,PropertyData> PropertyMap;
   typedef std::vector<CJValueP>              Values;
 
  public:
@@ -35,18 +54,24 @@ class CJNameSpace {
   void setRealProperty   (CJavaScript *js, const std::string &key, double r);
   void setIntegerProperty(CJavaScript *js, const std::string &key, long i);
   void setStringProperty (CJavaScript *js, const std::string &key, const std::string &str);
+  void setBoolProperty   (CJavaScript *js, const std::string &key, bool b);
 
   void setFunctionProperty(CJavaScript *js, const std::string &key, CJFunctionBaseP function);
-  void setFunctionProperty(CJavaScript *js, CJFunctionBaseP function);
+
+  void setFunctionProperty(CJavaScript *js, CJFunctionBaseP function,
+                           CJObjTypeP objType=CJObjTypeP());
 
   std::string getStringProperty(CJavaScript *js, const std::string &key,
                                 const std::string &def="") const;
 
   double getRealProperty(CJavaScript *js, const std::string &key, double def=0.0) const;
 
-  virtual void setProperty(CJavaScript *js, const std::string &key, CJValueP value);
-  virtual bool hasProperty(CJavaScript *js, const std::string &key) const;
+  bool getPropertyData(CJavaScript *js, const std::string &key, PropertyData &data);
+  void setPropertyData(CJavaScript *js, const std::string &key, const PropertyData &data);
+
+  virtual bool hasProperty(CJavaScript *js, const std::string &key, bool inherit=true) const;
   virtual CJValueP getProperty(CJavaScript *js, const std::string &key) const;
+  virtual void setProperty(CJavaScript *js, const std::string &key, CJValueP value);
 
   Names getPropertyNames(bool pseudo=true) const;
 
@@ -57,14 +82,16 @@ class CJNameSpace {
 
   const KeyNames &getPseudoPropertyNames() const { return keyNames_; }
 
-  bool canDeleteProperty(const std::string &key) const;
-  void setCanDeleteProperty(const std::string &key, bool b);
-
   bool isWritableProperty(const std::string &key) const;
   void setWritableProperty(const std::string &key, bool b=true);
 
   virtual bool isEnumerableProperty(const std::string &key) const;
   void setEnumerableProperty(const std::string &key, bool b=true);
+
+  bool isConfigurableProperty(const std::string &key) const;
+  void setConfigurableProperty(const std::string &key, bool b);
+
+  std::string toString() const;
 
   void print(std::ostream &os) const;
 
@@ -75,9 +102,8 @@ class CJNameSpace {
   }
 
  protected:
-  KeyValues   keyValues_;
-  KeyNames    keyNames_;
-  PropertyMap propertyMap_;
+  KeyValues keyValues_;
+  KeyNames  keyNames_;
 };
 
 #endif

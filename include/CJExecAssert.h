@@ -13,6 +13,8 @@ class CJExecAssert : public CJToken {
   CJExecExpressionListP exprList() const { return exprList_; }
   void setExprList(CJExecExpressionListP exprList) { exprList_ = exprList; }
 
+  std::string toString() const override;
+
   void print(std::ostream &os) const override;
 
  private:

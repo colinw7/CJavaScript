@@ -41,6 +41,7 @@ class CJFunctionBase : public CJObj {
     Type,
     ObjType,
     Call,
+    Bind,
     System,
     ObjectType,
     Object,
@@ -61,9 +62,9 @@ class CJFunctionBase : public CJObj {
 
   bool isFunction() const override { return true; }
 
-  const std::string &name() const { return name_; }
+  virtual bool isUserFunction() const { return false; }
 
-  std::string toString() const override { return name_; }
+  const std::string &name() const { return name_; }
 
   virtual bool hasObjectValue() const { return false; }
 
@@ -73,9 +74,12 @@ class CJFunctionBase : public CJObj {
 
   virtual CJValueP exec(CJavaScript *js, const Values &values) = 0;
 
-  void print(std::ostream &os) const override {
-    os << name_ << "()";
-  }
+  std::string toString() const override;
+
+  void print(std::ostream &os) const override;
+
+ public:
+  static void addFunctionMethods(CJavaScript *js, CJFunctionBaseP fn, CJObjTypeP type);
 
  protected:
   std::string   name_;

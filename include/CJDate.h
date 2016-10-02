@@ -6,7 +6,7 @@
 // Date Type
 class CJDateType : public CJObjType {
  public:
-  static CJObjTypeP instance(CJavaScript *js);
+  static CJDateTypeP instance(CJavaScript *js);
 
   CJDateType(CJavaScript *js);
 
@@ -15,7 +15,10 @@ class CJDateType : public CJObjType {
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjTypeP type_;
+  void init();
+
+ private:
+  static CJDateTypeP type_;
 };
 
 //-------
@@ -34,7 +37,7 @@ class CJDate : public CJObj {
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
   void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
 
-  void print(std::ostream &os) const override;
+  std::string toString() const override;
 
   static long dateFromValues(const Values &values);
 

@@ -15,6 +15,15 @@ exec(CJavaScript *)
   return CJValueP();
 }
 
+std::string
+CJExecLabel::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
+}
+
 void
 CJExecLabel::
 print(std::ostream &os) const

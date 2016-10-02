@@ -118,6 +118,15 @@ setProperty(CJavaScript *js, const std::string &key, CJValueP value)
   CJObj::setProperty(js, key, value);
 }
 
+std::string
+CJArguments::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
+}
+
 void
 CJArguments::
 print(std::ostream &os) const

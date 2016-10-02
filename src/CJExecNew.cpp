@@ -1,5 +1,6 @@
 #include <CJExecNew.h>
 #include <CJExecExpressionList.h>
+#include <CJObjTypeFunction.h>
 #include <CJFunction.h>
 #include <CJavaScript.h>
 
@@ -44,7 +45,7 @@ exec(CJavaScript *js)
   CJObjectP       protoObj;
 
   if (typeValue->isFunction()) {
-    typeFn = std::static_pointer_cast<CJFunctionBase>(typeValue);
+    typeFn = CJValue::cast<CJFunctionBase>(typeValue);
 
     if (typeFn->type() == CJFunctionBase::Type::ObjType) {
       CJValueP protoValue = typeFn->getProperty(js, "prototype");
@@ -55,20 +56,20 @@ exec(CJavaScript *js)
       }
 
       if      (protoValue->type() == CJToken::Type::Object) {
-        protoObj = std::static_pointer_cast<CJObject>(protoValue);
+        protoObj = CJValue::cast<CJObject>(protoValue);
 
         CJValueP constructor = protoObj->getProperty(js, "constructor");
 
         if (constructor && constructor->isFunction())
-          fn = std::static_pointer_cast<CJFunctionBase>(constructor);
+          fn = CJValue::cast<CJFunctionBase>(constructor);
       }
       else if (protoValue->type() == CJToken::Type::Dictionary) {
-        protoDict = std::static_pointer_cast<CJDictionary>(protoValue);
+        protoDict = CJValue::cast<CJDictionary>(protoValue);
 
         CJValueP constructor = protoDict->getProperty(js, "constructor");
 
         if (constructor && constructor->isFunction())
-          fn = std::static_pointer_cast<CJFunctionBase>(constructor);
+          fn = CJValue::cast<CJFunctionBase>(constructor);
       }
     }
     else {
@@ -80,10 +81,10 @@ exec(CJavaScript *js)
       }
 
       if      (protoValue->type() == CJToken::Type::Object) {
-        protoObj = std::static_pointer_cast<CJObject>(protoValue);
+        protoObj = CJValue::cast<CJObject>(protoValue);
       }
       else if (protoValue->type() == CJToken::Type::Dictionary) {
-        protoDict = std::static_pointer_cast<CJDictionary>(protoValue);
+        protoDict = CJValue::cast<CJDictionary>(protoValue);
       }
     }
   }
@@ -108,13 +109,20 @@ exec(CJavaScript *js)
   CJValueP newValue;
 
   if (typeFn && typeFn->type() == CJFunctionBase::Type::ObjType) {
-    CJFunction::Values values;
+    CJObjTypeFunctionP objTypeFn = CJValue::cast<CJObjTypeFunction>(typeFn);
+
+    CJFunction::Values fnValues;
 
     //CJUserObjectP userObj(new CJUserObject(js, userType, typeFn));
 
-    values.push_back(0);
+    fnValues.push_back(0);
 
-    newValue = typeFn->exec(js, values);
+    for (auto &v : values)
+      fnValues.push_back(v);
+
+    newValue = objTypeFn->execNew(js, fnValues);
+
+    return newValue;
   }
   else {
     CJObject *obj = new CJObject(js);
@@ -147,14 +155,14 @@ exec(CJavaScript *js)
 
   assert(newValue->isDictionary());
 
-  CJDictionaryP newObj = std::static_pointer_cast<CJDictionary>(newValue);
+  CJDictionaryP newObj = CJValue::cast<CJDictionary>(newValue);
 
   //---
 
   // set user object (argv[0])
-  CJUserObjectP userObj(new CJUserObject(js, userType, fn));
+  //CJUserObjectP userObj(new CJUserObject(js, userType, fn));
 
-  CJValueP objValue = std::static_pointer_cast<CJValue>(userObj);
+  //CJValueP objValue = userObj;
 
   //---
 
@@ -178,6 +186,15 @@ exec(CJavaScript *js)
     fnValue = newObj;
 
   return fnValue;
+}
+
+std::string
+CJExecNew::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
 }
 
 void

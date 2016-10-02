@@ -30,6 +30,27 @@ CJErrorFunctionBase(CJavaScript *js, const std::string &name, CJObjTypeP type) :
   prototype()->setProperty(js, "toString", CJValueP(new CJErrorToStringFunction(this)));
 }
 
+CJValueP
+CJErrorFunctionBase::
+execNew(CJavaScript *js, const Values &values)
+{
+  return exec(js, values);
+}
+
+std::string
+CJErrorFunctionBase::
+toString() const
+{
+  return "[Function: " + name_ + "]";
+}
+
+void
+CJErrorFunctionBase::
+print(std::ostream &os) const
+{
+  os << "[Function: " << name_ << "]";
+}
+
 //------
 
 CJErrorFunction::

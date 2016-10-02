@@ -21,6 +21,8 @@ class CJExecIncrDecrExpression : public CJExecExpression {
 
   CJValueP exec(CJavaScript *js) override;
 
+  std::string toString() const override;
+
   void print(std::ostream &os) const override;
 
  private:

@@ -12,6 +12,18 @@ CJValueP
 CJBooleanFunction::
 exec(CJavaScript *js, const Values &values)
 {
+  bool b = false;
+
+  if (values.size() > 1)
+    b = values[1]->toBoolean();
+
+  return js->createBoolValue(b);
+}
+
+CJValueP
+CJBooleanFunction::
+execNew(CJavaScript *js, const Values &values)
+{
   CJBoolean *bobj;
 
   if (values.size() <= 1)
@@ -23,4 +35,18 @@ exec(CJavaScript *js, const Values &values)
   }
 
   return CJValueP(bobj);
+}
+
+std::string
+CJBooleanFunction::
+toString() const
+{
+  return "[Function: Boolean]";
+}
+
+void
+CJBooleanFunction::
+print(std::ostream &os) const
+{
+  os << "[Function: Boolean]";
 }

@@ -80,6 +80,15 @@ execBlock(CJavaScript *js, CJExecBlockP block)
   return done;
 }
 
+std::string
+CJExecSwitch::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
+}
+
 void
 CJExecSwitch::
 print(std::ostream &os) const

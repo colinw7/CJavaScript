@@ -33,12 +33,6 @@ class CJArguments : public CJObj {
   Values values() const { return values_; }
   void setValues(const Values &values) { values_ = values; }
 
-  std::string toString() const override {
-    std::ostringstream ss; ss << *this;
-
-    return ss.str();
-  }
-
   double toReal() const override { return 0; }
 
   bool toBoolean() const override { return ! values_.empty(); }
@@ -58,6 +52,8 @@ class CJArguments : public CJObj {
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
   void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
+
+  std::string toString() const override;
 
   void print(std::ostream &os) const override;
 

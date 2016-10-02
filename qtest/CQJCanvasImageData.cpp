@@ -51,8 +51,7 @@ getProperty(CJavaScript *js, const std::string &key) const
   if (key == "data") {
     CQJCanvasImageData *th = const_cast<CQJCanvasImageData *>(this);
 
-    CQJCanvasImageDataP data =
-      std::static_pointer_cast<CQJCanvasImageData>(th->shared_from_this());
+    CQJCanvasImageDataP data = CJValue::cast<CQJCanvasImageData>(th->shared_from_this());
 
     return CJValueP(new CQJCanvasImageDataArray(qjs(), data));
   }

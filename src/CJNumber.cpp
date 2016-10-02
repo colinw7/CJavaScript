@@ -2,16 +2,18 @@
 #include <CJavaScript.h>
 #include <CJUtil.h>
 
-CJObjTypeP CJNumberType::type_;
+CJNumberTypeP CJNumberType::type_;
 
-CJObjTypeP
+CJNumberTypeP
 CJNumberType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjTypeP(new CJNumberType(js));
+    type_ = CJNumberTypeP(new CJNumberType(js));
 
-    js->addObjectType("number", type_);
+    type_->init();
+
+    js->addObjectType(type_->name(), type_);
 
     js->addTypeObject(CJToken::Type::Number, type_);
   }
@@ -21,15 +23,21 @@ instance(CJavaScript *js)
 
 CJNumberType::
 CJNumberType(CJavaScript *js) :
- CJObjType(js, CJToken::Type::Number, "number")
+ CJObjType(js, CJToken::Type::Number, "Number")
 {
-  addTypeFunction(js, "isNaN");
-  addTypeFunction(js, "parseInt");
-  addTypeFunction(js, "parseFloat");
-  addTypeFunction(js, "toString");
+}
 
-  addObjectFunction(js, "toString");
-  addObjectFunction(js, "toFixed");
+void
+CJNumberType::
+init()
+{
+  addTypeFunction(js_, "isNaN"     , type_);
+  addTypeFunction(js_, "parseInt"  , type_);
+  addTypeFunction(js_, "parseFloat", type_);
+  addTypeFunction(js_, "toString"  , type_);
+
+  addObjectFunction(js_, "toString", type_);
+  addObjectFunction(js_, "toFixed" , type_);
 
   addPseudoProperty("MAX_VALUE");
   addPseudoProperty("MIN_VALUE");
@@ -121,7 +129,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return CJValueP();
   }
 
-  CJNumber *num = values[0]->cast<CJNumber>();
+  CJNumberP num = CJValue::cast<CJNumber>(values[0]);
   assert(num);
 
   //---

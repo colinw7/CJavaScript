@@ -202,3 +202,19 @@ exec(CJavaScript *js, const Values &values)
   else
     return CJValueP();
 }
+
+std::string
+CJGlobalFunction::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
+}
+
+void
+CJGlobalFunction::
+print(std::ostream &os) const
+{
+  os << name_;
+}

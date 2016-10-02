@@ -1,4 +1,5 @@
 #include <CJFunctionBase.h>
+#include <CJCallFunction.h>
 #include <CJavaScript.h>
 
 CJFunctionBaseType::NameTypeMap CJFunctionBaseType::nameTypeMap_;
@@ -16,6 +17,8 @@ instance(CJavaScript *js, const std::string &name)
 
     //js->addObjectType(name, type);
 
+    //type->addTypeFunction(js, "isGenerator");
+    //type->addTypeFunction(js, "toSource");
     type->addTypeFunction(js, "toString");
   }
 
@@ -73,4 +76,30 @@ CJFunctionBase::
 CJFunctionBase(CJavaScript *js, const CJObjTypeP &objType, const std::string &name, Type type) :
  CJObj(js, objType), name_(name), type_(type)
 {
+}
+
+void
+CJFunctionBase::
+addFunctionMethods(CJavaScript *js, CJFunctionBaseP fn, CJObjTypeP type)
+{
+  fn->setProperty(js, "bind" ,
+    CJValueP(new CJCallFunction(js, fn, CJCallFunction::Type::Bind , type)));
+  fn->setProperty(js, "call" ,
+    CJValueP(new CJCallFunction(js, fn, CJCallFunction::Type::Call , type)));
+  fn->setProperty(js, "apply",
+    CJValueP(new CJCallFunction(js, fn, CJCallFunction::Type::Apply, type)));
+}
+
+std::string
+CJFunctionBase::
+toString() const
+{
+  return name_ + "()";
+}
+
+void
+CJFunctionBase::
+print(std::ostream &os) const
+{
+  os << name_ << "()";
 }

@@ -2,16 +2,18 @@
 #include <CJavaScript.h>
 #include <CJUtil.h>
 
-CJObjTypeP CJBooleanType::type_;
+CJBooleanTypeP CJBooleanType::type_;
 
-CJObjTypeP
+CJBooleanTypeP
 CJBooleanType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjTypeP(new CJBooleanType(js));
+    type_ = CJBooleanTypeP(new CJBooleanType(js));
 
-    js->addObjectType("boolean", type_);
+    type_->init();
+
+    js->addObjectType(type_->name(), type_);
 
     js->addTypeObject(CJToken::Type::Boolean, type_);
   }
@@ -21,12 +23,18 @@ instance(CJavaScript *js)
 
 CJBooleanType::
 CJBooleanType(CJavaScript *js) :
- CJObjType(js, CJToken::Type::Boolean, "boolean")
+ CJObjType(js, CJToken::Type::Boolean, "Boolean")
 {
-  addTypeFunction(js, "toString");
+}
 
-  addObjectFunction(js, "toString");
-  addObjectFunction(js, "valueOf");
+void
+CJBooleanType::
+init()
+{
+  addTypeFunction(js_, "toString", type_);
+
+  addObjectFunction(js_, "toString", type_);
+  addObjectFunction(js_, "valueOf" , type_);
 }
 
 CJValueP
@@ -64,7 +72,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return CJValueP();
   }
 
-  CJBoolean *num = values[0]->cast<CJBoolean>();
+  CJBooleanP num = CJValue::cast<CJBoolean>(values[0]);
   assert(num);
 
   //---
@@ -89,5 +97,8 @@ std::string
 CJBoolean::
 toString() const
 {
-  return "[Boolean: " + std::string(b_ ? "true" : "false") + "]";
+  if (isPrimitive())
+    return std::string(b_ ? "true" : "false");
+  else
+    return "[Boolean: " + std::string(b_ ? "true" : "false") + "]";
 }

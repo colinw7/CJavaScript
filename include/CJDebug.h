@@ -25,7 +25,9 @@ class CJDebugObject : public CJObj {
 
   CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values) override;
 
-  void print(std::ostream &os) const override { os << "debug"; }
+  std::string toString() const override;
+
+  void print(std::ostream &os) const override;
 };
 
 #endif

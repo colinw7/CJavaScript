@@ -42,7 +42,9 @@ class CJKeyword : public CJToken {
 
   std::string name() const;
 
-  void print(std::ostream &os) const override { os << name(); }
+  std::string toString() const override;
+
+  void print(std::ostream &os) const override;
 
  private:
   Type type_;

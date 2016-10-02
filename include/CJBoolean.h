@@ -8,7 +8,7 @@
 // Boolean Type
 class CJBooleanType : public CJObjType {
  public:
-  static CJObjTypeP instance(CJavaScript *js);
+  static CJBooleanTypeP instance(CJavaScript *js);
 
   CJBooleanType(CJavaScript *js);
 
@@ -19,7 +19,10 @@ class CJBooleanType : public CJObjType {
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjTypeP type_;
+  void init();
+
+ private:
+  static CJBooleanTypeP type_;
 };
 
 //------

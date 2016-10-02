@@ -13,7 +13,7 @@ CJValueP
 CJObjTypeFunction::
 getProperty(CJavaScript *js, const std::string &name) const
 {
-  if (type_->hasProperty(js, name))
+  if (type_ && type_->hasProperty(js, name))
     return type_->getProperty(js, name);
 
   return CJFunctionBase::getProperty(js, name);
@@ -43,15 +43,17 @@ exec(CJavaScript *js, const Values &values)
 
   CJValueP ovalue = values[0];
 
-  CJObjTypeP objType;
+  CJObjTypeP objType = type_;
 
-  if (ovalue->isFunction()) {
-    CJObjTypeFunctionP typeFn = std::static_pointer_cast<CJObjTypeFunction>(ovalue);
+  if (! objType) {
+    if (ovalue->isFunction()) {
+      CJObjTypeFunctionP typeFn = CJValue::cast<CJObjTypeFunction>(ovalue);
 
-    objType = typeFn->objectType();
-  }
-  else {
-    objType = js->getTypeObject(ovalue->type());
+      objType = typeFn->objectType();
+    }
+    else {
+      objType = js->getTypeObject(ovalue->type());
+    }
   }
 
   if (objType)
@@ -60,4 +62,27 @@ exec(CJavaScript *js, const Values &values)
     js->errorMsg(this, "Invalid object function type");
 
   return value;
+}
+
+CJValueP
+CJObjTypeFunction::
+execNew(CJavaScript *, const Values &)
+{
+  assert(false);
+}
+
+std::string
+CJObjTypeFunction::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
+}
+
+void
+CJObjTypeFunction::
+print(std::ostream &os) const
+{
+  os << "[Function: " + name_ + "]";
 }

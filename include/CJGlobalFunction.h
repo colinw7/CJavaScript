@@ -14,9 +14,9 @@ class CJGlobalFunction : public CJFunctionBase {
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 
-  void print(std::ostream &os) const override {
-    os << name_;
-  }
+  std::string toString() const override;
+
+  void print(std::ostream &os) const override;
 };
 
 #endif

@@ -9,7 +9,7 @@
 // Number Type
 class CJNumberType : public CJObjType {
  public:
-  static CJObjTypeP instance(CJavaScript *js);
+  static CJNumberTypeP instance(CJavaScript *js);
 
   CJNumberType(CJavaScript *js);
 
@@ -20,7 +20,10 @@ class CJNumberType : public CJObjType {
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjTypeP type_;
+  void init();
+
+ private:
+  static CJNumberTypeP type_;
 };
 
 //------

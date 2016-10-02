@@ -30,7 +30,7 @@ exec(CJavaScript *js)
     avalue = evalue_;
 
   if (! avalue) {
-    js->errorMsg("Invalid index value");
+    js->throwReferenceError(this, "Invalid index value");
     return CJValueP();
   }
 
@@ -47,6 +47,9 @@ indexValue(CJavaScript *js, CJValueP avalue)
 
   // index value
   CJValueP ivalue = indValue(js);
+
+  if (! ivalue)
+    return CJValueP();
 
   CJValueP res;
 
@@ -72,7 +75,7 @@ setIndexValue(CJavaScript *js, CJValueP avalue, CJValueP rvalue)
   CJValueP ivalue = indValue(js);
 
   if (! js->setIndexValue(avalue, ivalue, rvalue)) {
-    js->errorMsg("Value not an array or property for index");
+    js->throwSyntaxError(this, "Value not an array or property for index");
     return;
   }
 }
@@ -130,6 +133,15 @@ CJExecIndexExpression::
 indValue(CJavaScript *js)
 {
   return iexpr_->exec(js);
+}
+
+std::string
+CJExecIndexExpression::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
 }
 
 void

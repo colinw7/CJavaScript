@@ -35,15 +35,15 @@ class CJTokenValue : public CJValue {
   CJValueP value() const { return value_; }
   void setValue(CJValueP value);
 
-  std::string toString() const;
-
   double toReal() const;
 
   bool toBoolean() const;
 
   void addToken(CJTokenP token);
 
-  void print(std::ostream &os) const;
+  std::string toString() const override;
+
+  void print(std::ostream &os) const override;
 
  private:
   Tokens   tokens_;

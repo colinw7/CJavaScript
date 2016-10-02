@@ -28,13 +28,13 @@ class CJUndefined : public CJValue {
  public:
   CJValue *dup(CJavaScript *js) const override { return new CJUndefined(js); }
 
-  std::string toString() const override { return "undefined"; }
-
   double toReal() const override { return 0; }
 
   bool toBoolean() const override { return false; }
 
-  void print(std::ostream &os) const override { os << "undefined"; }
+  std::string toString() const override { return "undefined"; }
+
+  void print(std::ostream &os) const override;
 };
 
 #endif

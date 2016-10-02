@@ -22,9 +22,9 @@ exec(CJavaScript *js, const Values &values)
   double   t       = values[1]->toReal();
 
   if (fnValue->type() == CJToken::Type::Function) {
-    CJFunctionBaseP timerFn = std::static_pointer_cast<CJFunctionBase>(fnValue);
+    CJFunctionBaseP timerFn = CJValue::cast<CJFunctionBase>(fnValue);
 
-    CQJWindowP window = std::static_pointer_cast<CQJWindow>(qjs_->jsWindow());
+    CQJWindowP window = CJValue::cast<CQJWindow>(qjs_->jsWindow());
 
     timer = window->addTimer(timerFn, t);
   }
@@ -56,7 +56,7 @@ exec(CJavaScript *, const Values &values)
 
   long timer = values[0]->toInteger();
 
-  CQJWindowP window = std::static_pointer_cast<CQJWindow>(qjs_->jsWindow());
+  CQJWindowP window = CJValue::cast<CQJWindow>(qjs_->jsWindow());
 
   window->removeTimer(timer);
 

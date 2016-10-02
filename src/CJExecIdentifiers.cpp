@@ -23,14 +23,14 @@ exec(CJavaScript *js)
       CJObjTypeP valueType = evalue->valueType();
 
       if (evalue->hasProperty()) {
-        if (evalue->hasPropertyValue(name1)) {
+        if (evalue->hasPropertyValue(name1, /*inherited*/true)) {
           evalue = evalue->propertyValue(name1);
           continue;
         }
       }
 
       if (evalue->type() == CJToken::Type::Object) {
-        CJValueP propVal = evalue->cast<CJObj>()->getProperty(js, name1);
+        CJValueP propVal = CJValue::cast<CJObj>(evalue)->getProperty(js, name1);
 
         if (propVal) {
           evalue = propVal;
@@ -82,6 +82,15 @@ exec(CJavaScript *js)
 
     return value;
   }
+}
+
+std::string
+CJExecIdentifiers::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
 }
 
 void

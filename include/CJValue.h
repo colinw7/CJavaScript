@@ -9,6 +9,12 @@ class CJValue : public CJToken, public std::enable_shared_from_this<CJValue> {
   typedef std::vector<std::string> KeyNames;
 
  public:
+  template<typename T>
+  static std::shared_ptr<T> cast(CJValueP value) {
+    return std::static_pointer_cast<T>(value);
+  }
+
+ public:
   CJValue(CJObjTypeP valueType);
 
   virtual ~CJValue() { }
@@ -26,6 +32,7 @@ class CJValue : public CJToken, public std::enable_shared_from_this<CJValue> {
   virtual bool isString    () const { return false; }
   virtual bool isPrimitive () const { return false; }
 
+  // convert to string
   virtual std::string toString() const override = 0;
 
   virtual double toReal() const = 0;
@@ -46,11 +53,14 @@ class CJValue : public CJToken, public std::enable_shared_from_this<CJValue> {
   virtual void setWritableIndex(int, bool) { assert(false); }
   virtual bool isEnumerableIndex(int) const { return true; }
   virtual void setEnumerableIndex(int, bool) { assert(false); }
+  virtual bool isConfigurableIndex(int) const { return true; }
+  virtual void setConfigurableIndex(int, bool) { assert(false); }
 
   virtual bool hasProperty() const { return false; }
-  virtual bool hasPropertyValue(const std::string &) const { return false; }
+  virtual bool hasPropertyValue(const std::string &, bool) const { return false; }
   virtual CJValueP propertyValue(const std::string &) const { assert(false); return CJValueP(); }
   virtual void setPropertyValue(const std::string &, CJValueP) { assert(false); }
+  virtual void configPropertyValue(const std::string &, CJValueP) { assert(false); }
   virtual void deletePropertyValue(const std::string &) { assert(false); }
 
   virtual KeyNames propertyNames() const { return KeyNames(); }

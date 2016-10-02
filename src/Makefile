@@ -21,6 +21,7 @@ CJArguments.cpp \
 CJArray.cpp \
 CJArrayFunction.cpp \
 CJavaScript.cpp \
+CJBindFunction.cpp \
 CJBoolean.cpp \
 CJBooleanFunction.cpp \
 CJCallFunction.cpp \
@@ -29,7 +30,6 @@ CJDate.cpp \
 CJDateFunction.cpp \
 CJDebug.cpp \
 CJDictionary.cpp \
-CJDictionaryRef.cpp \
 CJDocument.cpp \
 CJError.cpp \
 CJErrorFunction.cpp \

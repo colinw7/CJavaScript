@@ -2,16 +2,18 @@
 #include <CJavaScript.h>
 #include <CJUtil.h>
 
-CJObjTypeP CJRegExpType::type_;
+CJRegExpTypeP CJRegExpType::type_;
 
-CJObjTypeP
+CJRegExpTypeP
 CJRegExpType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjTypeP(new CJRegExpType(js));
+    type_ = CJRegExpTypeP(new CJRegExpType(js));
 
-    js->addObjectType("regexp", type_);
+    type_->init();
+
+    js->addObjectType(type_->name(), type_);
 
     js->addTypeObject(CJToken::Type::RegExp, type_);
   }
@@ -21,15 +23,21 @@ instance(CJavaScript *js)
 
 CJRegExpType::
 CJRegExpType(CJavaScript *js) :
- CJObjType(js, CJToken::Type::RegExp, "regexp")
+ CJObjType(js, CJToken::Type::RegExp, "Regexp")
 {
-  addTypeFunction(js, "toString");
+}
 
-  addObjectFunction(js, "compile");
-  addObjectFunction(js, "exec");
-  addObjectFunction(js, "test");
-  addObjectFunction(js, "toSource");
-  addObjectFunction(js, "toString");
+void
+CJRegExpType::
+init()
+{
+  addTypeFunction(js_, "toString");
+
+  addObjectFunction(js_, "compile" , type_);
+  addObjectFunction(js_, "exec"    , type_);
+  addObjectFunction(js_, "test"    , type_);
+  addObjectFunction(js_, "toSource", type_);
+  addObjectFunction(js_, "toString", type_);
 }
 
 CJValueP
@@ -65,7 +73,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return CJValueP();
   }
 
-  CJRegExp *regexp = values[0]->cast<CJRegExp>();
+  CJRegExpP regexp = CJValue::cast<CJRegExp>(values[0]);
   assert(regexp);
 
   //---
@@ -92,7 +100,9 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     std::string str = (values[1] ? values[1]->toString() : std::string());
 
-    bool b = regexp->find(str);
+    CJRegExp::MatchData data;
+
+    bool b = regexp->find(str, data);
 
     return js->createBoolValue(b);
   }
@@ -158,9 +168,32 @@ setProperty(CJavaScript *js, const std::string &key, CJValueP value)
 
 bool
 CJRegExp::
-find(const std::string &str) const
+find(const std::string &str, MatchData &data) const
 {
-  return regexp_.find(str);
+  if (! regexp_.find(str))
+    return false;
+
+  int n = regexp_.getNumMatches();
+
+  for (int i = 0; i < n; ++i) {
+    int start, end;
+
+    if (! regexp_.getMatchRange(i, &start, &end))
+      continue;
+
+    data.ranges.push_back(MatchData::Range(start, end));
+  }
+
+  return true;
+}
+
+std::string
+CJRegExp::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
 }
 
 void

@@ -12,7 +12,7 @@ CJMath(CJavaScript *js)
   // TODO: mark as internal ? different behavior than user dictionary
   dict_ = CJDictionaryP(new CJDictionary(js));
 
-  js->setProperty("Math", std::static_pointer_cast<CJValue>(dict_));
+  js->setProperty("Math", dict_);
 
   double Eval = exp(1);
 

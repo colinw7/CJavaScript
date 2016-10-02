@@ -85,11 +85,11 @@ getProperty(CJavaScript *js, const std::string &key) const
   CJValueP propVal = CJNameSpace::getProperty(js, key);
 
   if (propVal && propVal->type() == CJToken::Type::GetterSetter) {
-    CJGetterSetterP gs = std::static_pointer_cast<CJGetterSetter>(propVal);
+    CJGetterSetterP gs = CJValue::cast<CJGetterSetter>(propVal);
 
     CJDictionary *th = const_cast<CJDictionary *>(this);
 
-    CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(th->shared_from_this());
+    CJDictionaryP dict = CJValue::cast<CJDictionary>(th->shared_from_this());
 
     js->pushThis(dict);
 
@@ -108,9 +108,9 @@ setProperty(CJavaScript *js, const std::string &key, CJValueP value)
   CJValueP propVal = getProperty(js, key);
 
   if (propVal && propVal->type() == CJToken::Type::GetterSetter) {
-    CJGetterSetterP gs = std::static_pointer_cast<CJGetterSetter>(propVal);
+    CJGetterSetterP gs = CJValue::cast<CJGetterSetter>(propVal);
 
-    CJDictionaryP dict = std::static_pointer_cast<CJDictionary>(shared_from_this());
+    CJDictionaryP dict = CJValue::cast<CJDictionary>(shared_from_this());
 
     js->pushThis(dict);
 
@@ -126,7 +126,7 @@ setProperty(CJavaScript *js, const std::string &key, CJValueP value)
 
 bool
 CJDictionary::
-hasPropertyValue(const std::string &key) const
+hasPropertyValue(const std::string &key, bool /*inherited*/) const
 {
   return CJNameSpace::hasProperty(js_, key);
 }
@@ -147,6 +147,13 @@ setPropertyValue(const std::string &key, CJValueP value)
 
 void
 CJDictionary::
+configPropertyValue(const std::string &key, CJValueP value)
+{
+  CJNameSpace::setProperty(js_, key, value);
+}
+
+void
+CJDictionary::
 deletePropertyValue(const std::string &key)
 {
   CJNameSpace::deleteProperty(key);
@@ -159,7 +166,7 @@ getFunctionNames() const
   std::vector<std::string> names;
 
   for (const auto &f : keyValues_) {
-    if (f.second->isFunction())
+    if (f.second.value->isFunction())
       names.push_back(f.first);
   }
 
@@ -173,7 +180,7 @@ getVariableNames() const
   std::vector<std::string> names;
 
   for (const auto &v : keyValues_) {
-    if (v.second->type() == CJToken::Type::Var)
+    if (v.second.value->type() == CJToken::Type::Var)
       names.push_back(v.first);
   }
 
@@ -209,8 +216,8 @@ print(std::ostream &os) const
 
     os << " " << kv.first << ": ";
 
-    if (kv.second)
-      os << *kv.second;
+    if (kv.second.value)
+      os << *kv.second.value;
     else
       os << "<null>";
 

@@ -58,6 +58,8 @@ class CJExecData {
     pos_ += n;
   }
 
+  std::string toString() const;
+
   void print(std::iostream &os) const;
 
  private:

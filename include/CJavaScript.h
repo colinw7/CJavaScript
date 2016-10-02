@@ -41,7 +41,6 @@ class CStrParse;
 //------
 
 #include <CJLValue.h>
-#include <CJDictionaryRef.h>
 #include <CJObject.h>
 #include <CJTypeValue.h>
 #include <CJUserObject.h>
@@ -109,7 +108,7 @@ class CJavaScript {
 
   CJValueP setProperty(const std::string &name, CJValueP value);
 
-  bool hasIndexValue(CJValueP value, CJValueP ivalue) const;
+  bool hasIndexValue(CJValueP value, CJValueP ivalue, bool inherit=true) const;
   bool indexValue(CJValueP value, CJValueP ivalue, CJValueP &rvalue) const;
   bool setIndexValue(CJValueP value, CJValueP ivalue, CJValueP rvalue);
   bool deleteIndexValue(CJValueP value, CJValueP ivalue);
@@ -194,6 +193,8 @@ class CJavaScript {
 
   //---
 
+  bool isEmptyLine(const std::string &str) const;
+
   int isCompleteLine(const std::string &str) const;
 
   bool loadFile(const std::string &filename);
@@ -214,6 +215,8 @@ class CJavaScript {
 
   CJValueP valueToObject(CJValueP value) const;
 
+  CJObjTypeFunctionP valueTypeFunction(CJValueP value) const;
+
   COptInt cmp(CJValueP value1, CJValueP value2);
 
   CJValueP execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2);
@@ -229,47 +232,55 @@ class CJavaScript {
   CJValueP createTrueValue() const {
     CJavaScript *th = const_cast<CJavaScript *>(this);
 
-    //return CJValueP(new CJTrue(th));
     return CJTrue::value(th);
   }
 
   CJValueP createFalseValue() const {
     CJavaScript *th = const_cast<CJavaScript *>(this);
 
-    //return CJValueP(new CJFalse(th));
     return CJFalse::value(th);
   }
 
-  CJValueP createNumberValue(long l) const {
+  CJNumberP createNumberValue(long l) const {
     CJavaScript *th = const_cast<CJavaScript *>(this);
 
-    return CJValueP(new CJNumber(th, l));
+    return CJNumberP(new CJNumber(th, l));
   }
 
-  CJValueP createNumberValue(double r) const {
+  CJNumberP createNumberValue(double r) const {
     CJavaScript *th = const_cast<CJavaScript *>(this);
 
-    return CJValueP(new CJNumber(th, r));
+    return CJNumberP(new CJNumber(th, r));
   }
 
-  CJValueP createStringValue(const std::string &s, char c='\"') const {
+  CJStringP createStringValue(const std::string &s, char c='\"') const {
     CJavaScript *th = const_cast<CJavaScript *>(this);
 
-    return CJValueP(new CJString(th, s, c));
+    return CJStringP(new CJString(th, s, c));
   }
 
   CJValueP createNullValue() const {
     CJavaScript *th = const_cast<CJavaScript *>(this);
 
-    //return CJValueP(new CJNull(th));
     return CJNull::value(th);
   }
 
   CJValueP createUndefinedValue() const {
     CJavaScript *th = const_cast<CJavaScript *>(this);
 
-    //return CJValueP(new CJUndefined(th));
     return CJUndefined::value(th);
+  }
+
+  CJArrayP createArrayValue() const {
+    CJavaScript *th = const_cast<CJavaScript *>(this);
+
+    return CJArrayP(new CJArray(th));
+  }
+
+  CJArrayP createArrayValue(long n) const {
+    CJavaScript *th = const_cast<CJavaScript *>(this);
+
+    return CJArrayP(new CJArray(th, n));
   }
 
   CJValueP createRegExpValue(const std::string &s, const std::string &f="") const {
@@ -410,6 +421,7 @@ class CJavaScript {
   typedef std::map<std::string,CJFunctionBaseP>    Functions;
   typedef std::map<CJToken::Type,CJObjTypeP>       TypeObject;
   typedef std::map<std::string,CJObjTypeP>         NamedType;
+  typedef std::map<std::string,CJObjTypeFunctionP> TypeFunctions;
 
   struct DebugData {
     bool parse  { false };
@@ -424,6 +436,7 @@ class CJavaScript {
   NamedType       namedType_;
   NameOperatorMap nameOperatorMap_;
   NameRealTypeMap nameRealTypeMap_;
+  TypeFunctions   typeFunctions_;
   CJDictionaryP   rootScope_;
   CJDictionaryP   currentScope_;
   ScopeStack      scopeStack_;

@@ -28,6 +28,22 @@ exec(CJavaScript *js, const Values &values)
     return CJValueP();
 }
 
+std::string
+CJMathFunction::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
+}
+
+void
+CJMathFunction::
+print(std::ostream &os) const
+{
+  os << "double " << name_ << "(double)";
+}
+
 //------
 
 CJValueP
@@ -45,6 +61,22 @@ exec(CJavaScript *js, const Values &values)
   double res = (*fn_)(r1, r2);
 
   return js->createNumberValue(res);
+}
+
+std::string
+CJReal2Function::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
+}
+
+void
+CJReal2Function::
+print(std::ostream &os) const
+{
+  os << "double " << name_ << "(double, double)";
 }
 
 //------
@@ -67,6 +99,22 @@ exec(CJavaScript *js, const Values &values)
   return js->createNumberValue(res);
 }
 
+std::string
+CJMinFunction::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
+}
+
+void
+CJMinFunction::
+print(std::ostream &os) const
+{
+  os << "double min(...)";
+}
+
 //------
 
 CJValueP
@@ -85,4 +133,20 @@ exec(CJavaScript *js, const Values &values)
   }
 
   return js->createNumberValue(res);
+}
+
+std::string
+CJMaxFunction::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
+}
+
+void
+CJMaxFunction::
+print(std::ostream &os) const
+{
+  os << "double max(...)";
 }

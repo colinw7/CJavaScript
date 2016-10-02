@@ -1,4 +1,16 @@
 #include <CJExecData.h>
+#include <sstream>
+
+std::string
+CJExecData::
+toString() const
+{
+  std::stringstream ss;
+
+  this->print(ss);
+
+  return ss.str();
+}
 
 void
 CJExecData::
