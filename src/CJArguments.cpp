@@ -58,9 +58,9 @@ addValue(CJValueP value)
 
 CJValueP
 CJArguments::
-indexValue(int ind) const
+indexValue(long ind) const
 {
-  if (ind < 0 || ind >= int(values_.size()))
+  if (ind < 0 || ind >= long(values_.size()))
     return CJValueP();
 
   return values_[ind];
@@ -68,12 +68,12 @@ indexValue(int ind) const
 
 void
 CJArguments::
-setIndexValue(int ind, CJValueP value)
+setIndexValue(long ind, CJValueP value)
 {
   if (ind < 0)
     return;
 
-  while (ind >= int(values_.size()))
+  while (ind >= long(values_.size()))
     values_.push_back(CJValueP());
 
   values_[ind] = value;
@@ -81,15 +81,15 @@ setIndexValue(int ind, CJValueP value)
 
 void
 CJArguments::
-deleteIndexValue(int /*ind*/)
+deleteIndexValue(long /*ind*/)
 {
 }
 
 bool
 CJArguments::
-hasIndexValue(int ind) const
+hasIndexValue(long ind) const
 {
-  return (ind >= 0 && ind < int(values_.size()));
+  return (ind >= 0 && ind < long(values_.size()));
 }
 
 CJValueP
@@ -97,7 +97,7 @@ CJArguments::
 getProperty(CJavaScript *js, const std::string &key) const
 {
   if      (key == "length")
-    return js->createNumberValue(length());
+    return js->createNumberValue(length().getValue(0));
   else if (key == "callee")
     return callee();
   else if (key == "caller")
@@ -133,7 +133,7 @@ print(std::ostream &os) const
 {
   os << "[";
 
-  int i = 0;
+  long i = 0;
 
   for (auto &v : values_) {
     if (i > 0)

@@ -37,6 +37,7 @@ class CStrParse;
 #include <CJDictionary.h>
 #include <CJRegExp.h>
 #include <CJDate.h>
+#include <CJFunction.h>
 
 //------
 
@@ -45,13 +46,21 @@ class CStrParse;
 #include <CJTypeValue.h>
 #include <CJUserObject.h>
 #include <CJTypeFunction.h>
+#include <CJGetterSetter.h>
 
 //------
 
 #include <CJExecBlock.h>
+#include <CJExecStatement.h>
+#include <CJExecExpression.h>
+#include <CJExecExpressionList.h>
+
 #include <CJTypeObjectFunction.h>
 #include <CJExecData.h>
 #include <CJPropertyData.h>
+#include <CJGlobalFunction.h>
+#include <CJRealFunction.h>
+#include <CJRandFunction.h>
 
 //------
 
@@ -113,6 +122,7 @@ class CJavaScript {
   bool setIndexValue(CJValueP value, CJValueP ivalue, CJValueP rvalue);
   bool deleteIndexValue(CJValueP value, CJValueP ivalue);
 
+  bool lookupPropertyData(const CJExecIdentifiersP &eidentifiers, CJPropertyData &data);
   bool lookupPropertyData(const Identifiers &identifiers, CJPropertyData &data);
 
   bool lookupScopePropertyData(CJDictionaryP dict, const Identifiers &identifiers,
@@ -124,29 +134,40 @@ class CJavaScript {
                                     CJPropertyData &data, int ind=0);
   bool lookupObjPropertyData(CJObjP obj, const Identifiers &identifiers,
                              CJPropertyData &data, int ind=0);
+
+  bool lookupValuePropertyData(CJValueP value, const CJExecIdentifiersP &eidentifiers,
+                               CJPropertyData &data, int ind=0);
   bool lookupValuePropertyData(CJValueP value, const Identifiers &identifiers,
                                CJPropertyData &data, int ind=0);
 
   CJValueP valueToObj(CJValueP value) const;
 
+  //---
+
+  CJValueP lookupValue(const CJExecIdentifiersP &eidentifiers);
   CJValueP lookupValue(const Identifiers &identifiers);
 
+  CJLValueP lookupLValue(const CJExecIdentifiersP &eidentifiers);
   CJLValueP lookupLValue(const Identifiers &identifiers);
 
   CJValueP lookupFunction(const Identifiers &identifiers);
 
+  CJLValueP lookupProperty(const CJExecIdentifiersP &eidentifiers, bool create=false);
   CJLValueP lookupProperty(const Identifiers &identifiers, bool create=false);
 
+  ValuePair lookupObjectProperty(const CJExecIdentifiersP &eidentifiers, bool create=false);
   ValuePair lookupObjectProperty(const Identifiers &identifiers, bool create=false);
 
   bool deleteToken(const Tokens &tokens);
 
+  bool deleteProperty(const CJExecIdentifiersP &eidentifiers, const Values &values=Values());
   bool deleteProperty(const Identifiers &identifiers, const Values &values=Values());
-
   bool deleteProperty(CJDictionaryP scope, const Identifiers &identifiers,
                       const Values &values=Values());
 
   CJValueP setVariable(const Identifiers &identifiers, CJValueP value);
+
+  //---
 
   void addTypeObject(CJToken::Type type, CJObjTypeP obj);
   CJObjTypeP getTypeObject(CJToken::Type type) const;
@@ -217,25 +238,55 @@ class CJavaScript {
 
   CJObjTypeFunctionP valueTypeFunction(CJValueP value) const;
 
-  COptInt cmp(CJValueP value1, CJValueP value2);
+  //---
+
+  COptInt rcmp     (CJValueP  value1 , CJValueP  value2 ) const;
+  COptInt cmpArray (CJArrayP  array1 , CJArrayP  array2 ) const;
+  COptInt cmpObject(CJObjectP object1, CJObjectP object2) const;
+  COptInt cmp      (CJValueP  value1 , CJValueP  value2 ) const;
+
+  //---
 
   CJValueP execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2);
   CJValueP execUnaryOp (CJOperator::Type op, CJValueP value);
 
-  CJValueP createBoolValue(bool b) const {
+  //---
+
+  CJOperatorP createOpToken(const CJOperator::Type &type, int precedence,
+                            CJOperator::Associativty associativty, CJOperator::Ary ary) const {
+    return std::make_shared<CJOperator>(type, precedence, associativty, ary);
+  }
+
+  CJKeywordP createKeyword(const CJKeyword::Type &type) {
+    return std::make_shared<CJKeyword>(type);
+  }
+
+  CJIdentifierP createIdentifier(const std::string &name) {
+    return std::make_shared<CJIdentifier>(name);
+  }
+
+  //---
+
+  CJValueP createBoolValue(bool b=false) const {
     if (b)
       return createTrueValue();
     else
       return createFalseValue();
   }
 
-  CJValueP createTrueValue() const {
+  CJBooleanP createBoolObject(bool b=false) const {
+    CJavaScript *th = const_cast<CJavaScript *>(this);
+
+    return std::make_shared<CJBoolean>(th, b);
+  }
+
+  CJTrueP createTrueValue() const {
     CJavaScript *th = const_cast<CJavaScript *>(this);
 
     return CJTrue::value(th);
   }
 
-  CJValueP createFalseValue() const {
+  CJFalseP createFalseValue() const {
     CJavaScript *th = const_cast<CJavaScript *>(this);
 
     return CJFalse::value(th);
@@ -244,19 +295,37 @@ class CJavaScript {
   CJNumberP createNumberValue(long l) const {
     CJavaScript *th = const_cast<CJavaScript *>(this);
 
-    return CJNumberP(new CJNumber(th, l));
+    return std::make_shared<CJNumber>(th, l);
   }
 
   CJNumberP createNumberValue(double r) const {
     CJavaScript *th = const_cast<CJavaScript *>(this);
 
-    return CJNumberP(new CJNumber(th, r));
+    return std::make_shared<CJNumber>(th, r);
+  }
+
+  CJNumberP createNumberObject(long l) const {
+    CJNumberP number = createNumberValue(l);
+    number->setIsPrimitive(false);
+    return number;
+  }
+
+  CJNumberP createNumberObject(double r) const {
+    CJNumberP number = createNumberValue(r);
+    number->setIsPrimitive(false);
+    return number;
   }
 
   CJStringP createStringValue(const std::string &s, char c='\"') const {
     CJavaScript *th = const_cast<CJavaScript *>(this);
 
-    return CJStringP(new CJString(th, s, c));
+    return std::make_shared<CJString>(th, s, c);
+  }
+
+  CJStringP createStringObject(const std::string &s, char c='\"') const {
+    CJStringP str = createStringValue(s, c);
+    str->setIsPrimitive(false);
+    return str;
   }
 
   CJValueP createNullValue() const {
@@ -265,7 +334,7 @@ class CJavaScript {
     return CJNull::value(th);
   }
 
-  CJValueP createUndefinedValue() const {
+  CJUndefinedP createUndefinedValue() const {
     CJavaScript *th = const_cast<CJavaScript *>(this);
 
     return CJUndefined::value(th);
@@ -274,26 +343,119 @@ class CJavaScript {
   CJArrayP createArrayValue() const {
     CJavaScript *th = const_cast<CJavaScript *>(this);
 
-    return CJArrayP(new CJArray(th));
+    return std::make_shared<CJArray>(th);
   }
 
   CJArrayP createArrayValue(long n) const {
     CJavaScript *th = const_cast<CJavaScript *>(this);
 
-    return CJArrayP(new CJArray(th, n));
+    return std::make_shared<CJArray>(th, n);
   }
 
-  CJValueP createRegExpValue(const std::string &s, const std::string &f="") const {
+  CJDictionaryP createDictValue(const std::string &s="") const {
     CJavaScript *th = const_cast<CJavaScript *>(this);
 
-    return CJValueP(new CJRegExp(th, s, f));
+    return std::make_shared<CJDictionary>(th, s);
   }
 
-  CJValueP createDateValue(const Values &values) const {
+  CJRegExpP createRegExpValue(const std::string &s="", const std::string &f="") const {
     CJavaScript *th = const_cast<CJavaScript *>(this);
 
-    return CJValueP(new CJDate(th, values));
+    return std::make_shared<CJRegExp>(th, s, f);
   }
+
+  CJDateP createDateValue(const Values &values) const {
+    CJavaScript *th = const_cast<CJavaScript *>(this);
+
+    return std::make_shared<CJDate>(th, values);
+  }
+
+  CJObjectP createObject() const {
+    CJavaScript *th = const_cast<CJavaScript *>(this);
+
+    return std::make_shared<CJObject>(th);
+  }
+
+  CJFunctionP createFunction(const std::string &name="",
+                             const CJFunction::Args &args=CJFunction::Args(),
+                             CJExecBlockP block=CJExecBlockP()) const {
+    CJavaScript *th = const_cast<CJavaScript *>(this);
+
+    return std::make_shared<CJFunction>(th, name, args, block);
+  }
+
+  CJGetterSetterP createGetterSetter() const {
+    CJavaScript *th = const_cast<CJavaScript *>(this);
+
+    return std::make_shared<CJGetterSetter>(th);
+  }
+
+  //---
+
+  CJGlobalFunctionP createGlobalFunction(const std::string &name) const {
+    CJavaScript *th = const_cast<CJavaScript *>(this);
+
+    return std::make_shared<CJGlobalFunction>(th, name);
+  }
+
+  CJMathFunctionP createMathFunction(const std::string &name, CJRealFn1 fn=0) const {
+    CJavaScript *th = const_cast<CJavaScript *>(this);
+
+    return std::make_shared<CJMathFunction>(th, name, fn);
+  }
+
+  CJReal2FunctionP createReal2Function(const std::string &name, CJRealFn2 fn=0) const {
+    CJavaScript *th = const_cast<CJavaScript *>(this);
+
+    return std::make_shared<CJReal2Function>(th, name, fn);
+  }
+
+  CJMinFunctionP createMinFunction() const {
+    CJavaScript *th = const_cast<CJavaScript *>(this);
+
+    return std::make_shared<CJMinFunction>(th);
+  }
+
+  CJMaxFunctionP createMaxFunction() const {
+    CJavaScript *th = const_cast<CJavaScript *>(this);
+
+    return std::make_shared<CJMaxFunction>(th);
+  }
+
+  CJRandFunctionP createRandFunction() const {
+    CJavaScript *th = const_cast<CJavaScript *>(this);
+
+    return std::make_shared<CJRandFunction>(th);
+  }
+
+  //---
+
+  CJExecStatementP createExecStatement(CJTokenP token=CJTokenP()) const {
+    //CJavaScript *th = const_cast<CJavaScript *>(this);
+
+    return std::make_shared<CJExecStatement>(token);
+  }
+
+  CJExecExpressionP createExecExpression(CJToken::Type type=CJToken::Type::Expression) const {
+    //CJavaScript *th = const_cast<CJavaScript *>(this);
+
+    return std::make_shared<CJExecExpression>(type);
+  }
+
+  CJExecExpressionListP
+  createExecExpressionList(CJToken::Type type=CJToken::Type::ExpressionList) const {
+    //CJavaScript *th = const_cast<CJavaScript *>(this);
+
+    return std::make_shared<CJExecExpressionList>(type);
+  }
+
+  CJExecBlockP createExecBlock(CJExecBlock::Type type) const {
+    //CJavaScript *th = const_cast<CJavaScript *>(this);
+
+    return std::make_shared<CJExecBlock>(type);
+  }
+
+  //---
 
   virtual long setInterval(const std::string & /*proc*/, double /*msecs*/) { return -1; }
 
@@ -312,12 +474,19 @@ class CJavaScript {
 
   //---
 
+  CJValueP execFunction(CJFunctionBaseP fn, const CJFunctionBase::Values &values,
+                        CJValueP thisValue=CJValueP());
+
+  //---
+
   void throwException(CJExceptionType type);
 
   void throwTypeError     (CJTokenP token, const std::string &msg);
   void throwTypeError     (CJToken *token, const std::string &msg);
   void throwSyntaxError   (CJTokenP token, const std::string &msg);
   void throwSyntaxError   (CJToken *token, const std::string &msg);
+  void throwRangeError    (CJTokenP token, const std::string &msg);
+  void throwRangeError    (CJToken *token, const std::string &msg);
   void throwReferenceError(CJTokenP token, const std::string &msg);
   void throwReferenceError(CJToken *token, const std::string &msg);
 
@@ -347,7 +516,7 @@ class CJavaScript {
 
   std::string getIdentifier(CStrParse &parse, bool allowUnary) const;
 
-  void readIdentifier(CStrParse &parse);
+  void readIdentifier(CStrParse &parse, bool allowKeyword=true);
 
   bool isRealValueName(const std::string &name, bool allowUnary,
                        CJNumber::RealType &realType) const;
@@ -360,6 +529,7 @@ class CJavaScript {
   void readSingleString(CStrParse &parse);
   void readRegExp(CStrParse &parse);
 
+  CJTokenP      lastToken() const;
   CJToken::Type lastTokenType() const;
 
   std::pair<bool, CJKeyword::Type> isKeyword(const std::string &name) const;

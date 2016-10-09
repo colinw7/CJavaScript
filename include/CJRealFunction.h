@@ -6,14 +6,13 @@
 // function calling API with signature: double result = fn(double r);
 class CJMathFunction : public CJFunctionBase {
  public:
-  typedef double (*Fn)(double);
-
- public:
-  CJMathFunction(CJavaScript *js, const std::string &name, Fn fn=0) :
+  CJMathFunction(CJavaScript *js, const std::string &name, CJRealFn1 fn=0) :
    CJFunctionBase(js, name, CJFunctionBase::Type::Real), fn_(fn) {
   }
 
   CJValue *dup(CJavaScript *js) const override { return new CJMathFunction(js, name_, fn_); }
+
+  bool hasObjectValue() const override { return true; }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 
@@ -22,16 +21,13 @@ class CJMathFunction : public CJFunctionBase {
   void print(std::ostream &os) const override;
 
  protected:
-  Fn fn_;
+  CJRealFn1 fn_;
 };
 
 // function calling API with signature: double result = fn(double r1, double r2);
 class CJReal2Function : public CJFunctionBase {
  public:
-  typedef double (*Fn)(double, double);
-
- public:
-  CJReal2Function(CJavaScript *js, const std::string &name, Fn fn) :
+  CJReal2Function(CJavaScript *js, const std::string &name, CJRealFn2 fn) :
    CJFunctionBase(js, name, CJFunctionBase::Type::Real2), fn_(fn) {
   }
 
@@ -44,7 +40,7 @@ class CJReal2Function : public CJFunctionBase {
   void print(std::ostream &os) const override;
 
  protected:
-  Fn fn_;
+  CJRealFn2 fn_;
 };
 
 // min of values

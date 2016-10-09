@@ -2,43 +2,17 @@
 #define CJNameSpace_H
 
 #include <CJTypes.h>
-#include <COptVal.h>
+#include <CJPropertyValue.h>
 #include <map>
 #include <set>
 #include <vector>
 
 class CJNameSpace {
  public:
-  struct PropertyData {
-    PropertyData(CJValueP v=CJValueP()) : value(v) { }
-
-    PropertyData(CJValueP v, const std::string &attr) :
-     value(v) {
-      bool b = true;
-
-      for (const auto &c : attr) {
-        switch (c) {
-          case '-': b            = false; break;
-          case '+': b            = true ; break;
-          case 'w': writable     = b    ; break;
-          case 'e': enumerable   = b    ; break;
-          case 'c': configurable = b    ; break;
-        }
-      }
-    }
-
-    CJValueP value;
-    COptBool writable;
-    COptBool enumerable;
-    COptBool configurable;
-
-    bool isEnumerable() const { return enumerable.getValue(true); }
-  };
-
-  typedef std::map<std::string,PropertyData> KeyValues;
-  typedef std::set<std::string>              KeyNames;
-  typedef std::vector<std::string>           Names;
-  typedef std::vector<CJValueP>              Values;
+  typedef std::map<std::string,CJPropertyValue> KeyValues;
+  typedef std::set<std::string>                 KeyNames;
+  typedef std::vector<std::string>              Names;
+  typedef std::vector<CJValueP>                 Values;
 
  public:
   CJNameSpace(const KeyValues &keyValues=KeyValues()) :
@@ -66,8 +40,8 @@ class CJNameSpace {
 
   double getRealProperty(CJavaScript *js, const std::string &key, double def=0.0) const;
 
-  bool getPropertyData(CJavaScript *js, const std::string &key, PropertyData &data);
-  void setPropertyData(CJavaScript *js, const std::string &key, const PropertyData &data);
+  bool getPropertyData(CJavaScript *js, const std::string &key, CJPropertyValue &data);
+  void setPropertyData(CJavaScript *js, const std::string &key, const CJPropertyValue &data);
 
   virtual bool hasProperty(CJavaScript *js, const std::string &key, bool inherit=true) const;
   virtual CJValueP getProperty(CJavaScript *js, const std::string &key) const;
@@ -75,8 +49,9 @@ class CJNameSpace {
 
   Names getPropertyNames(bool pseudo=true) const;
 
-  bool deleteProperty(CJavaScript *js, const std::string &key, const Values &values);
-  void deleteProperty(const std::string &key);
+  bool deletePropertyIndices(CJavaScript *js, const std::string &key, const Values &values);
+
+  virtual void deleteProperty(CJavaScript *js, const std::string &key);
 
   void addPseudoProperty(const std::string &key);
 

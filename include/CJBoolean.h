@@ -36,9 +36,15 @@ class CJBoolean : public CJObj {
 
   std::string toString() const override;
 
-  double toReal() const override { return b_; }
+  //---
+
+  COptReal toReal() const override { return COptReal(b_ ? 1.0 : 0.0); }
+
+  COptLong toInteger() const override { return COptLong(b_ ? 1 : 0); }
 
   bool toBoolean() const override { return b_; }
+
+  //---
 
   int cmp(const CJValue *v) const override {
     bool b1 =    toBoolean();

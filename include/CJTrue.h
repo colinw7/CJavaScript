@@ -7,32 +7,37 @@
 // True Type
 class CJTrueType : public CJObjType {
  public:
-  static CJObjTypeP instance(CJavaScript *js);
+  static CJTrueTypeP instance(CJavaScript *js);
 
   CJTrueType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjTypeP type_;
+  static CJTrueTypeP type_;
 };
 
 // True Value
 class CJTrue : public CJValue {
  public:
-  static CJValueP value(CJavaScript *js);
+  static CJTrueP value(CJavaScript *js);
 
- private:
+ public:
   CJTrue(CJavaScript *js);
 
   bool isPrimitive() const override { return true; }
 
- public:
   CJValue *dup(CJavaScript *js) const override { return new CJTrue(js); }
 
-  double toReal() const override { return 1; }
+  //---
+
+  COptReal toReal() const override { return COptReal(1); }
+
+  COptLong toInteger() const override { return COptLong(1); }
 
   bool toBoolean() const override { return true; }
+
+  //---
 
   std::string toString() const override { return "true"; }
 

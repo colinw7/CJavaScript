@@ -37,7 +37,7 @@ class CQJCanvasLinearGradient : public CJObj {
     return ss.str();
   }
 
-  double toReal() const override { return 0; }
+  COptReal toReal() const override { return COptReal(0); }
 
   bool toBoolean() const override { return 0; }
 

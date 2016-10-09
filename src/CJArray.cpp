@@ -32,17 +32,17 @@ void
 CJArrayType::
 init()
 {
-  addTypeFunction(js_, "from");
-  addTypeFunction(js_, "isArray");
-  addTypeFunction(js_, "observe"); // obsolete
-  addTypeFunction(js_, "of");
+  addTypeFunction(js_, "from"     );
+  addTypeFunction(js_, "isArray"  );
+  addTypeFunction(js_, "observe"  ); // obsolete
+  addTypeFunction(js_, "of"       );
   addTypeFunction(js_, "unobserve"); // obsolete
-  addTypeFunction(js_, "toString");
+  addTypeFunction(js_, "toString" );
 
   addObjectFunction(js_, "concat"              , type_);
-  addObjectFunction(js_, "forEach"             , type_);
   addObjectFunction(js_, "every"               , type_);
   addObjectFunction(js_, "filter"              , type_);
+  addObjectFunction(js_, "forEach"             , type_);
   addObjectFunction(js_, "hasOwnProperty"      , type_); // TODO: move to base class
   addObjectFunction(js_, "indexOf"             , type_);
   addObjectFunction(js_, "join"                , type_);
@@ -60,7 +60,7 @@ init()
   addObjectFunction(js_, "splice"              , type_);
   addObjectFunction(js_, "sort"                , type_);
   addObjectFunction(js_, "toString"            , type_);
-  addObjectFunction(js_, "toLocalString"       , type_);
+  addObjectFunction(js_, "toLocaleString"      , type_);
   addObjectFunction(js_, "unshift"             , type_);
 }
 
@@ -141,7 +141,7 @@ createArrayFromValue(CJavaScript *js, CJValueP value1)
   CJArrayP array = js->createArrayValue();
 
   if      (value1->hasIndex()) {
-    long len = value1->length();
+    long len = value1->length().getValue(0);
 
     for (long ind = 0; ind < len; ++ind) {
       CJValueP ivalue = value1->indexValue(ind);
@@ -155,10 +155,10 @@ createArrayFromValue(CJavaScript *js, CJValueP value1)
   else if (value1->hasProperty()) {
     CJDictionaryP dict1 = CJValue::cast<CJDictionary>(value1);
 
-    CJValueP lenValue = value1->propertyValue("length");
+    COptLong lenValue = value1->length();
 
-    if (lenValue) {
-      int len = lenValue->toInteger();
+    if (lenValue.isValid()) {
+      long len = lenValue.getValue(0);
 
       for (int ind = 0; ind < len; ++ind) {
         std::string istr = std::to_string(ind);
@@ -179,7 +179,7 @@ createArrayFromValue(CJavaScript *js, CJValueP value1)
         CJValueP ivalue = value1->propertyValue(ind);
 
         if (ivalue)
-          array->addValue(ivalue);
+          array->setProperty(js, ind, ivalue);
       }
     }
   }
@@ -196,34 +196,67 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return CJValueP();
   }
 
-  assert(values[0]->isArray());
+  // support array functions on non-array objects
+  CJArrayP  array;
+  CJObjectP obj;
 
-  CJArrayP array = CJValue::cast<CJArray>(values[0]);
+  if      (values[0]->isArray())
+    array = CJValue::cast<CJArray>(values[0]);
+  else if (values[0]->isObject())
+    obj = CJValue::cast<CJObject>(values[0]);
+
+  if (! array && ! obj) {
+    js->errorMsg("Invalid type for array function " + name);
+    return CJValueP();
+  }
 
   // object functions
   if      (name == "concat") {
-    if (values.size() != 2) {
-      js->errorMsg("Invalid number of arguments for " + name);
-      return CJValueP();
-    }
+    // create new array
+    CJArrayP array1 = js->createArrayValue();
 
-    if      (values[1]->type() == CJToken::Type::String) {
-      array->addValue(values[1]);
-    }
-    else if (values[1]->hasIndex()) {
-      int len = values[1]->length();
+    int len1 = 0;
 
-      for (int i = 0; i < len; ++i) {
-        array->addValue(values[1]->indexValue(i));
+    // add all (expanded) values to array
+    for (uint i = 0; i < values.size(); ++i) {
+      if      (values[i]->isString()) { // special string handling (string has hasIndex() true)
+        array1->setIndexValue(len1, values[i]);
+
+        ++len1;
       }
-    }
-    else {
-      array->addValue(values[1]);
+      else if (values[i]->isArray()) {
+        CJArrayP array2 = CJValue::cast<CJArray>(values[i]);
+
+        for (const auto &v : array2->indValues()) {
+          int ind1 = v.first + len1;
+
+          array1->setIndexValue(ind1, v.second.calcValue(js));
+        }
+
+        len1 += array2->length().getValue(0);
+      }
+      else if (values[i]->hasIndex()) {
+        long len = values[i]->length().getValue(0);
+
+        for (long j = 0; j < len; ++j) {
+          array1->setIndexValue(len1, values[i]->indexValue(j));
+
+          ++len1;
+        }
+      }
+      else {
+        array1->setIndexValue(len1, values[i]);
+
+        ++len1;
+      }
+
+      array1->setLength(len1);
     }
 
-    return values[0];
+    return array1;
   }
   else if (name == "every") {
+    // get function
     CJFunctionP fn;
 
     if (values.size() >= 2) {
@@ -231,6 +264,14 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
         fn = CJValue::cast<CJFunction>(values[1]);
     }
 
+    if (! fn) {
+      js->throwTypeError(values[0], "Missing function for " + name);
+      return CJValueP();
+    }
+
+    //---
+
+    // get optional this
     CJDictionaryP thisDict;
 
     if (values.size() >= 3) {
@@ -238,36 +279,37 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
         thisDict = CJValue::cast<CJDictionary>(values[2]);
     }
 
-    if (! fn) {
-      js->errorMsg("Missing function for " + name);
+    //---
+
+    // ensure first value is array
+    if (! array)
+      array = createArrayFromValue(js, values[0]);
+
+    if (! array) {
+      js->throwTypeError(values[0], "Missing array for " + name);
       return CJValueP();
     }
 
+    //---
+
+    // run function on each element
     bool b = true;
+
+    if (js->getCurrentBlock() && js->getCurrentBlock()->hasError())
+      return CJValueP();
 
     CJObjType::Values fnValues;
 
-    fnValues.push_back(array);
-    fnValues.push_back(CJValueP());
-    fnValues.push_back(CJValueP());
-    fnValues.push_back(array);
+    fnValues.push_back(array);      // this
+    fnValues.push_back(CJValueP()); // value
+    fnValues.push_back(CJValueP()); // index
+    fnValues.push_back(array);      // array
 
-    for (int i = 0; i < array->length(); ++i) {
-      fnValues[1] = array->indexValue(i);
-      fnValues[2] = js->createNumberValue(long(i));
+    for (const auto &v : array->indValues()) {
+      fnValues[1] = v.second.calcValue(js);
+      fnValues[2] = js->createNumberValue(v.first);
 
-      CJValueP res;
-
-      if (thisDict) {
-        js->pushThis(thisDict);
-
-        res = fn->exec(js, fnValues);
-
-        js->popThis();
-      }
-      else {
-        res = fn->exec(js, fnValues);
-      }
+      CJValueP res = js->execFunction(fn, fnValues, thisDict);
 
       if (js->getCurrentBlock() && js->getCurrentBlock()->hasError())
         break;
@@ -278,9 +320,13 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       }
     }
 
+    //---
+
+    // return every check
     return js->createBoolValue(b);
   }
   else if (name == "filter") {
+    // get function
     CJFunctionP fn;
 
     if (values.size() >= 2) {
@@ -288,6 +334,14 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
         fn = CJValue::cast<CJFunction>(values[1]);
     }
 
+    if (! fn) {
+      js->throwTypeError(values[0], "Missing function for " + name);
+      return CJValueP();
+    }
+
+    //---
+
+    // get optional this
     CJDictionaryP thisDict;
 
     if (values.size() >= 3) {
@@ -295,36 +349,37 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
         thisDict = CJValue::cast<CJDictionary>(values[2]);
     }
 
-    if (! fn) {
-      js->errorMsg("Missing function for " + name);
+    //---
+
+    // ensure first value is array
+    if (! array)
+      array = createArrayFromValue(js, values[0]);
+
+    if (! array) {
+      js->throwTypeError(values[0], "Missing array for " + name);
       return CJValueP();
     }
 
+    //---
+
+    // run function on each element
     std::vector<CJValueP> newValues;
+
+    if (js->getCurrentBlock() && js->getCurrentBlock()->hasError())
+      return CJValueP();
 
     CJObjType::Values fnValues;
 
-    fnValues.push_back(array);
-    fnValues.push_back(CJValueP());
-    fnValues.push_back(CJValueP());
-    fnValues.push_back(array);
+    fnValues.push_back(array);      // this
+    fnValues.push_back(CJValueP()); // value
+    fnValues.push_back(CJValueP()); // index
+    fnValues.push_back(array);      // array
 
-    for (int i = 0; i < array->length(); ++i) {
-      fnValues[1] = array->indexValue(i);
-      fnValues[2] = js->createNumberValue(long(i));
+    for (const auto &v : array->indValues()) {
+      fnValues[1] = v.second.calcValue(js);
+      fnValues[2] = js->createNumberValue(v.first);
 
-      CJValueP res;
-
-      if (thisDict) {
-        js->pushThis(thisDict);
-
-        res = fn->exec(js, fnValues);
-
-        js->popThis();
-      }
-      else {
-        res = fn->exec(js, fnValues);
-      }
+      CJValueP res = js->execFunction(fn, fnValues, thisDict);
 
       if (js->getCurrentBlock() && js->getCurrentBlock()->hasError())
         break;
@@ -333,6 +388,9 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
         newValues.push_back(fnValues[1]);
     }
 
+    //---
+
+    // return filtered values
     CJArrayP array1 = js->createArrayValue();
 
     array1->setValues(newValues);
@@ -340,6 +398,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return array1;
   }
   else if (name == "forEach") {
+    // get function
     CJFunctionP fn;
 
     if (values.size() >= 2) {
@@ -347,6 +406,14 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
         fn = CJValue::cast<CJFunction>(values[1]);
     }
 
+    if (! fn) {
+      js->throwTypeError(values[0], "Missing function for " + name);
+      return CJValueP();
+    }
+
+    //---
+
+    // get optional this
     CJDictionaryP thisDict;
 
     if (values.size() >= 3) {
@@ -354,42 +421,47 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
         thisDict = CJValue::cast<CJDictionary>(values[2]);
     }
 
-    if (! fn) {
-      js->errorMsg("Missing function for " + name);
+    //---
+
+    // ensure first value is array
+    if (! array)
+      array = createArrayFromValue(js, values[0]);
+
+    if (! array) {
+      js->throwTypeError(values[0], "Missing array for " + name);
       return CJValueP();
     }
 
+    //---
+
+    // run function on each element
+    if (js->getCurrentBlock() && js->getCurrentBlock()->hasError())
+      return CJValueP();
+
     CJObjType::Values fnValues;
 
-    fnValues.push_back(array);
-    fnValues.push_back(CJValueP());
-    fnValues.push_back(CJValueP());
-    fnValues.push_back(array);
+    fnValues.push_back(array);      // this
+    fnValues.push_back(CJValueP()); // value
+    fnValues.push_back(CJValueP()); // index
+    fnValues.push_back(array);      // array
 
-    for (int i = 0; i < array->length(); ++i) {
-      fnValues[1] = array->indexValue(i);
-      fnValues[2] = js->createNumberValue(long(i));
+    for (const auto &v : array->indValues()) {
+      fnValues[1] = v.second.calcValue(js);
+      fnValues[2] = js->createNumberValue(v.first);
 
-      CJValueP res;
-
-      if (thisDict) {
-        js->pushThis(thisDict);
-
-        res = fn->exec(js, fnValues);
-
-        js->popThis();
-      }
-      else {
-        res = fn->exec(js, fnValues);
-      }
+      CJValueP res = js->execFunction(fn, fnValues, thisDict);
 
       if (js->getCurrentBlock() && js->getCurrentBlock()->hasError())
         break;
     }
 
-    return CJValueP();
+    //---
+
+    // return undefined
+    return js->createUndefinedValue();
   }
   else if (name == "indexOf") {
+    // get search value
     CJValueP search;
 
     if (values.size() >= 2)
@@ -398,19 +470,48 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     if (! search)
       return js->createNumberValue(-1L);
 
-    int start = 0;
-    int len   = array->length();
+    //---
 
+    // get input array
+    if (! array)
+      array = createArrayFromValue(js, values[0]);
+
+    if (! array) {
+      js->throwTypeError(values[0], "Missing array for " + name);
+      return CJValueP();
+    }
+
+    //---
+
+    long start = 0;
+    long len   = array->length().getValue(0);
+
+    //---
+
+    // get start index
     if (values.size() >= 3) {
-      start = values[2]->toInteger();
+      COptLong optStart = values[2]->toInteger();
+
+      if (! optStart.isValid()) {
+        js->throwTypeError(values[0], "Invalid start index for " + name);
+        return CJValueP();
+      }
+
+      start = optStart.getValue(0);
 
       if (start < 0)
         start = len + start;
 
-      start = CJUtil::clamp(start, 0, len - 1);
+      if (start >= len)
+        return js->createNumberValue(-1L);
+
+      start = CJUtil::clamp(start, 0L, len - 1);
     }
 
-    for (int i = start; i < len; ++i) {
+    //---
+
+    // search
+    for (long i = start; i < len; ++i) {
       COptInt cmp = js->cmp(array->indexValue(i), search);
 
       if (cmp.isValid() && cmp.getValue() == 0)
@@ -425,11 +526,19 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     if (values.size() > 1)
       jstr = values[1]->toString();
 
+    if (! array)
+      array = createArrayFromValue(js, values[0]);
+
+    if (! array) {
+      js->throwTypeError(values[0], "Missing array for " + name);
+      return CJValueP();
+    }
+
     std::string str;
 
-    int len = array->length();
+    long len = array->length().getValue(0);
 
-    for (int i = 0; i < len; ++i) {
+    for (long i = 0; i < len; ++i) {
       if (i > 0)
         str += jstr;
 
@@ -448,20 +557,36 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     if (! search)
       return js->createNumberValue(-1L);
 
-    int len   = array->length();
-    int start = len - 1;
+    if (! array)
+      array = createArrayFromValue(js, values[0]);
+
+    if (! array) {
+      js->throwTypeError(values[0], "Missing array for " + name);
+      return CJValueP();
+    }
+
+    long len   = array->length().getValue(0);
+    long start = len - 1;
 
     if (values.size() >= 3) {
-      start = values[2]->toInteger();
+      start = values[2]->toInteger().getValue(0);
 
       if (start < 0)
         start = len + start;
 
-      start = CJUtil::clamp(start, 0, len - 1);
+      if (start < 0)
+        return js->createNumberValue(-1L);
+
+      start = CJUtil::clamp(start, 0L, len - 1);
     }
 
-    for (int i = start; i >= 0; --i) {
-      COptInt cmp = js->cmp(array->indexValue(i), search);
+    for (long i = start; i >= 0; --i) {
+      CJValueP v = array->indexValue(i);
+
+      COptInt cmp;
+
+      if (v)
+        cmp = js->cmp(v, search);
 
       if (cmp.isValid() && cmp.getValue() == 0)
         return js->createNumberValue(long(i));
@@ -470,6 +595,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return js->createNumberValue(-1L);
   }
   else if (name == "map") {
+    // get function
     CJFunctionP fn;
 
     if (values.size() >= 2) {
@@ -477,6 +603,14 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
         fn = CJValue::cast<CJFunction>(values[1]);
     }
 
+    if (! fn) {
+      js->throwTypeError(values[0], "Missing function for " + name);
+      return CJValueP();
+    }
+
+    //---
+
+    // get optional this
     CJDictionaryP thisDict;
 
     if (values.size() >= 3) {
@@ -484,77 +618,125 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
         thisDict = CJValue::cast<CJDictionary>(values[2]);
     }
 
-    if (! fn) {
-      js->errorMsg("Missing function for " + name);
+    if (! thisDict)
+      thisDict = array;
+
+    //---
+
+    // ensure first value is array
+    if (! array)
+      array = createArrayFromValue(js, values[0]);
+
+    if (! array) {
+      js->throwTypeError(values[0], "Missing array for " + name);
       return CJValueP();
     }
 
-    std::vector<CJValueP> newValues;
+    //---
+
+    // run function on each element
+    CJArray::IndValues newValues;
+
+    if (js->getCurrentBlock() && js->getCurrentBlock()->hasError())
+      return CJValueP();
 
     CJObjType::Values fnValues;
 
-    fnValues.push_back(array);
-    fnValues.push_back(CJValueP());
-    fnValues.push_back(CJValueP());
-    fnValues.push_back(array);
+    fnValues.push_back(array);      // this
+    fnValues.push_back(CJValueP()); // value
+    fnValues.push_back(CJValueP()); // index
+    fnValues.push_back(array);      // array
 
-    for (int i = 0; i < array->length(); ++i) {
-      fnValues[1] = array->indexValue(i);
-      fnValues[2] = js->createNumberValue(long(i));
+    for (const auto &v : array->indValues()) {
+      fnValues[1] = v.second.calcValue(js);
+      fnValues[2] = js->createNumberValue(v.first);
 
       CJValueP res;
 
-      if (thisDict) {
-        js->pushThis(thisDict);
+      if (fnValues[1]) {
+        res = js->execFunction(fn, fnValues, thisDict);
 
-        res = fn->exec(js, fnValues);
-
-        js->popThis();
-      }
-      else {
-        res = fn->exec(js, fnValues);
+        if (js->getCurrentBlock() && js->getCurrentBlock()->hasError())
+          break;
       }
 
-      if (js->getCurrentBlock() && js->getCurrentBlock()->hasError())
-        break;
-
-      newValues.push_back(res);
+      newValues[v.first] = res;
     }
 
+    //---
+
+    // return new values
     CJArrayP array1 = js->createArrayValue();
 
-    array1->setValues(newValues);
+    array1->setValues(newValues, array->length().getValue(0));
 
     return array1;
   }
   else if (name == "pop") {
-    if (values.size() != 1) {
-      js->errorMsg("Invalid number of arguments for " + name);
-      return CJValueP();
+    CJValueP res;
+
+    if (array) {
+      long len = array->length().getValue(0);
+
+      if (len < 1)
+        return js->createUndefinedValue();
+
+      res = array->removeValue();
+    }
+    else if (obj) {
+      COptLong len = obj->length();
+
+      long n = len.getValue(0);
+
+      if (n > 0)
+        res = obj->getProperty(js, std::to_string(n - 1));
+      else
+        res = js->createUndefinedValue();
+
+      if (n > 0)
+        obj->setLength(n - 1);
+      else
+        obj->setLength(0);
+    }
+    else {
+      js->throwTypeError(values[0], "Invalid value type for " + name);
     }
 
-    int len = array->length();
-
-    if (len < 1) {
-      js->errorMsg("Empty array for " + name);
-      return CJValueP();
-    }
-
-    CJValueP value = array->removeValue();
-
-    return value;
+    return res;
   }
   else if (name == "push") {
-    if (values.size() != 2) {
-      js->errorMsg("Invalid number of arguments for " + name);
-      return CJValueP();
+    long n = 0;
+
+    if      (array) {
+      for (uint i = 1; i < values.size(); ++i)
+        array->addValue(values[i]);
+
+      n = array->length().getValue(0);
+    }
+    else if (obj) {
+      COptLong len = obj->length();
+
+      n = len.getValue(0);
+
+      for (uint i = 1; i < values.size(); ++i) {
+        if (n >= CJUtil::maxInteger() + 1)
+          n = 0;
+
+        obj->setProperty(js, std::to_string(n), values[i]);
+
+        ++n;
+      }
+
+      obj->setLength(n);
+    }
+    else {
+      js->throwTypeError(values[0], "Invalid value type for " + name);
     }
 
-    array->addValue(values[1]);
-
-    return values[0];
+    return js->createNumberValue(n);
   }
   else if (name == "reduce") {
+    // get function
     CJFunctionP fn;
 
     if (values.size() >= 2) {
@@ -562,16 +744,34 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
         fn = CJValue::cast<CJFunction>(values[1]);
     }
 
-    CJValueP ivalue;
-
-    if (values.size() >= 3) {
-      ivalue = values[2];
-    }
-
     if (! fn) {
-      js->errorMsg("Missing function for " + name);
+      js->throwTypeError(values[0], "Missing function for " + name);
       return CJValueP();
     }
+
+    //---
+
+    // get init value
+    CJValueP ivalue;
+    bool     needInit = true;
+
+    if (values.size() >= 3) {
+      ivalue   = values[2];
+      needInit = false;
+    }
+
+    //---
+
+    // get array to process
+    if (! array)
+      array = createArrayFromValue(js, values[0]);
+
+    if (! array) {
+      js->throwTypeError(values[0], "Missing array for " + name);
+      return CJValueP();
+    }
+
+    //---
 
     CJObjType::Values fnValues;
 
@@ -581,15 +781,15 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     fnValues.push_back(CJValueP()); // currentIndex
     fnValues.push_back(array);      // array
 
-    int i   = 0;
-    int len = array->length();
+    for (const auto &v : array->indValues()) {
+      if (needInit) {
+        fnValues[1] = v.second.calcValue(js);
+        needInit = false;
+        continue;
+      }
 
-    if (! ivalue && len)
-      fnValues[1] = array->indexValue(i++);
-
-    for ( ; i < len; ++i) {
-      fnValues[2] = array->indexValue(i);           // curValue
-      fnValues[3] = js->createNumberValue(long(i)); // currentIndex
+      fnValues[2] = v.second.calcValue(js);         // curValue
+      fnValues[3] = js->createNumberValue(v.first); // currentIndex
 
       CJValueP res = fn->exec(js, fnValues);
 
@@ -597,11 +797,17 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
         break;
 
       fnValues[1] = res;
+    }
+
+    if (needInit) {
+      js->throwTypeError(values[0], "Missing initial value for " + name);
+      return CJValueP();
     }
 
     return fnValues[1];
   }
   else if (name == "reduceRight") {
+    // get function
     CJFunctionP fn;
 
     if (values.size() >= 2) {
@@ -609,16 +815,34 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
         fn = CJValue::cast<CJFunction>(values[1]);
     }
 
+    if (! fn) {
+      js->throwTypeError(values[0], "Missing function for " + name);
+      return CJValueP();
+    }
+
+    //---
+
+    // get init value
     CJValueP ivalue;
+    bool     needInit = true;
 
     if (values.size() >= 3) {
       ivalue = values[2];
+      needInit = false;
     }
 
-    if (! fn) {
-      js->errorMsg("Missing function for " + name);
+    //---
+
+    // get array to process
+    if (! array)
+      array = createArrayFromValue(js, values[0]);
+
+    if (! array) {
+      js->throwTypeError(values[0], "Missing array for " + name);
       return CJValueP();
     }
+
+    //---
 
     CJObjType::Values fnValues;
 
@@ -628,15 +852,15 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     fnValues.push_back(CJValueP()); // currentIndex
     fnValues.push_back(array);      // array
 
-    int len = array->length();
-    int i   = len - 1;
+    for (auto p = array->indValues().rbegin(); p != array->indValues().rend(); ++p) {
+      if (needInit) {
+        fnValues[1] = (*p).second.calcValue(js);
+        needInit = false;
+        continue;
+      }
 
-    if (! ivalue && len)
-      fnValues[1] = array->indexValue(i--);
-
-    for ( ; i >= 0; --i) {
-      fnValues[2] = array->indexValue(i);           // curValue
-      fnValues[3] = js->createNumberValue(long(i)); // currentIndex
+      fnValues[2] = (*p).second.calcValue(js);         // curValue
+      fnValues[3] = js->createNumberValue((*p).first); // currentIndex
 
       CJValueP res = fn->exec(js, fnValues);
 
@@ -646,63 +870,142 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       fnValues[1] = res;
     }
 
+    if (needInit) {
+      js->throwTypeError(values[0], "Missing initial value for " + name);
+      return CJValueP();
+    }
+
     return fnValues[1];
   }
   else if (name == "reverse") {
+    if (! array)
+      array = createArrayFromValue(js, values[0]);
+
+    if (! array) {
+      js->throwTypeError(values[0], "Missing array for " + name);
+      return CJValueP();
+    }
+
     array->reverse();
 
-    return values[0];
+    return array;
   }
   else if (name == "shift") {
-    if (values.size() != 1) {
-      js->errorMsg("Invalid number of arguments for " + name);
-      return CJValueP();
+    CJValueP remVal;
+
+    if      (array) {
+      long len = array->length().getValue(0);
+
+      if (len >= 1)
+        remVal = array->removeFrontValue();
+      else
+        remVal = js->createUndefinedValue();
+    }
+    else if (obj) {
+      COptLong len = obj->length();
+
+      long n = len.getValue(0);
+
+      if (n >= 1) {
+        for (long i = 0; i < n; ++i) {
+          std::string ind = std::to_string(i);
+
+          CJValueP val = obj->getProperty(js, ind);
+
+          if (i == 0)
+            remVal = val;
+          else {
+            if (! val) continue;
+
+            std::string ind1 = std::to_string(i - 1);
+
+            obj->setProperty(js, ind1, val);
+
+            obj->deleteProperty(js, ind);
+          }
+        }
+      }
+      else
+        remVal = js->createUndefinedValue();
+
+      obj->setLength(n - 1);
+    }
+    else {
+      array = createArrayFromValue(js, values[0]);
+
+      long len = array->length().getValue(0);
+
+      if (len >= 1)
+        remVal = array->removeFrontValue();
+      else
+        remVal = js->createUndefinedValue();
     }
 
-    int len = array->length();
-
-    if (len < 1) {
-      js->errorMsg("Empty array for " + name);
-      return CJValueP();
-    }
-
-    CJValueP value = array->removeFrontValue();
-
-    return value;
+    return remVal;
   }
   else if (name == "slice") {
-    int len = array->length();
+    if (! array)
+      array = createArrayFromValue(js, values[0]);
 
-    int start = 0;
-    int end   = len;
+    if (! array) {
+      js->throwTypeError(values[0], "Missing array for " + name);
+      return CJValueP();
+    }
+
+    long len = array->length().getValue(0);
+
+    long start = 0;
+    long end   = len;
 
     if (values.size() >= 2) {
-      start = values[1]->toInteger();
+      COptLong optStart = values[1]->toInteger();
 
-      if (start < 0)
-        start = len + start;
+      if (optStart.isValid()) {
+        start = optStart.getValue();
 
-      start = CJUtil::clamp(start, 0, len - 1);
+        if (start < 0)
+          start = len + start;
+
+        start = CJUtil::clamp(start, 0L, len);
+      }
     }
 
     if (values.size() >= 3) {
-      end = values[2]->toInteger();
+      COptLong optEnd = values[2]->toInteger();
 
-      if (end < 0)
-        end = len + end;
+      if (optEnd.isValid()) {
+        end = optEnd.getValue();
 
-      end = CJUtil::clamp(end, 0, len);
+        if (end < 0)
+          end = len + end;
+
+        end = CJUtil::clamp(end, 0L, len);
+      }
+    }
+
+    CJArray::IndValues newValues;
+    long               newLen = 0;
+
+    for (const auto &v : array->indValues()) {
+      long ind = v.first;
+
+      if (ind >= start && ind < end) {
+        long ind1 = ind - start;
+
+        newValues[ind1] = v.second;
+
+        newLen = std::max(newLen, ind1 + 1);
+      }
     }
 
     CJArrayP array1 = js->createArrayValue();
 
-    for (int i = start; i < end; ++i) {
-      array1->addValue(array->indexValue(i));
-    }
+    array1->setValues(newValues, newLen);
 
     return array1;
   }
   else if (name == "some") {
+    // get function
     CJFunctionP fn;
 
     if (values.size() >= 2) {
@@ -710,6 +1013,14 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
         fn = CJValue::cast<CJFunction>(values[1]);
     }
 
+    if (! fn) {
+      js->throwTypeError(values[0], "Missing function for " + name);
+      return CJValueP();
+    }
+
+    //---
+
+    // get optional this
     CJDictionaryP thisDict;
 
     if (values.size() >= 3) {
@@ -717,36 +1028,37 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
         thisDict = CJValue::cast<CJDictionary>(values[2]);
     }
 
-    if (! fn) {
-      js->errorMsg("Missing function for " + name);
+    //---
+
+    // ensure first value is array
+    if (! array)
+      array = createArrayFromValue(js, values[0]);
+
+    if (! array) {
+      js->throwTypeError(values[0], "Missing array for " + name);
       return CJValueP();
     }
 
+    //---
+
+    // run function on each element
     bool b = false;
+
+    if (js->getCurrentBlock() && js->getCurrentBlock()->hasError())
+      return CJValueP();
 
     CJObjType::Values fnValues;
 
-    fnValues.push_back(array);
-    fnValues.push_back(CJValueP());
-    fnValues.push_back(CJValueP());
-    fnValues.push_back(array);
+    fnValues.push_back(array);      // this
+    fnValues.push_back(CJValueP()); // value
+    fnValues.push_back(CJValueP()); // index
+    fnValues.push_back(array);      // array
 
-    for (int i = 0; i < array->length(); ++i) {
-      fnValues[1] = array->indexValue(i);
-      fnValues[2] = js->createNumberValue(long(i));
+    for (const auto &v : array->indValues()) {
+      fnValues[1] = v.second.calcValue(js);
+      fnValues[2] = js->createNumberValue(v.first);
 
-      CJValueP res;
-
-      if (thisDict) {
-        js->pushThis(thisDict);
-
-        res = fn->exec(js, fnValues);
-
-        js->popThis();
-      }
-      else {
-        res = fn->exec(js, fnValues);
-      }
+      CJValueP res = js->execFunction(fn, fnValues, thisDict);
 
       if (js->getCurrentBlock() && js->getCurrentBlock()->hasError())
         break;
@@ -757,85 +1069,264 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       }
     }
 
+    //---
+
+    // return some check
+
     return js->createBoolValue(b);
   }
   else if (name == "splice") {
-    int len = array->length();
+    if (! array)
+      array = createArrayFromValue(js, values[0]);
 
-    int start  = 0;
-    int numDel = 0;
+    if (! array) {
+      js->throwTypeError(values[0], "Missing array for " + name);
+      return CJValueP();
+    }
+
+    long len = array->length().getValue(0);
+
+    // get start of splice (default to end of array)
+    long start = 0;
 
     if (values.size() >= 2) {
-      start = values[1]->toInteger();
+      start = values[1]->toInteger().getValue(0);
 
       if (start < 0)
         start = len + start;
 
-      start = CJUtil::clamp(start, 0, len - 1);
+      start = CJUtil::clamp(start, 0L, len);
     }
+    else
+      start = len;
+
+    // get number of elements to delete (default to all elements after start)
+    long numDel = 0;
 
     if (values.size() >= 3) {
-      numDel = values[2]->toInteger();
+      numDel = values[2]->toInteger().getValue(0);
 
-      numDel = CJUtil::clamp(numDel, 0, len);
+      numDel = CJUtil::clamp(numDel, 0L, len);
+    }
+    else
+      numDel = len - start;
+
+    // get number to insert
+    long numIns = std::max<long>(values.size() - 3, 0);
+
+    //---
+
+    CJArray::IndValues newValues, remValues;
+    long               newLen = 0, remLen = 0;
+
+    for (const auto &v : array->indValues()) {
+      long ind = v.first;
+
+      // add values before start
+      if      (ind < start) {
+        newValues[ind] = v.second;
+
+        newLen = std::max<long>(newLen, ind + 1);
+      }
+      // add values after start + numDel
+      else if (ind >= start + numDel) {
+        long ind1 = ind - numDel + numIns;
+
+        newValues[ind1] = v.second;
+
+        newLen = std::max<long>(newLen, ind1 + 1);
+      }
+      // save removed values
+      else {
+        long ind1 = ind - start;
+
+        remValues[ind1] = v.second;
+
+        remLen = std::max<long>(remLen, ind1 + 1);
+      }
     }
 
-    std::vector<CJValueP> newValues;
-    std::vector<CJValueP> remValues;
+    // insert new values
+    for (std::size_t j = 3; j < values.size(); ++j) {
+      long ind1 = start + j - 3;
 
-    int i = 0;
+      newValues[ind1] = CJPropertyValue(values[j]);
 
-    for ( ; i < start; ++i)
-      newValues.push_back(array->indexValue(i));
-
-    // save removed values
-    for ( ; i < start + numDel && i < len; ++i)
-      remValues.push_back(array->indexValue(i));
-
-    // add new values
-    for (std::size_t j = 3; j < values.size(); ++j)
-      newValues.push_back(values[j]);
-
-    // add remaining values
-    for ( ; i < len; ++i)
-      newValues.push_back(array->indexValue(i));
+      newLen = std::max<long>(newLen, ind1 + 1);
+    }
 
     // update array to new values
-    array->setValues(newValues);
+    array->setValues(newValues, newLen);
 
     // return array of old values
     CJArrayP array1 = js->createArrayValue();
 
-    array1->setValues(remValues);
+    array1->setValues(remValues, remLen);
 
     return array1;
   }
   else if (name == "sort") {
+    CJFunctionP fn;
+
     if (values.size() > 1) {
-      // TODO: sort function name
+      if (! values[1]->isFunction()) {
+        js->throwTypeError(values[0], "Invalid function for " + name);
+        return CJValueP();
+      }
+
+      fn = CJValue::cast<CJFunction>(values[1]);
     }
 
-    array->sort();
+    if (! array)
+      array = createArrayFromValue(js, values[0]);
 
-    return values[0];
-  }
-  else if (name == "sum") {
-  }
-  else if (name == "toString") {
-    return js->createStringValue(array->toString());
-  }
-  else if (name == "toLocaleString") {
-    return js->createStringValue(array->toString());
-  }
-  else if (name == "unshift") {
-    if (values.size() != 2) {
-      js->errorMsg("Invalid number of arguments for " + name);
+    if (! array) {
+      js->throwTypeError(values[0], "Missing array for " + name);
       return CJValueP();
     }
 
-    array->addFrontValue(values[1]);
+    array->sort(fn);
 
-    return values[0];
+    return array;
+  }
+  else if (name == "sum") {
+    assert(false);
+  }
+  else if (name == "toString") {
+    CJValueP joinValue;
+
+    if (values[0]->isDictionary()) {
+      CJDictionaryP dict = CJValue::cast<CJDictionary>(values[0]);
+
+      joinValue = dict->getProperty(js_, "join");
+    }
+
+    if (joinValue) {
+      if (joinValue->isFunction()) {
+        CJFunctionP joinFn = CJValue::cast<CJFunction>(joinValue);
+
+        Values fnValues = values;
+
+        CJValueP res = js->execFunction(joinFn, fnValues);
+
+        return res;
+      }
+      else
+        return CJObjType::exec(js, name, values);
+    }
+    else
+      return js->createStringValue(values[0]->toString());
+  }
+  else if (name == "toLocaleString") {
+    std::string str;
+
+    if (array) {
+      int i = 0;
+
+      for (const auto &v : array->indValues()) {
+        if (i > 0)
+          str += ",";
+
+        CJValueP value1 = v.second.calcValue(js);
+
+        CJDictionaryP dictVal;
+
+        if (value1 && value1->isDictionary())
+          dictVal = CJValue::cast<CJDictionary>(value1);
+
+        if      (dictVal) {
+          CJValueP fnValue = dictVal->getProperty(js, "toLocaleString");
+
+          if (fnValue) {
+            if (fnValue->isFunction()) {
+              CJFunctionBaseP fn = CJValue::cast<CJFunctionBase>(fnValue);
+
+              Values fnValues;
+
+              CJValueP res = js->execFunction(fn, fnValues);
+
+              if (js->getCurrentBlock() && js->getCurrentBlock()->hasError())
+                break;
+
+              if (res)
+                str += res->toString();
+            }
+            else {
+              js->throwTypeError(values[0], "toLocaleString is not a function for " + name);
+              return CJValueP();
+            }
+          }
+          else
+            str += dictVal->toString();
+        }
+        else if (value1) {
+          if (value1->type() != CJToken::Type::Undefined &&
+              value1->type() != CJToken::Type::Null)
+            str += value1->toString();
+        }
+
+        ++i;
+      }
+    }
+
+    return js->createStringValue(str);
+  }
+  else if (name == "unshift") {
+    long numAdd = values.size() - 1;
+
+    long res = 0;
+
+    if      (array) {
+      for (long i = numAdd; i >= 1; --i)
+        array->addFrontValue(values[i]);
+
+      res = array->length().getValue(0L);
+    }
+    else if (obj) {
+      COptLong len = obj->length();
+
+      if (len.isValid()) {
+        long n = len.getValue();
+
+        for (long i = n - 1; i >= 0; --i) {
+          std::string ind = std::to_string(i);
+
+          CJPropertyValue data;
+
+          if (obj->getPropertyData(js, ind, data)) {
+            std::string ind1 = std::to_string(i + numAdd);
+
+            obj->setProperty(js, ind1, data.calcValue(js));
+
+            if (i >= 0 && i < numAdd) {
+              obj->setProperty(js, ind, values[i + 1]);
+            }
+            else {
+              obj->deleteProperty(js, ind);
+            }
+          }
+          else {
+            if (i >= 0 && i < numAdd) {
+              obj->setProperty(js, ind, values[i + 1]);
+            }
+          }
+        }
+      }
+
+      obj->setLength(len.getValue(0) + numAdd);
+
+      res = obj->length().getValue(0L);
+    }
+    else {
+      array = createArrayFromValue(js, values[0]);
+
+      for (size_t i = values.size() - 1; i >= 1; --i)
+        array->addFrontValue(values[i]);
+
+      res = array->length().getValue(0L);
+    }
+
+    return js->createNumberValue(res);
   }
   else if (name == "propertyIsEnumerable") {
     if (values.size() != 2) {
@@ -843,9 +1334,9 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       return CJValueP();
     }
 
-    int ind = values[1]->toInteger();
+    long ind = values[1]->toInteger().getValue(0);
 
-    bool b = array->isEnumerableIndex(ind);
+    bool b = (array ? array->isEnumerableIndex(ind) : false);
 
     return js->createBoolValue(b);
   }
@@ -867,18 +1358,18 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 //------
 
 CJArray::
-CJArray(CJavaScript *js, int n) :
+CJArray(CJavaScript *js, long n) :
  CJObj(js, CJArrayType::instance(js))
 {
   if (n > 0)
-    values_.resize(n);
+    len_ = n;
 
   addPseudoProperty("length");
 }
 
 CJArray::
-CJArray(CJavaScript *js, const Values &values) :
- CJObj(js, CJArrayType::instance(js)), values_(values)
+CJArray(CJavaScript *js, const IndValues &values, long len) :
+ CJObj(js, CJArrayType::instance(js)), values_(values), len_(len)
 {
   addPseudoProperty("length");
 }
@@ -898,40 +1389,62 @@ setValues(const std::vector<CJValueP> &values)
 {
   values_.clear();
 
-  int n = values.size();
+  len_ = values.size();
 
-  values_.resize(n);
+  for (long ind = 0; ind < len_; ++ind)
+    values_[ind] = CJPropertyValue(values[ind]);
+}
 
-  for (int ind = 0; ind < n; ++ind)
-    values_[ind] = PropertyData(values[ind]);
+void
+CJArray::
+setValues(const IndValues &values, long len)
+{
+  values_ = values;
+  len_    = len;
 }
 
 std::string
 CJArray::
 toString() const
 {
-  std::string str;
-
-  int i = 0;
-
-  for (auto &v : values_) {
+  auto addValue = [] (std::string &str, long &i, CJValueP value) {
     if (i > 0)
-      str += ",";
+      str += ", ";
 
-    if (v.value)
-      str += v.value->toString();
+    if (value)
+      str += value->toString();
 
     ++i;
+  };
+
+  //---
+
+  std::string str;
+
+  long i = 0;
+
+  for (const auto &v : values_) {
+    while (i < v.first)
+      addValue(str, i, CJValueP());
+
+    addValue(str, i, v.second.calcValue(js_));
   }
+
+  while (i < len_)
+    addValue(str, i, CJValueP());
+
+  //---
 
   for (auto &kv : keyValues()) {
     if (i > 0)
-      str += ",";
+      str += ", ";
 
     str += "'" + kv.first + "': ";
 
-    if (kv.second.value)
-      str += kv.second.value->toString();
+    CJValueP value1 = kv.second.calcValue(js_);
+
+    if (value1)
+      str += value1->toString();
     else
       str += "<null>";
 
@@ -941,22 +1454,63 @@ toString() const
   return str;
 }
 
+COptReal
+CJArray::
+toReal() const
+{
+  long n = length().getValue(0);
+
+  if      (n == 0)
+    return COptReal(0);
+  else if (n == 1) {
+    CJValueP value = indexValue(0);
+
+    return (value ? COptReal(value->toReal()) : COptReal());
+  }
+  else
+    return COptReal();
+}
+
+COptLong
+CJArray::
+toInteger() const
+{
+  long n = length().getValue(0);
+
+  if      (n == 0)
+    return COptLong(0);
+  else if (n == 1) {
+    CJValueP value = indexValue(0);
+
+    return (value ? COptLong(value->toInteger()) : COptLong());
+  }
+  else
+    return COptLong();
+}
+
 void
 CJArray::
 addValue(CJValueP value)
 {
-  values_.push_back(PropertyData(value));
+  if (len_ + 1 > CJUtil::maxInteger()) {
+    js_->throwRangeError(this, "Invalid array length");
+    return;
+  }
+
+  values_[len_++] = CJPropertyValue(value);
 }
 
 CJValueP
 CJArray::
 removeValue()
 {
-  assert(! values_.empty());
+  assert(len_ > 0);
 
-  PropertyData data = values_.back();
+  --len_;
 
-  values_.pop_back();
+  CJPropertyValue data = values_[len_];
+
+  values_.erase(len_);
 
   return data.value;
 }
@@ -965,168 +1519,283 @@ void
 CJArray::
 addFrontValue(CJValueP value)
 {
-  int n = values_.size();
+  IndValues newValues;
 
-  values_.resize(n + 1);
+  for (const auto &v : values_) {
+    long ind1 = v.first + 1;
 
-  for (int i = n - 1; i >= 0; --i)
-    values_[i + 1] = values_[i];
+    newValues[ind1] = v.second;
+  }
 
-  values_[0] = PropertyData(value);
+  newValues[0] = CJPropertyValue(value);
+
+  values_ = newValues;
+
+  ++len_;
 }
 
 CJValueP
 CJArray::
 removeFrontValue()
 {
-  assert(! values_.empty());
+  assert(len_ > 0);
 
-  int n = values_.size();
+  CJPropertyValue remData;
 
-  PropertyData data = values_[0];
+  IndValues newValues;
 
-  for (int i = 1; i < n; ++i)
-    values_[i - 1] = values_[i];
+  for (const auto &v : values_) {
+    long ind1 = v.first - 1;
 
-  values_.pop_back();
+    if (ind1 >= 0)
+      newValues[ind1] = v.second;
+    else
+      remData = v.second;
+  }
 
-  return data.value;
+  values_ = newValues;
+
+  --len_;
+
+  return remData.value;
 }
 
 bool
 CJArray::
-hasIndexValue(int ind) const
+hasIndexValue(long ind) const
 {
-  int n = values_.size();
-
-  if (ind < 0 || ind >= n)
+  if (ind < 0 || ind >= len_)
     return false;
 
-  return !!values_[ind].value;
+  auto p = values_.find(ind);
+
+  if (p == values_.end())
+    return false;
+
+  CJValueP value1 = (*p).second.calcValue(js_);
+
+  return !!value1;
 }
 
 CJValueP
 CJArray::
-indexValue(int ind) const
+indexValue(long ind) const
 {
-  int n = values_.size();
-
-  if (ind < 0 || ind >= n)
+  if (ind < 0 || ind >= len_)
     return CJValueP();
 
-  return values_[ind].value;
+  auto p = values_.find(ind);
+
+  if (p == values_.end())
+    return CJValueP();
+
+  CJValueP value = (*p).second.calcValue(js_);
+
+  if (value && value->type() == CJToken::Type::GetterSetter) {
+    CJGetterSetterP gs = CJValue::cast<CJGetterSetter>(value);
+
+    CJObjectP obj = CJValue::cast<CJObject>(gs->parent());
+
+    js_->pushThis(obj);
+
+    value = gs->getValue();
+
+    js_->popThis();
+  }
+
+  return value;
 }
 
 void
 CJArray::
-setIndexValue(int ind, CJValueP value)
+setIndexValue(long ind, CJValueP value)
 {
   if (ind < 0)
     return;
 
-  int n = values_.size();
-
-  if (ind < n && ! isWritableIndex(ind))
+  if (ind < len_ && ! isWritableIndex(ind))
     return;
 
-  while (ind >= n) {
-    values_.push_back(CJValueP());
-
-    ++n;
-  }
-
   values_[ind].value = value;
+
+  len_ = std::max(ind + 1, len_);
 }
 
 void
 CJArray::
-deleteIndexValue(int ind)
+deleteIndexValue(long ind)
 {
-  setIndexValue(ind, CJValueP());
+  assert(ind >= 0 && ind < len_);
+
+  values_.erase(ind);
 }
 
 bool
 CJArray::
-isWritableIndex(int ind) const
+isWritableIndex(long ind) const
 {
-  if (ind < 0 || ind >= int(values_.size()))
+  if (ind < 0 || ind >= len_)
     return false;
 
-  return values_[ind].writable.getValue(true);
+  auto p = values_.find(ind);
+
+  if (p == values_.end())
+    return true;
+
+  return (*p).second.writable.getValue(true);
 }
 
 void
 CJArray::
-setWritableIndex(int ind, bool b)
+setWritableIndex(long ind, bool b)
 {
-  assert(ind >= 0 && ind < int(values_.size()));
+  assert(ind >= 0 && ind < len_);
 
   values_[ind].writable = b;
 }
 
 bool
 CJArray::
-isEnumerableIndex(int ind) const
+isEnumerableIndex(long ind) const
 {
-  if (ind < 0 || ind >= int(values_.size()))
+  if (ind < 0 || ind >= len_)
     return false;
 
-  return values_[ind].enumerable.getValue(true);
+  auto p = values_.find(ind);
+
+  if (p == values_.end())
+    return false;
+
+  return (*p).second.enumerable.getValue(true);
 }
 
 void
 CJArray::
-setEnumerableIndex(int ind, bool b)
+setEnumerableIndex(long ind, bool b)
 {
-  assert(ind >= 0 && ind < int(values_.size()));
+  assert(ind >= 0 && ind < len_);
 
   values_[ind].enumerable = b;
 }
 
 bool
 CJArray::
-isConfigurableIndex(int ind) const
+isConfigurableIndex(long ind) const
 {
-  if (ind < 0 || ind >= int(values_.size()))
+  if (ind < 0 || ind >= len_)
     return false;
 
-  return values_[ind].configurable.getValue(true);
+  auto p = values_.find(ind);
+
+  if (p == values_.end())
+    return true;
+
+  return (*p).second.configurable.getValue(true);
 }
 
 void
 CJArray::
-setConfigurableIndex(int ind, bool b)
+setConfigurableIndex(long ind, bool b)
 {
-  assert(ind >= 0 && ind < int(values_.size()));
+  assert(ind >= 0 && ind < len_);
 
   values_[ind].configurable = b;
+}
+
+COptLong
+CJArray::
+length() const
+{
+  return COptLong(len_);
+}
+
+void
+CJArray::
+setLength(long n)
+{
+  if (n > CJUtil::maxInteger()) {
+    js_->throwRangeError(this, "Invalid array length");
+    return;
+  }
+
+  if (n < len_) {
+    while (len_ > n) {
+      --len_;
+
+      values_.erase(len_);
+    }
+  }
+  else
+    len_ = n;
 }
 
 void
 CJArray::
 reverse()
 {
-  int n = values_.size();
-
-  for (int i = 0, j = n - 1; i < j; ++i, --j)
+  for (long i = 0, j = len_ - 1; i < j; ++i, --j)
     std::swap(values_[i], values_[j]);
 }
 
 void
 CJArray::
-sort()
+sort(CJFunctionP fn)
 {
-  struct Cmp {
-    bool operator()(const PropertyData &v1, const PropertyData &v2) {
-      if (! v2.value) return false;
-      if (! v1.value) return true;
-      return (v1.value->cmp(v2.value.get()) < 0);
+  class Cmp {
+   public:
+    Cmp(CJavaScript *js, CJFunctionP fn) :
+     js_(js), fn_(fn) {
     }
+
+    bool operator()(const CJPropertyValue &v1, const CJPropertyValue &v2) {
+      if (! v2.value) return true;
+      if (! v1.value) return false;
+
+      if (js_->isUndefinedValue(v2.value)) return true;
+      if (js_->isUndefinedValue(v1.value)) return false;
+
+      if (! fn_) {
+        return (v1.value->cmp(v2.value.get()) < 0);
+      }
+      else {
+        CJObjType::Values fnValues;
+
+        fnValues.push_back(CJValueP());
+        fnValues.push_back(v1.value);
+        fnValues.push_back(v2.value);
+
+        CJValueP res = fn_->exec(js_, fnValues);
+
+        if (! res)
+          return false;
+
+        return (res->toInteger().getValue(0) < 0);
+      }
+    }
+
+   private:
+    CJavaScript *js_ { 0 };
+    CJFunctionP  fn_;
   };
 
-  Cmp cmp;
+  //---
 
-  std::sort(values_.begin(), values_.end(), cmp);
+  Cmp cmp(js_, fn);
+
+  Values values;
+
+  values.reserve(values_.size());
+
+  for (const auto &v : values_)
+    values.push_back(v.second);
+
+  std::sort(values.begin(), values.end(), cmp);
+
+  int i = 0;
+
+  for (auto &v : values_) {
+    v.second = values[i++];
+  }
 }
 
 CJValueP
@@ -1134,7 +1803,7 @@ CJArray::
 getProperty(CJavaScript *js, const std::string &key) const
 {
   if (key == "length")
-    return js->createNumberValue(length());
+    return js->createNumberValue(length().getValue(0));
 
   return CJObj::getProperty(js, key);
 }
@@ -1144,24 +1813,7 @@ CJArray::
 setProperty(CJavaScript *js, const std::string &key, CJValueP value)
 {
   if (key == "length") {
-    int len = value->toInteger();
-
-    int n = values_.size();
-
-    if (len < n) {
-      while (n > len) {
-        --n;
-
-        values_.pop_back();
-      }
-    }
-    else {
-      while (n < len) {
-        values_.push_back(PropertyData());
-
-        ++n;
-      }
-    }
+    setLength(value->toInteger().getValue(0));
   }
   else
     CJObj::setProperty(js, key, value);
@@ -1172,7 +1824,7 @@ CJArray::
 hasValue(CJValueP value) const
 {
   for (const auto &v : values_) {
-    if (js_->cmp(v.value, value) == 0)
+    if (js_->cmp(v.second.calcValue(js_), value) == 0)
       return true;
   }
 
@@ -1183,21 +1835,35 @@ void
 CJArray::
 print(std::ostream &os) const
 {
-  os << "[";
-
-  int i = 0;
-
-  for (auto &v : values_) {
+  auto addValue = [] (std::ostream &os, long &i, CJValueP value) {
     if (i > 0)
       os << ",";
 
     os << " ";
 
-    if (v.value)
-      os << *v.value;
+    if (value)
+      value->print(os);
 
     ++i;
+  };
+
+  //---
+
+  os << "[";
+
+  long i = 0;
+
+  for (const auto &v : values_) {
+    while (i < v.first)
+      addValue(os, i, CJValueP());
+
+    addValue(os, i, v.second.calcValue(js_));
   }
+
+  while (i < len_)
+    addValue(os, i, CJValueP());
+
+  //---
 
   for (auto &kv : keyValues()) {
     if (i > 0)
@@ -1205,17 +1871,20 @@ print(std::ostream &os) const
 
     os << " '" << kv.first << "': ";
 
-    if (kv.second.value)
-      os << *kv.second.value;
+    CJValueP value1 = kv.second.calcValue(js_);
+
+    if (value1)
+      os << *value1;
     else
       os << "<null>";
 
     ++i;
   }
 
+  //---
+
   if (i > 0)
     os << " ";
 
   os << "]";
 }
-

@@ -61,7 +61,7 @@ setFunctionProperty(CJavaScript *js, CJFunctionBaseP function, CJObjTypeP objTyp
 
 bool
 CJNameSpace::
-getPropertyData(CJavaScript *, const std::string &key, PropertyData &data)
+getPropertyData(CJavaScript *, const std::string &key, CJPropertyValue &data)
 {
   auto p = keyValues_.find(key);
 
@@ -75,12 +75,12 @@ getPropertyData(CJavaScript *, const std::string &key, PropertyData &data)
 
 void
 CJNameSpace::
-setPropertyData(CJavaScript *js, const std::string &key, const PropertyData &data)
+setPropertyData(CJavaScript *js, const std::string &key, const CJPropertyValue &data)
 {
   auto p = keyValues_.find(key);
 
   if (p == keyValues_.end())
-    p = keyValues_.insert(p, KeyValues::value_type(key, PropertyData()));
+    p = keyValues_.insert(p, KeyValues::value_type(key, CJPropertyValue()));
 
   (*p).second = data;
 
@@ -94,7 +94,7 @@ setProperty(CJavaScript *, const std::string &key, CJValueP value)
   auto p = keyValues_.find(key);
 
   if (p == keyValues_.end())
-    p = keyValues_.insert(p, KeyValues::value_type(key, PropertyData()));
+    p = keyValues_.insert(p, KeyValues::value_type(key, CJPropertyValue()));
 
   (*p).second.value = value;
 }
@@ -143,7 +143,7 @@ getRealProperty(CJavaScript *js, const std::string &key, double def) const
   CJValueP v = getProperty(js, key);
   if (! v) return def;
 
-  return v->toReal();
+  return v->toReal().getValue(0.0);
 }
 
 CJNameSpace::Names
@@ -165,13 +165,13 @@ getPropertyNames(bool pseudo) const
 
 bool
 CJNameSpace::
-deleteProperty(CJavaScript *js, const std::string &key, const Values &ivalues)
+deletePropertyIndices(CJavaScript *js, const std::string &key, const Values &ivalues)
 {
   if (ivalues.empty()) {
     if (keyValues_.find(key) == keyValues_.end())
       return false;
 
-    deleteProperty(key);
+    deleteProperty(js, key);
   }
   else {
     auto p = keyValues_.find(key);
@@ -206,7 +206,7 @@ deleteProperty(CJavaScript *js, const std::string &key, const Values &ivalues)
 
 void
 CJNameSpace::
-deleteProperty(const std::string &key)
+deleteProperty(CJavaScript *, const std::string &key)
 {
   keyValues_.erase(key);
 }
@@ -237,7 +237,7 @@ setWritableProperty(const std::string &key, bool b)
   auto p = keyValues_.find(key);
 
   if (p == keyValues_.end())
-    p = keyValues_.insert(p, KeyValues::value_type(key, PropertyData()));
+    p = keyValues_.insert(p, KeyValues::value_type(key, CJPropertyValue()));
 
   (*p).second.writable = b;
 }
@@ -261,7 +261,7 @@ setEnumerableProperty(const std::string &key, bool b)
   auto p = keyValues_.find(key);
 
   if (p == keyValues_.end())
-    p = keyValues_.insert(p, KeyValues::value_type(key, PropertyData()));
+    p = keyValues_.insert(p, KeyValues::value_type(key, CJPropertyValue()));
 
   (*p).second.enumerable = b;
 }
@@ -285,7 +285,7 @@ setConfigurableProperty(const std::string &key, bool b)
   auto p = keyValues_.find(key);
 
   if (p == keyValues_.end())
-    p = keyValues_.insert(p, KeyValues::value_type(key, PropertyData()));
+    p = keyValues_.insert(p, KeyValues::value_type(key, CJPropertyValue()));
 
   (*p).second.configurable = b;
 }

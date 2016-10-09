@@ -16,20 +16,24 @@ CJExecVar::
 exec(CJavaScript *js)
 {
   for (const auto &varValue : varValues_) {
-    auto identifiers1 = varValue.identifiers->identifiers();
-
     CJPropertyData data(js);
 
     data.setModifiable(true);
     data.setCreate    (true); // always create in local scope
 
-    if (! js->lookupPropertyData(identifiers1, data))
+    if (! js->lookupPropertyData(varValue.identifiers, data))
       return CJLValueP();
 
     CJValueP value;
 
-    if      (varValue.expr)
+    if      (varValue.expr) {
       value = varValue.expr->exec(js);
+
+      if (! value) {
+        js->throwReferenceError(this, varValue.expr->toString() + " is not defined");
+        return CJValueP();
+      }
+    }
     else if (varValue.block)
       value = varValue.block->exec(js);
     else if (varValue.array)

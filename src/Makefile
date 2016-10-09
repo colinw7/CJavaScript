@@ -88,6 +88,7 @@ CJObjFunction.cpp \
 CJObjTypeFunction.cpp \
 CJOperator.cpp \
 CJPropertyData.cpp \
+CJPropertyValue.cpp \
 CJRandFunction.cpp \
 CJRealFunction.cpp \
 CJRegExp.cpp \

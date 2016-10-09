@@ -260,7 +260,7 @@ exec(CJavaScript *js)
 #if 0
         bool b = value->toBoolean();
 
-        return CJValueP(js->createBoolValue(b));
+        return js->createBoolValue(b);
 #else
         return value;
 #endif
@@ -325,7 +325,7 @@ exec(CJavaScript *js)
 #if 0
         bool b = value->toBoolean();
 
-        return CJValueP(js->createBoolValue(b));
+        return js->createBoolValue(b);
 #else
         return value;
 #endif

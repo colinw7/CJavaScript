@@ -39,12 +39,19 @@ class CJGetterSetter : public CJValue, public CJNameSpace {
   CJFunctionP setter() const { return setter_; }
   void setSetter(CJFunctionP f) { setter_ = f; }
 
+  const CJValueP &parent() const { return value_; }
+  void setParent(const CJValueP &v) { value_ = v; }
+
   CJValueP getValue() const;
   void setValue(CJValueP value);
 
+  //---
+
   bool toBoolean() const override { return false; }
 
-  double toReal() const override { return toBoolean(); }
+  COptReal toReal() const override { return COptReal(); }
+
+  COptLong toInteger() const override { return COptLong(); }
 
   //---
 
@@ -62,6 +69,7 @@ class CJGetterSetter : public CJValue, public CJNameSpace {
   CJavaScript* js_ { 0 };
   CJFunctionP  getter_;
   CJFunctionP  setter_;
+  CJValueP     value_;
 };
 
 #endif

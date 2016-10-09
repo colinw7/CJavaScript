@@ -88,9 +88,20 @@ CJFunction(CJavaScript *js, const std::string &name, const Args &args, CJExecBlo
 
 void
 CJFunction::
+init(CJFunctionP fn)
+{
+  prototype_ = js_->createDictValue();
+
+  setProperty(js_, "prototype", prototype_);
+
+  prototype_->setPropertyData(js_, "constructor", CJPropertyValue(fn, "-e"));
+}
+
+void
+CJFunction::
 setScope(CJavaScript *js, CJDictionaryP parentScope)
 {
-  scope_ = CJDictionaryP(new CJDictionary(js, name_));
+  scope_ = js->createDictValue(name_);
 
   if (parentScope)
     scope_->setParent(parentScope);

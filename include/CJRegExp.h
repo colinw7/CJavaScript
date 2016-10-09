@@ -28,10 +28,13 @@ class CJRegExpType : public CJObjType {
 class CJRegExp : public CJObj {
  public:
   struct MatchData {
-    typedef std::pair<int,int> Range;
-    typedef std::vector<Range> Ranges;
+    typedef std::pair<int,int>       Range;
+    typedef std::vector<Range>       Ranges;
+    typedef std::vector<std::string> Matches;
 
-    Ranges ranges;
+    Range   range;
+    Ranges  subRanges;
+    Matches subMatches;
   };
 
  public:

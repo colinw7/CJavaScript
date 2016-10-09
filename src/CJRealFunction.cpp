@@ -6,16 +6,18 @@ CJValueP
 CJMathFunction::
 exec(CJavaScript *js, const Values &values)
 {
+  // values[0] is this
+
   if      (fn_) {
-    if (values.size() != 1) {
+    if (values.size() < 2) {
       js->errorMsg("Wrong number of function values");
       return CJValueP();
     }
 
-    if (! values[0])
+    if (! values[1])
       return CJValueP();
 
-    double r = values[0]->toReal();
+    double r = values[1]->toReal().getValue(0.0);
 
     double res = (*fn_)(r);
 
@@ -50,13 +52,13 @@ CJValueP
 CJReal2Function::
 exec(CJavaScript *js, const Values &values)
 {
-  if (values.size() != 2) {
+  if (values.size() < 2) {
     js->errorMsg("Wrong number of function values");
     return CJValueP();
   }
 
-  double r1 = values[0]->toReal();
-  double r2 = values[1]->toReal();
+  double r1 = values[0]->toReal().getValue(0.0);
+  double r2 = values[1]->toReal().getValue(0.0);
 
   double res = (*fn_)(r1, r2);
 
@@ -88,10 +90,10 @@ exec(CJavaScript *js, const Values &values)
   if (values.size() == 0)
     return js->createNumberValue(CJUtil::getPosInf());
 
-  double res = values[0]->toReal();
+  double res = values[0]->toReal().getValue(0.0);
 
   for (uint i = 1; i < values.size(); ++i) {
-    double r = values[i]->toReal();
+    double r = values[i]->toReal().getValue(0.0);
 
     res = CJUtil::min(res, r);
   }
@@ -124,10 +126,10 @@ exec(CJavaScript *js, const Values &values)
   if (values.size() == 0)
     return js->createNumberValue(CJUtil::getNegInf());
 
-  double res = values[0]->toReal();
+  double res = values[0]->toReal().getValue(0.0);
 
   for (uint i = 1; i < values.size(); ++i) {
-    double r = values[i]->toReal();
+    double r = values[i]->toReal().getValue(0.0);
 
     res = CJUtil::max(res, r);
   }

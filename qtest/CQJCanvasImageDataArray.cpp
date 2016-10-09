@@ -33,7 +33,7 @@ CQJCanvasImageDataArray(CQJavaScript *qjs, CQJCanvasImageDataP data) :
 
 CJValueP
 CQJCanvasImageDataArray::
-indexValue(int i) const
+indexValue(long i) const
 {
   int i1 = i / 4;
   int i0 = i % 4;
@@ -64,7 +64,7 @@ indexValue(int i) const
 
 void
 CQJCanvasImageDataArray::
-setIndexValue(int i, CJValueP value)
+setIndexValue(long i, CJValueP value)
 {
   int i1 = i / 4;
   int i0 = i % 4;
@@ -78,7 +78,7 @@ setIndexValue(int i, CJValueP value)
   int y = i1 / w;
   int x = i1 % w;
 
-  long c = value->toInteger();
+  long c = value->toInteger().getValue(0L);
 
   QRgb rgb = data_->getPixel(x, y);
 

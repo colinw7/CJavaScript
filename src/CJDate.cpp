@@ -269,7 +269,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     CJDate::timeToValues(date->t(), &year, &month, &day, &hour, &min, &sec);
 
-    year = (values.size() > 1 ? values[1]->toInteger() - 1900 : year);
+    year = (values.size() > 1 ? values[1]->toInteger().getValue(0) - 1900 : year);
 
     date->setT(CJDate::timeFromValues(year, month, day, hour, min, sec));
   }
@@ -278,7 +278,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     CJDate::timeToValues(date->t(), &year, &month, &day, &hour, &min, &sec);
 
-    hour = (values.size() > 1 ? values[1]->toInteger() : hour);
+    hour = (values.size() > 1 ? values[1]->toInteger().getValue(0) : hour);
 
     date->setT(CJDate::timeFromValues(year, month, day, hour, min, sec));
   }
@@ -290,7 +290,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     CJDate::timeToValues(date->t(), &year, &month, &day, &hour, &min, &sec);
 
-    min = (values.size() > 1 ? values[1]->toInteger() : min);
+    min = (values.size() > 1 ? values[1]->toInteger().getValue(0) : min);
 
     date->setT(CJDate::timeFromValues(year, month, day, hour, min, sec));
   }
@@ -299,7 +299,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     CJDate::timeToValues(date->t(), &year, &month, &day, &hour, &min, &sec);
 
-    month = (values.size() > 1 ? values[1]->toInteger() : month);
+    month = (values.size() > 1 ? values[1]->toInteger().getValue(0) : month);
 
     date->setT(CJDate::timeFromValues(year, month, day, hour, min, sec));
   }
@@ -308,7 +308,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     CJDate::timeToValues(date->t(), &year, &month, &day, &hour, &min, &sec);
 
-    sec = (values.size() > 1 ? values[1]->toInteger() : sec);
+    sec = (values.size() > 1 ? values[1]->toInteger().getValue(0) : sec);
 
     date->setT(CJDate::timeFromValues(year, month, day, hour, min, sec));
   }
@@ -323,7 +323,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     CJDate::timeToValues(date->t(), &year, &month, &day, &hour, &min, &sec);
 
-    year = (values.size() > 1 ? values[1]->toInteger() - 1900 : year);
+    year = (values.size() > 1 ? values[1]->toInteger().getValue(0) - 1900 : year);
 
     date->setT(CJDate::timeFromValues(year, month, day, hour, min, sec));
   }
@@ -332,7 +332,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     CJDate::timeToValues(date->t(), &year, &month, &day, &hour, &min, &sec);
 
-    hour = (values.size() > 1 ? values[1]->toInteger() : hour);
+    hour = (values.size() > 1 ? values[1]->toInteger().getValue(0) : hour);
 
     date->setT(CJDate::timeFromValues(year, month, day, hour, min, sec));
   }
@@ -344,7 +344,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     CJDate::timeToValues(date->t(), &year, &month, &day, &hour, &min, &sec);
 
-    min = (values.size() > 1 ? values[1]->toInteger() : min);
+    min = (values.size() > 1 ? values[1]->toInteger().getValue(0) : min);
 
     date->setT(CJDate::timeFromValues(year, month, day, hour, min, sec));
   }
@@ -353,7 +353,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     CJDate::timeToValues(date->t(), &year, &month, &day, &hour, &min, &sec);
 
-    month = (values.size() > 1 ? values[1]->toInteger() : month);
+    month = (values.size() > 1 ? values[1]->toInteger().getValue(0) : month);
 
     date->setT(CJDate::timeFromValues(year, month, day, hour, min, sec));
   }
@@ -362,7 +362,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     CJDate::timeToValues(date->t(), &year, &month, &day, &hour, &min, &sec);
 
-    sec = (values.size() > 1 ? values[1]->toInteger() : sec);
+    sec = (values.size() > 1 ? values[1]->toInteger().getValue(0) : sec);
 
     date->setT(CJDate::timeFromValues(year, month, day, hour, min, sec));
   }
@@ -371,7 +371,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     CJDate::timeToValues(date->t(), &year, &month, &day, &hour, &min, &sec);
 
-    year = (values.size() > 1 ? values[1]->toInteger(): year);
+    year = (values.size() > 1 ? values[1]->toInteger().getValue(0): year);
 
     date->setT(CJDate::timeFromValues(year, month, day, hour, min, sec));
   }
@@ -460,7 +460,7 @@ dateFromValues(const Values &values)
       return 0;
 
     if      (values[0]->isNumber()) {
-      long t = values[0]->toInteger();
+      long t = values[0]->toInteger().getValue(0);
 
       return t;
     }
@@ -476,13 +476,13 @@ dateFromValues(const Values &values)
       return 0;
   }
   else if (values.size() >= 2 && values.size() <= 7) {
-    int year    = values[0]->toInteger();
-    int month   = values[1]->toInteger();
-    int day     = (values.size() >= 3 ? values[2]->toInteger() : 0);
-    int hour    = (values.size() >= 4 ? values[3]->toInteger() : 0);
-    int minutes = (values.size() >= 5 ? values[4]->toInteger() : 0);
-    int seconds = (values.size() >= 6 ? values[5]->toInteger() : 0);
-  //int msec    = (values.size() >= 7 ? values[6]->toInteger() : 0);
+    int year    = values[0]->toInteger().getValue(0);
+    int month   = values[1]->toInteger().getValue(0);
+    int day     = (values.size() >= 3 ? values[2]->toInteger().getValue(0) : 0);
+    int hour    = (values.size() >= 4 ? values[3]->toInteger().getValue(0) : 0);
+    int minutes = (values.size() >= 5 ? values[4]->toInteger().getValue(0) : 0);
+    int seconds = (values.size() >= 6 ? values[5]->toInteger().getValue(0) : 0);
+  //int msec    = (values.size() >= 7 ? values[6]->toInteger().getValue(0) : 0);
 
     struct tm tm;
 

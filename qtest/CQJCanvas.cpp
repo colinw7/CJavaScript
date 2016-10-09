@@ -51,7 +51,7 @@ CQJCanvas(CQJavaScript *qjs) :
 {
   CJavaScript *js = qjs->js();
 
-  objType_->addObjectFunction(js, "getContext");
+  objType_->addObjFunction(js, "getContext", objType_);
 
   updateSize();
 }

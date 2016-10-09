@@ -67,7 +67,7 @@ CJFunctionBase::
 CJFunctionBase(CJavaScript *js, const std::string &name, Type type) :
  CJObj(js, CJFunctionBaseType::instance(js, name)), name_(name), type_(type)
 {
-  prototype_ = CJDictionaryP(new CJDictionary(js));
+  prototype_ = js->createDictValue();
 
   setProperty(js, "prototype", prototype_);
 }

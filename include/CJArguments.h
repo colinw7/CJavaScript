@@ -33,19 +33,24 @@ class CJArguments : public CJObj {
   Values values() const { return values_; }
   void setValues(const Values &values) { values_ = values; }
 
-  double toReal() const override { return 0; }
+  //---
 
   bool toBoolean() const override { return ! values_.empty(); }
 
+  COptReal toReal() const override { return COptReal(); }
+  COptLong toInteger() const override { return COptLong(); }
+
+  //---
+
   bool hasIndex() const override { return true; }
-  bool hasIndexValue(int ind) const override;
-  CJValueP indexValue(int ind) const override;
-  void setIndexValue(int ind, CJValueP value) override;
-  void deleteIndexValue(int ind) override;
+  bool hasIndexValue(long ind) const override;
+  CJValueP indexValue(long ind) const override;
+  void setIndexValue(long ind, CJValueP value) override;
+  void deleteIndexValue(long ind) override;
 
   void addValue(CJValueP value);
 
-  long length() const override { return values_.size(); }
+  COptLong length() const override { return COptLong(values_.size()); }
 
   CJValueP callee() const { return callee_; }
   void setCallee(CJValueP value) { callee_ = value; }

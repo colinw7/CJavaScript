@@ -1,14 +1,14 @@
 #include <CJFalse.h>
 #include <CJavaScript.h>
 
-CJObjTypeP CJFalseType::type_;
+CJFalseTypeP CJFalseType::type_;
 
-CJObjTypeP
+CJFalseTypeP
 CJFalseType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjTypeP(new CJFalseType(js));
+    type_ = std::make_shared<CJFalseType>(js);
 
     js->addObjectType("false", type_);
   }
@@ -38,14 +38,14 @@ exec(CJavaScript *js, const std::string &name, const Values &)
 
 //------
 
-CJValueP
+CJFalseP
 CJFalse::
 value(CJavaScript *js)
 {
-  static CJValueP falseValue;
+  static CJFalseP falseValue;
 
   if (! falseValue)
-    falseValue = CJValueP(new CJFalse(js));
+    falseValue = std::make_shared<CJFalse>(js);
 
   return falseValue;
 }

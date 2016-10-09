@@ -34,7 +34,8 @@ class CJObjectType : public CJObjType {
   static bool getPropertyValues(CJavaScript *js, const CJValueP &desc,
                                 PropertyValues &propValues);
 
-  static void setIndexPropertyValues(CJValueP obj, int ind, const PropertyValues &propValues);
+  static void setIndexPropertyValues(CJavaScript *js, CJValueP obj, int ind,
+                                     const PropertyValues &propValues);
 
   static void setNamePropertyValues(CJavaScript *js, CJValueP obj, const std::string &ind,
                                     const PropertyValues &propValues);
@@ -58,6 +59,9 @@ class CJObject : public CJObj {
 
   const std::string &typeName() const { return typeName_; }
   void setTypeName(const std::string &v) { typeName_ = v; }
+
+  COptLong length() const override;
+  void setLength(long n);
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
   void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;

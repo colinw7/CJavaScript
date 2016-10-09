@@ -38,10 +38,10 @@ CJDebugObject::
 CJDebugObject(CJavaScript *js) :
  CJObj(js, CJDebugType::instance(js))
 {
-  setFunctionProperty(js, CJFunctionBaseP(new CJObjFunction(js, "print")));
-  setFunctionProperty(js, CJFunctionBaseP(new CJObjFunction(js, "printScopeStack")));
-  setFunctionProperty(js, CJFunctionBaseP(new CJObjFunction(js, "printScopeChain")));
-  setFunctionProperty(js, CJFunctionBaseP(new CJObjFunction(js, "printUserFunctions")));
+  objType_->addObjFunction(js, "print"             , objType_);
+  objType_->addObjFunction(js, "printScopeStack"   , objType_);
+  objType_->addObjFunction(js, "printScopeChain"   , objType_);
+  objType_->addObjFunction(js, "printUserFunctions", objType_);
 }
 
 CJValueP

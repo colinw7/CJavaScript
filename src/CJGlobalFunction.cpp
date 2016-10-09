@@ -81,7 +81,7 @@ exec(CJavaScript *js, const Values &values)
       return CJValueP();
     }
 
-    double r = (values[0] ? values[0]->toReal() : 0.0);
+    double r = (values[0] ? values[0]->toReal().getValue(0.0) : 0.0);
 
     return js->createBoolValue(! CJUtil::isInf(r) && ! CJUtil::isNaN(r));
   }
@@ -91,7 +91,7 @@ exec(CJavaScript *js, const Values &values)
       return CJValueP();
     }
 
-    double r = (values[0] ? values[0]->toReal() : 0.0);
+    double r = (values[0] ? values[0]->toReal().getValue(0.0) : 0.0);
 
     return js->createBoolValue(CJUtil::isNaN(r));
   }
@@ -104,7 +104,7 @@ exec(CJavaScript *js, const Values &values)
     COptInt base;
 
     if (values.size() > 1 && values[1])
-      base = values[1]->toInteger();
+      base = values[1]->toInteger().getValue(0);
 
     if (base.isValid() && (base.getValue() < 2 || base.getValue() > 36))
       return js->createNumberValue(CJUtil::getNaN());

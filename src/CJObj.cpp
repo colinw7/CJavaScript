@@ -2,40 +2,62 @@
 #include <CJTypeValue.h>
 #include <CJObjTypeFunction.h>
 #include <CJObjectTypeFunction.h>
+#include <CJObjFunction.h>
 #include <CJavaScript.h>
 
 CJObjType::
 CJObjType(CJavaScript *js, const CJToken::Type type, const std::string &name) :
  js_(js), type_(type), name_(name)
 {
-  addPseudoProperty("length");
+  //addPseudoProperty("length");
+
   addPseudoProperty("name");
   addPseudoProperty("arguments");
   addPseudoProperty("caller");
 }
 
-void
+CJObjTypeFunctionP
 CJObjType::
 addTypeFunction(CJavaScript *js, const std::string &name, CJObjTypeP type)
 {
-  CJFunctionBaseP fn(new CJObjTypeFunction(js, name, type));
+  CJObjTypeFunctionP fn(new CJObjTypeFunction(js, name, type));
 
   setFunctionProperty(js, fn, type);
 
   typeFunctions_[name] = fn;
+
+  return fn;
+}
+
+CJObjectTypeFunctionP
+CJObjType::
+addObjectFunction(CJavaScript *js, const std::string &name, CJObjTypeP type)
+{
+  CJObjectTypeFunctionP fn(new CJObjectTypeFunction(js, name, type));
+
+  addObjectFunction(fn);
+
+  return fn;
 }
 
 void
 CJObjType::
-addObjectFunction(CJavaScript *js, const std::string &name, CJObjTypeP type)
+addObjectFunction(CJObjectTypeFunctionP fn)
 {
-  CJFunctionBaseP fn(new CJObjectTypeFunction(js, name, type));
+  //if (! typeFunction()) setFunctionProperty(fn->js(), fn, fn->type());
 
-  //if (! typeFunction()) setFunctionProperty(js, fn, type);
+  CJFunctionBase::addFunctionMethods(fn->js(), fn, fn->type());
 
-  CJFunctionBase::addFunctionMethods(js, fn, type);
+  objFunctions_[fn->name()] = fn;
+}
 
-  objFunctions_[name] = fn;
+void
+CJObjType::
+addObjFunction(CJavaScript *js, const std::string &name, CJObjTypeP type)
+{
+  CJObjFunctionP fn(new CJObjFunction(js, name));
+
+  setFunctionProperty(js, fn, type);
 }
 
 CJNameSpace::KeyNames
@@ -84,12 +106,43 @@ isInstanceOf(CJObjTypeP type) const
 
 CJValueP
 CJObjType::
+execType(CJavaScript *, const std::string &, const Values &)
+{
+  return CJValueP();
+}
+
+CJValueP
+CJObjType::
+exec(CJavaScript *js, const std::string &name, const Values &values)
+{
+  if (values.size() < 1) {
+    js->errorMsg("Invalid number of arguments for " + name);
+    return CJValueP();
+  }
+
+  if (name == "toString") {
+    CJValueP value = values[0];
+
+    // TODO: function [object Function]
+    if (value)
+      return js->createStringValue("[object " + value->valueType()->name() + "]");
+    else
+      return js->createStringValue("[object " + this->name() + "]");
+  }
+  else
+    return CJValueP();
+}
+
+CJValueP
+CJObjType::
 getProperty(CJavaScript *js, const std::string &key) const
 {
-  if      (key == "length") {
+#if 0
+  if (key == "length") {
     return js->createNumberValue(1L);
   }
-  else if (key == "name") {
+#endif
+  if (key == "name") {
     return js->createStringValue(name_);
   }
   else if (key == "arguments") {
@@ -208,8 +261,23 @@ CJObj::
 getProperty(CJavaScript *js, const std::string &key) const
 {
   // get direct property
-  if (CJNameSpace::hasProperty(js, key))
-    return CJNameSpace::getProperty(js, key);
+  if (CJNameSpace::hasProperty(js, key)) {
+    CJValueP propVal = CJNameSpace::getProperty(js, key);
+
+    if (propVal && propVal->type() == CJToken::Type::GetterSetter) {
+      CJGetterSetterP gs = CJValue::cast<CJGetterSetter>(propVal);
+
+      CJObjectP obj = CJValue::cast<CJObject>(gs->parent());
+
+      js->pushThis(obj);
+
+      propVal = gs->getValue();
+
+      js->popThis();
+    }
+
+    return propVal;
+  }
 
   // get prototype property
   CJValueP protoValue = this->protoValue();
@@ -235,6 +303,25 @@ void
 CJObj::
 setProperty(CJavaScript *js, const std::string &key, CJValueP value)
 {
+  // get direct property
+  if (CJNameSpace::hasProperty(js, key)) {
+    CJValueP propVal = CJNameSpace::getProperty(js, key);
+
+    if (propVal && propVal->type() == CJToken::Type::GetterSetter) {
+      CJGetterSetterP gs = CJValue::cast<CJGetterSetter>(propVal);
+
+      CJObjectP obj = CJValue::cast<CJObject>(gs->parent());
+
+      js->pushThis(obj);
+
+      gs->setValue(value);
+
+      js->popThis();
+
+      return;
+    }
+  }
+
   CJNameSpace::setProperty(js, key, value);
 }
 

@@ -20,9 +20,15 @@ class CJObjectValue : public CJLValue {
   CJValueP value() const override;
   void setValue(CJValueP value) override;
 
-  double toReal() const override { return value()->toReal(); }
+  //---
+
+  COptReal toReal() const override { return value()->toReal(); }
+
+  COptLong toInteger() const override { return value()->toInteger(); }
 
   bool toBoolean() const override { return value()->toBoolean(); }
+
+  //---
 
   std::string toString() const override { return value()->toString(); }
 

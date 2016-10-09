@@ -15,6 +15,8 @@ class CJObjectTypeFunction : public CJFunctionBase {
     return new CJObjectTypeFunction(js, name_, type_);
   }
 
+  CJObjTypeP type() const { return type_; }
+
   bool hasObjectValue() const override { return true; }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;

@@ -35,9 +35,15 @@ class CJTokenValue : public CJValue {
   CJValueP value() const { return value_; }
   void setValue(CJValueP value);
 
-  double toReal() const;
+  //---
 
-  bool toBoolean() const;
+  COptReal toReal() const override;
+
+  COptLong toInteger() const override;
+
+  bool toBoolean() const override;
+
+  //---
 
   void addToken(CJTokenP token);
 

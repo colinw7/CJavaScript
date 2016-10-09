@@ -13,7 +13,7 @@ CJObjectType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjectTypeP(new CJObjectType(js));
+    type_ = std::make_shared<CJObjectType>(js);
 
     type_->init();
 
@@ -156,15 +156,21 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
         return CJValueP();
 
       if      (obj->hasIndex()) {
-        int ind = prop->toInteger();
+        COptLong ind = prop->toInteger();
 
-        setIndexPropertyValues(obj, ind, propValues);
+        if (ind.isValid())
+          setIndexPropertyValues(js, obj, ind.getValue(0), propValues);
+        else {
+          std::string ind = prop->toString();
+
+          setNamePropertyValues(js, obj, ind, propValues);
+        }
       }
       else if (obj->hasProperty()) {
-        CJDictionaryP objDict;
+        //CJDictionaryP objDict;
 
-        if (obj->isDictionary())
-          objDict = CJValue::cast<CJDictionary>(obj);
+        //if (obj->isDictionary())
+        //  objDict = CJValue::cast<CJDictionary>(obj);
 
         std::string ind = prop->toString();
 
@@ -311,12 +317,12 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
 
     CJObjP obj = CJValue::cast<CJObj>(objVal);
 
-    CJNameSpace::PropertyData data;
+    CJPropertyValue data;
 
     if (! obj->getPropertyData(js, name, data))
       return CJValueP();
 
-    CJObjectP descObj(new CJObject(js));
+    CJObjectP descObj = js->createObject();
 
     if (data.value && data.value->type() == CJToken::Type::GetterSetter) {
       CJGetterSetterP gs = CJValue::cast<CJGetterSetter>(data.value);
@@ -627,11 +633,24 @@ getPropertyValues(CJavaScript *js, const CJValueP &desc, PropertyValues &propVal
 
 void
 CJObjectType::
-setIndexPropertyValues(CJValueP obj, int ind, const PropertyValues &propValues)
+setIndexPropertyValues(CJavaScript *js, CJValueP obj, int ind, const PropertyValues &propValues)
 {
   assert(obj->hasIndex());
 
-  if (propValues.value)
+  if     (propValues.getter || propValues.setter) {
+    CJGetterSetterP gs = js->createGetterSetter();
+
+    if (propValues.getter)
+      gs->setGetter(propValues.getter);
+
+    if (propValues.setter)
+      gs->setSetter(propValues.setter);
+
+    gs->setParent(obj);
+
+    obj->setIndexValue(ind, gs);
+  }
+  else if (propValues.value)
     obj->setIndexValue(ind, propValues.value);
 
   if (propValues.writable    .isValid())
@@ -684,13 +703,15 @@ setNamePropertyValues(CJavaScript *js, CJValueP obj, const std::string &ind,
   }
 
   if      (propValues.getter || propValues.setter) {
-    CJGetterSetterP gs(new CJGetterSetter(js));
+    CJGetterSetterP gs = js->createGetterSetter();
 
     if (propValues.getter)
       gs->setGetter(propValues.getter);
 
     if (propValues.setter)
       gs->setSetter(propValues.setter);
+
+    gs->setParent(obj);
 
     if (objObj) {
       objObj->configPropertyValue(ind, gs);
@@ -717,18 +738,36 @@ CJObject(CJavaScript *js) :
 {
 }
 
+COptLong
+CJObject::
+length() const
+{
+  CJValueP lenValue = propertyValue("length");
+
+  if (! lenValue)
+    return COptLong();
+
+  return lenValue->toInteger();
+}
+
+void
+CJObject::
+setLength(long n)
+{
+  setIntegerProperty(js_, "length", n);
+}
+
 CJValueP
 CJObject::
 getProperty(CJavaScript *js, const std::string &key) const
 {
   CJValueP propVal = CJObj::getProperty(js, key);
 
+#if 0
   if (propVal && propVal->type() == CJToken::Type::GetterSetter) {
     CJGetterSetterP gs = CJValue::cast<CJGetterSetter>(propVal);
 
-    CJObject *th = const_cast<CJObject *>(this);
-
-    CJObjectP obj = CJValue::cast<CJObject>(th->shared_from_this());
+    CJObjectP obj = CJValue::cast<CJObject>(gs->parent());
 
     js->pushThis(obj);
 
@@ -736,6 +775,7 @@ getProperty(CJavaScript *js, const std::string &key) const
 
     js->popThis();
   }
+#endif
 
   return propVal;
 }
@@ -744,12 +784,13 @@ void
 CJObject::
 setProperty(CJavaScript *js, const std::string &key, CJValueP value)
 {
+#if 0
   CJValueP propVal = CJObj::getProperty(js, key);
 
   if (propVal && propVal->type() == CJToken::Type::GetterSetter) {
     CJGetterSetterP gs = CJValue::cast<CJGetterSetter>(propVal);
 
-    CJObjectP obj = CJValue::cast<CJObject>(shared_from_this());
+    CJObjectP obj = CJValue::cast<CJObject>(gs->parent());
 
     js->pushThis(obj);
 
@@ -759,6 +800,7 @@ setProperty(CJavaScript *js, const std::string &key, CJValueP value)
 
     return;
   }
+#endif
 
   CJObj::setProperty(js, key, value);
 }

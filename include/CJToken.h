@@ -77,6 +77,12 @@ class CJToken {
   };
 
  public:
+  template<typename T>
+  static std::shared_ptr<T> cast(CJTokenP token) {
+    return std::static_pointer_cast<T>(token);
+  }
+
+ public:
   CJToken(Type type);
 
   virtual ~CJToken() { }

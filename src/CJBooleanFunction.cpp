@@ -12,29 +12,34 @@ CJValueP
 CJBooleanFunction::
 exec(CJavaScript *js, const Values &values)
 {
-  bool b = false;
+  CJValueP bobj;
 
-  if (values.size() > 1)
-    b = values[1]->toBoolean();
+  if (values.size() <= 1)
+    bobj = js->createBoolValue();
+  else {
+    bool b = values[1]->toBoolean();
 
-  return js->createBoolValue(b);
+    bobj = js->createBoolValue(b);
+  }
+
+  return bobj;
 }
 
 CJValueP
 CJBooleanFunction::
 execNew(CJavaScript *js, const Values &values)
 {
-  CJBoolean *bobj;
+  CJBooleanP bobj;
 
   if (values.size() <= 1)
-    bobj = new CJBoolean(js);
+    bobj = js->createBoolObject();
   else {
     bool b = values[1]->toBoolean();
 
-    bobj = new CJBoolean(js, b);
+    bobj = js->createBoolObject(b);
   }
 
-  return CJValueP(bobj);
+  return bobj;
 }
 
 std::string

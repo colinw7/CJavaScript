@@ -7,14 +7,14 @@
 // False Type
 class CJFalseType : public CJObjType {
  public:
-  static CJObjTypeP instance(CJavaScript *js);
+  static CJFalseTypeP instance(CJavaScript *js);
 
   CJFalseType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjTypeP type_;
+  static CJFalseTypeP type_;
 };
 
 //------
@@ -22,19 +22,24 @@ class CJFalseType : public CJObjType {
 // False Value
 class CJFalse : public CJValue {
  public:
-  static CJValueP value(CJavaScript *js);
+  static CJFalseP value(CJavaScript *js);
 
- private:
+ public:
   CJFalse(CJavaScript *js);
 
   bool isPrimitive() const override { return true; }
 
- public:
   CJValue *dup(CJavaScript *js) const override { return new CJFalse(js); }
 
-  double toReal() const override { return 0; }
+  //---
+
+  COptReal toReal() const override { return COptReal(0); }
+
+  COptLong toInteger() const override { return COptLong(0); }
 
   bool toBoolean() const override { return false; }
+
+  //---
 
   std::string toString() const override { return "false"; }
 

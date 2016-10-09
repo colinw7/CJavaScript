@@ -54,17 +54,23 @@ class CJNumber : public CJObj {
 
   bool isInteger() const { return CJUtil::isInteger(real_); }
 
-  double toReal() const override { return real_; }
+  //---
 
   bool toBoolean() const override { return (real_ != 0.0); }
+
+  COptReal toReal() const override { return COptReal(real_); }
+
+  COptLong toInteger() const override;
+
+  //---
 
   bool hasProperty() const override { return ! isPrimitive(); }
 
   std::string realString() const;
 
   int cmp(const CJValue *v) const override {
-    double r1 =    toReal();
-    double r2 = v->toReal();
+    double r1 =    toReal().getValue(0);
+    double r2 = v->toReal().getValue(0);
 
     if (r1 < r2) return -1;
     if (r1 > r2) return  1;

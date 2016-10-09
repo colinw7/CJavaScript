@@ -9,7 +9,7 @@ CJJSON(CJavaScript *js)
 {
   // JSON Dictionary
   // TODO: mark as internal ? different behavior than user dictionary
-  dict_ = CJDictionaryP(new CJDictionary(js));
+  dict_ = js->createDictValue();
 
   js->setProperty("JSON", dict_);
 
@@ -78,7 +78,7 @@ exec(CJavaScript *js, const Values &values)
       if      (values[2]->type() == CJToken::Type::Number) {
         CJNumberP number = CJValue::cast<CJNumber>(values[2]);
 
-        long i = number->toInteger();
+        long i = number->toInteger().getValue(0);
 
         if (i > 0)
           indent.setInteger(std::min(i, 10L));
@@ -86,7 +86,7 @@ exec(CJavaScript *js, const Values &values)
       else if (values[2]->type() == CJToken::Type::String) {
         CJStringP str = CJValue::cast<CJString>(values[2]);
 
-        int len = str->length();
+        long len = str->length().getValue(0);
 
         if (len > 0) {
           std::string str1;
@@ -185,7 +185,7 @@ parseToValue(CJavaScript *js, CJValueP key, CJson::Value *value, CJFunctionBaseP
   else if (value->isObject()) {
     CJson::Object *obj = value->cast<CJson::Object>();
 
-    CJDictionary *dict = new CJDictionary(js);
+    CJDictionaryP dict = js->createDictValue();
 
     std::vector<std::string> names;
 
@@ -201,7 +201,7 @@ parseToValue(CJavaScript *js, CJValueP key, CJson::Value *value, CJFunctionBaseP
       dict->setProperty(js, name, value2);
     }
 
-    value1 = CJValueP(dict);
+    value1 = dict;
 
     if (reviver) {
       for (const auto &name : dict->propertyNames()) {

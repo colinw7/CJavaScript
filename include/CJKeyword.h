@@ -9,6 +9,7 @@ class CJKeyword : public CJToken {
   enum class Type {
     None,
     Assert,
+    AssertEq,
     Break,
     Case,
     Catch,

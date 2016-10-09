@@ -45,20 +45,25 @@ class CJString : public CJObj {
   const std::string &text() const { return text_; }
   void setText(const std::string &str) { text_ = str; }
 
-  double toReal   () const override;
-  long   toInteger() const override;
-  bool   toBoolean() const override;
+  //---
+
+  COptReal toReal   () const override;
+  COptLong toInteger() const override;
+
+  bool toBoolean() const override;
+
+  //---
 
   bool hasIndex() const override { return true; }
-  bool hasIndexValue(int ind) const override;
-  CJValueP indexValue(int ind) const override;
-  void setIndexValue(int ind, CJValueP value) override;
-  void deleteIndexValue(int ind) override;
+  bool hasIndexValue(long ind) const override;
+  CJValueP indexValue(long ind) const override;
+  void setIndexValue(long ind, CJValueP value) override;
+  void deleteIndexValue(long ind) override;
 
-  long length() const override;
+  COptLong length() const override;
 
-  std::string substr(int ind) const;
-  std::string substr(int ind, int n) const;
+  std::string substr(long ind) const;
+  std::string substr(long ind, long n) const;
 
   bool hasProperty() const override { return ! isPrimitive(); }
 

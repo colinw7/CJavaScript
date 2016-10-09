@@ -7,30 +7,35 @@
 // Undefined Type
 class CJUndefinedType : public CJObjType {
  public:
-  static CJObjTypeP instance(CJavaScript *js);
+  static CJUndefinedTypeP instance(CJavaScript *js);
 
   CJUndefinedType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjTypeP type_;
+  static CJUndefinedTypeP type_;
 };
 
 // Undefined Value
 class CJUndefined : public CJValue {
  public:
-  static CJValueP value(CJavaScript *js);
-
- private:
-  CJUndefined(CJavaScript *js);
+  static CJUndefinedP value(CJavaScript *js);
 
  public:
+  CJUndefined(CJavaScript *js);
+
   CJValue *dup(CJavaScript *js) const override { return new CJUndefined(js); }
 
-  double toReal() const override { return 0; }
+  //---
+
+  COptLong toInteger() const override { return COptLong(); }
+
+  COptReal toReal() const override { return COptReal(); }
 
   bool toBoolean() const override { return false; }
+
+  //---
 
   std::string toString() const override { return "undefined"; }
 

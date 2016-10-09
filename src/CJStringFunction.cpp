@@ -12,6 +12,7 @@ CJValueP
 CJStringFunction::
 exec(CJavaScript *js, const Values &values)
 {
+  // create string primitive
   CJStringP str;
 
   if (values.size() <= 1)
@@ -21,8 +22,6 @@ exec(CJavaScript *js, const Values &values)
 
     str = js->createStringValue(s);
   }
-
-  str->setIsPrimitive(true);
 
   return str;
 }
@@ -31,17 +30,16 @@ CJValueP
 CJStringFunction::
 execNew(CJavaScript *js, const Values &values)
 {
+  // create string object
   CJStringP str;
 
   if (values.size() <= 1)
-    str = js->createStringValue("");
+    str = js->createStringObject("");
   else {
     std::string s = values[1]->toString();
 
-    str = js->createStringValue(s);
+    str = js->createStringObject(s);
   }
-
-  str->setIsPrimitive(false);
 
   return str;
 }

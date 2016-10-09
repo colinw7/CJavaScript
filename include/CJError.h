@@ -2,6 +2,7 @@
 #define CJError_H
 
 #include <CJObj.h>
+#include <CJTypes.h>
 
 //-------
 
@@ -10,6 +11,8 @@ class CJErrorTypeBase : public CJObjType {
  public:
   CJErrorTypeBase(CJavaScript *js, CJToken::Type type, const std::string &name);
 
+  void init(CJObjTypeP type);
+
   CJValueP getProperty(CJavaScript *js, const std::string &key) const;
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
@@ -17,6 +20,8 @@ class CJErrorTypeBase : public CJObjType {
   CJObjTypeP parentType() const { return parentType_; }
 
  protected:
+  static CJObjectTypeFunctionP toStringFn_;
+
   CJObjTypeP parentType_;
 };
 
@@ -54,14 +59,14 @@ class CJErrorBase : public CJObj {
 // Error Type
 class CJErrorType : public CJErrorTypeBase {
  public:
-  static CJObjTypeP instance(CJavaScript *js);
+  static CJErrorTypeP instance(CJavaScript *js);
 
   CJErrorType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjTypeP type_;
+  static CJErrorTypeP type_;
 };
 
 //-------
@@ -88,14 +93,14 @@ class CJError : public CJErrorBase {
 // TypeError Type
 class CJTypeErrorType : public CJErrorTypeBase {
  public:
-  static CJObjTypeP instance(CJavaScript *js);
+  static CJTypeErrorTypeP instance(CJavaScript *js);
 
   CJTypeErrorType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjTypeP type_;
+  static CJTypeErrorTypeP type_;
 };
 
 //-------
@@ -116,14 +121,14 @@ class CJTypeError : public CJErrorBase {
 // ReferenceError Type
 class CJReferenceErrorType : public CJErrorTypeBase {
  public:
-  static CJObjTypeP instance(CJavaScript *js);
+  static CJReferenceErrorTypeP instance(CJavaScript *js);
 
   CJReferenceErrorType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjTypeP type_;
+  static CJReferenceErrorTypeP type_;
 };
 
 //-------
@@ -144,14 +149,14 @@ class CJReferenceError : public CJErrorBase {
 // EvalError Type
 class CJEvalErrorType : public CJErrorTypeBase {
  public:
-  static CJObjTypeP instance(CJavaScript *js);
+  static CJEvalErrorTypeP instance(CJavaScript *js);
 
   CJEvalErrorType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjTypeP type_;
+  static CJEvalErrorTypeP type_;
 };
 
 //-------
@@ -172,14 +177,14 @@ class CJEvalError : public CJErrorBase {
 // RangeError Type
 class CJRangeErrorType : public CJErrorTypeBase {
  public:
-  static CJObjTypeP instance(CJavaScript *js);
+  static CJRangeErrorTypeP instance(CJavaScript *js);
 
   CJRangeErrorType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjTypeP type_;
+  static CJRangeErrorTypeP type_;
 };
 
 //-------
@@ -200,14 +205,14 @@ class CJRangeError : public CJErrorBase {
 // SyntaxError Type
 class CJSyntaxErrorType : public CJErrorTypeBase {
  public:
-  static CJObjTypeP instance(CJavaScript *js);
+  static CJSyntaxErrorTypeP instance(CJavaScript *js);
 
   CJSyntaxErrorType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjTypeP type_;
+  static CJSyntaxErrorTypeP type_;
 };
 
 //-------
@@ -228,14 +233,14 @@ class CJSyntaxError : public CJErrorBase {
 // URIError Type
 class CJURIErrorType : public CJErrorTypeBase {
  public:
-  static CJObjTypeP instance(CJavaScript *js);
+  static CJURIErrorTypeP instance(CJavaScript *js);
 
   CJURIErrorType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjTypeP type_;
+  static CJURIErrorTypeP type_;
 };
 
 //-------

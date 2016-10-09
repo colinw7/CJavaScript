@@ -125,7 +125,7 @@ exec(CJavaScript *js)
     return newValue;
   }
   else {
-    CJObject *obj = new CJObject(js);
+    CJObjectP obj = js->createObject();
 
     obj->setTypeName(typeName_);
 
@@ -150,7 +150,7 @@ exec(CJavaScript *js)
       }
     }
 
-    newValue = CJValueP(obj);
+    newValue = obj;
   }
 
   assert(newValue->isDictionary());

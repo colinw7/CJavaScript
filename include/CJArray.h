@@ -31,34 +31,33 @@ class CJArrayType : public CJObjType {
 // Array Value
 class CJArray : public CJObj {
  public:
-  struct PropertyData {
-    PropertyData(CJValueP v=CJValueP()) : value(v) { }
-
-    CJValueP value;
-    COptBool writable;
-    COptBool enumerable;
-    COptBool configurable;
-  };
-
-  typedef std::vector<PropertyData> Values;
+  typedef std::vector<CJPropertyValue>   Values;
+  typedef std::map<long,CJPropertyValue> IndValues;
 
  public:
-  CJArray(CJavaScript *js, int n=0);
-  CJArray(CJavaScript *js, const Values &values);
+  CJArray(CJavaScript *js, long n=0);
   CJArray(CJavaScript *js, const std::vector<CJValueP> &values);
+  CJArray(CJavaScript *js, const IndValues &values, long len);
 
-  CJArray *dup(CJavaScript *js) const override { return new CJArray(js, values_); }
+  CJArray *dup(CJavaScript *js) const override { return new CJArray(js, values_, len_); }
 
   bool isArray() const override { return true; }
 
-  Values values() const { return values_; }
-  void setValues(const Values &values) { values_ = values; }
+  const IndValues &indValues() const { return values_; }
+  void setIndValues(const IndValues &values) { values_ = values; }
 
   void setValues(const std::vector<CJValueP> &values);
+  void setValues(const IndValues &values, long len);
 
-  double toReal() const override { return 0; }
+  //---
 
-  bool toBoolean() const override { return ! values_.empty(); }
+  COptReal toReal() const override;
+
+  COptLong toInteger() const override;
+
+  bool toBoolean() const override { return true; }
+
+  //---
 
   void addValue(CJValueP value);
 
@@ -69,27 +68,28 @@ class CJArray : public CJObj {
   CJValueP removeFrontValue();
 
   bool hasIndex() const override { return true; }
-  bool hasIndexValue(int ind) const override;
-  CJValueP indexValue(int ind) const override;
-  void setIndexValue(int ind, CJValueP value) override;
-  void deleteIndexValue(int ind) override;
+  bool hasIndexValue(long ind) const override;
+  CJValueP indexValue(long ind) const override;
+  void setIndexValue(long ind, CJValueP value) override;
+  void deleteIndexValue(long ind) override;
 
-  bool isWritableIndex(int ind) const override;
-  void setWritableIndex(int ind, bool b) override;
+  bool isWritableIndex(long ind) const override;
+  void setWritableIndex(long ind, bool b) override;
 
-  bool isEnumerableIndex(int ind) const;
-  void setEnumerableIndex(int ind, bool b=true);
+  bool isEnumerableIndex(long ind) const;
+  void setEnumerableIndex(long ind, bool b=true);
 
-  bool isConfigurableIndex(int ind) const;
-  void setConfigurableIndex(int ind, bool b);
+  bool isConfigurableIndex(long ind) const;
+  void setConfigurableIndex(long ind, bool b);
 
   bool hasValue(CJValueP value) const;
 
-  long length() const override { return values_.size(); }
+  COptLong length() const override;
+  void setLength(long n);
 
   void reverse();
 
-  void sort();
+  void sort(CJFunctionP fn);
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
   void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
@@ -99,7 +99,8 @@ class CJArray : public CJObj {
   void print(std::ostream &os) const override;
 
  protected:
-  Values values_;
+  IndValues values_;
+  long      len_ { 0 };
 };
 
 #endif

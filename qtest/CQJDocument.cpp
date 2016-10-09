@@ -31,8 +31,8 @@ CQJDocument(CQJavaScript *qjs) :
 {
   CJavaScript *js = qjs->js();
 
-  objType_->addObjectFunction(js, "getElementById");
-  objType_->addObjectFunction(js, "querySelector");
+  objType_->addObjFunction(js, "getElementById", objType_);
+  objType_->addObjFunction(js, "querySelector" , objType_);
 }
 
 CJValueP

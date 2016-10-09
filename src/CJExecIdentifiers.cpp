@@ -61,7 +61,7 @@ exec(CJavaScript *js)
   else {
     CJValueP value;
 
-    if      (isThis_) {
+    if      (isThis()) {
       CJDictionaryP scope = js->thisScope();
 
       if (! identifiers_.empty()) {
@@ -99,7 +99,7 @@ print(std::ostream &os) const
 {
   int i = 0;
 
-  if (isThis_) {
+  if (isThis()) {
     os << "this";
 
     ++i;

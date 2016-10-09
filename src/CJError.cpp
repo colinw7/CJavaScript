@@ -2,11 +2,22 @@
 #include <CJavaScript.h>
 #include <CJUtil.h>
 
+CJObjectTypeFunctionP CJErrorTypeBase::toStringFn_;
+
 CJErrorTypeBase::
 CJErrorTypeBase(CJavaScript *js, CJToken::Type type, const std::string &typeName) :
  CJObjType(js, type, typeName)
 {
-  addObjectFunction(js, "toString");
+}
+
+void
+CJErrorTypeBase::
+init(CJObjTypeP type)
+{
+  if (! toStringFn_)
+    toStringFn_ = addObjectFunction(js_, "toString", type);
+  else
+    addObjectFunction(toStringFn_);
 }
 
 CJValueP
@@ -107,14 +118,16 @@ print(std::ostream &os) const
 
 //------
 
-CJObjTypeP CJErrorType::type_;
+CJErrorTypeP CJErrorType::type_;
 
-CJObjTypeP
+CJErrorTypeP
 CJErrorType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjTypeP(new CJErrorType(js));
+    type_ = CJErrorTypeP(new CJErrorType(js));
+
+    type_->init(type_);
 
     js->addObjectType("Error", type_);
 
@@ -162,14 +175,16 @@ setProperty(CJavaScript *js, const std::string &key, CJValueP value)
 
 //------
 
-CJObjTypeP CJTypeErrorType::type_;
+CJTypeErrorTypeP CJTypeErrorType::type_;
 
-CJObjTypeP
+CJTypeErrorTypeP
 CJTypeErrorType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjTypeP(new CJTypeErrorType(js));
+    type_ = CJTypeErrorTypeP(new CJTypeErrorType(js));
+
+    type_->init(type_);
 
     js->addObjectType("TypeError", type_);
 
@@ -217,14 +232,16 @@ setProperty(CJavaScript *js, const std::string &key, CJValueP value)
 
 //------
 
-CJObjTypeP CJReferenceErrorType::type_;
+CJReferenceErrorTypeP CJReferenceErrorType::type_;
 
-CJObjTypeP
+CJReferenceErrorTypeP
 CJReferenceErrorType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjTypeP(new CJReferenceErrorType(js));
+    type_ = CJReferenceErrorTypeP(new CJReferenceErrorType(js));
+
+    type_->init(type_);
 
     js->addObjectType("ReferenceError", type_);
 
@@ -272,14 +289,16 @@ setProperty(CJavaScript *js, const std::string &key, CJValueP value)
 
 //------
 
-CJObjTypeP CJEvalErrorType::type_;
+CJEvalErrorTypeP CJEvalErrorType::type_;
 
-CJObjTypeP
+CJEvalErrorTypeP
 CJEvalErrorType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjTypeP(new CJEvalErrorType(js));
+    type_ = CJEvalErrorTypeP(new CJEvalErrorType(js));
+
+    type_->init(type_);
 
     js->addObjectType("EvalError", type_);
 
@@ -327,14 +346,16 @@ setProperty(CJavaScript *js, const std::string &key, CJValueP value)
 
 //------
 
-CJObjTypeP CJRangeErrorType::type_;
+CJRangeErrorTypeP CJRangeErrorType::type_;
 
-CJObjTypeP
+CJRangeErrorTypeP
 CJRangeErrorType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjTypeP(new CJRangeErrorType(js));
+    type_ = CJRangeErrorTypeP(new CJRangeErrorType(js));
+
+    type_->init(type_);
 
     js->addObjectType("RangeError", type_);
 
@@ -382,14 +403,16 @@ setProperty(CJavaScript *js, const std::string &key, CJValueP value)
 
 //------
 
-CJObjTypeP CJSyntaxErrorType::type_;
+CJSyntaxErrorTypeP CJSyntaxErrorType::type_;
 
-CJObjTypeP
+CJSyntaxErrorTypeP
 CJSyntaxErrorType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjTypeP(new CJSyntaxErrorType(js));
+    type_ = CJSyntaxErrorTypeP(new CJSyntaxErrorType(js));
+
+    type_->init(type_);
 
     js->addObjectType("SyntaxError", type_);
 
@@ -437,14 +460,16 @@ setProperty(CJavaScript *js, const std::string &key, CJValueP value)
 
 //------
 
-CJObjTypeP CJURIErrorType::type_;
+CJURIErrorTypeP CJURIErrorType::type_;
 
-CJObjTypeP
+CJURIErrorTypeP
 CJURIErrorType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjTypeP(new CJURIErrorType(js));
+    type_ = CJURIErrorTypeP(new CJURIErrorType(js));
+
+    type_->init(type_);
 
     js->addObjectType("URIError", type_);
 

@@ -16,20 +16,24 @@ exec(CJavaScript *js)
   CJValueP value;
 
   // try { block }
+  CJErrorBaseP error;
+
   if (tryBlock_) {
     js->startBlock(tryBlock_);
 
     value = tryBlock_->exec(js);
 
+    error = tryBlock_->firstError();
+
+    tryBlock_->resetErrors();
+
     js->endBlock();
   }
 
   // execute catch block if error and defined
-  if (tryBlock_->hasError() && catchBlock_) {
+  if (error && catchBlock_) {
     if (catchIdentifiers_) {
-      CJLValueP evar = js->lookupProperty(catchIdentifiers_->identifiers(), /*create*/true);
-
-      CJErrorBaseP error = tryBlock_->error();
+      CJLValueP evar = js->lookupProperty(catchIdentifiers_, /*create*/true);
 
       CJValueP evalue;
 

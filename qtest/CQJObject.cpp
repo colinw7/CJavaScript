@@ -8,7 +8,7 @@ CQJObject(CQJavaScript *qjs, const CJObjTypeP &type) :
 {
   CJavaScript *js = qjs_->js();
 
-  objType_->addObjectFunction(js, "addEventListener");
+  objType_->addObjFunction(js, "addEventListener", objType_);
 
   qjs_->addObject(this);
 }

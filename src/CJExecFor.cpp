@@ -22,10 +22,10 @@ exec(CJavaScript *js)
       return CJValueP();
     }
 
-    CJLValueP ivalue = js->lookupLValue(identifiers_->identifiers());
+    CJLValueP ivalue = js->lookupLValue(identifiers_);
 
     if (! ivalue)
-      ivalue = js->lookupProperty(identifiers_->identifiers(), /*create*/true);
+      ivalue = js->lookupProperty(identifiers_, /*create*/true);
 
     //---
 
@@ -48,7 +48,7 @@ exec(CJavaScript *js)
       if (value->isArray())
         valueArray = CJValue::cast<CJArray>(value);
 
-      int len = value->length();
+      long len = value->length().getValue(0);
 
       for (int ind = 0; ind < len; ++ind) {
         if (valueArray && ! valueArray->isEnumerableIndex(ind))

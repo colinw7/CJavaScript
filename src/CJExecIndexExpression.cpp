@@ -17,10 +17,21 @@ exec(CJavaScript *js)
 
   if (identifiers_ || expr_) {
     if (identifiers_) {
-      CJLValueP varValue = js->lookupProperty(identifiers_->identifiers());
+      CJPropertyData data(js);
 
-      if (varValue)
-        avalue = varValue->value();
+      data.setModifiable(true);
+
+      if (! js->lookupPropertyData(identifiers_, data)) {
+        js->throwReferenceError(this, "Invalid index value");
+        return CJValueP();
+      }
+
+      avalue = data.value();
+
+      //CJLValueP varValue = js->lookupProperty(identifiers_);
+
+      //if (varValue)
+      //  avalue = varValue->value();
     }
     else {
       avalue = expr_->exec(js);

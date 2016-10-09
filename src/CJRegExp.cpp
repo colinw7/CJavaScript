@@ -137,6 +137,8 @@ void
 CJRegExp::
 updateFlags()
 {
+  regexp_.setExtended(true);
+
   for (auto & elem : flags_) {
     if      (elem == 'g') {
     }
@@ -173,15 +175,22 @@ find(const std::string &str, MatchData &data) const
   if (! regexp_.find(str))
     return false;
 
-  int n = regexp_.getNumMatches();
+  int start, end;
+
+  if (regexp_.getMatchRange(&start, &end))
+    data.range = MatchData::Range(start, end);
+
+  int n = regexp_.getNumSubMatches();
 
   for (int i = 0; i < n; ++i) {
     int start, end;
 
-    if (! regexp_.getMatchRange(i, &start, &end))
+    if (! regexp_.getSubMatchRange(i, &start, &end))
       continue;
 
-    data.ranges.push_back(MatchData::Range(start, end));
+    data.subRanges.push_back(MatchData::Range(start, end));
+
+    data.subMatches.push_back(regexp_.getSubMatchString(i));
   }
 
   return true;

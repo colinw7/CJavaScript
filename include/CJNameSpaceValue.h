@@ -9,9 +9,15 @@ class CJNameSpaceValue : public CJLValue {
 
   CJValue *dup(CJavaScript *js) const override { return new CJNameSpaceValue(js, scope_, name_); }
 
-  double toReal() const override;
+  //---
+
+  COptReal toReal() const override;
+
+  COptLong toInteger() const override;
 
   bool toBoolean() const override;
+
+  //---
 
   // get/set value
   CJValueP value() const override;

@@ -45,9 +45,13 @@ class CJDictionary : public CJValue, public CJNameSpace {
 
   bool isDictionary() const override { return true; }
 
-  bool toBoolean() const override { return ! keyValues_.empty(); }
+  //---
 
-  double toReal() const override { return toBoolean(); }
+  bool toBoolean() const override { return true; }
+
+  COptReal toReal() const override { return COptReal(); }
+
+  COptLong toInteger() const override { return COptLong(); }
 
   //---
 

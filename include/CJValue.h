@@ -2,6 +2,7 @@
 #define CJValue_H
 
 #include <CJToken.h>
+#include <COptVal.h>
 #include <vector>
 
 class CJValue : public CJToken, public std::enable_shared_from_this<CJValue> {
@@ -32,29 +33,33 @@ class CJValue : public CJToken, public std::enable_shared_from_this<CJValue> {
   virtual bool isString    () const { return false; }
   virtual bool isPrimitive () const { return false; }
 
+  //---
+
   // convert to string
   virtual std::string toString() const override = 0;
 
-  virtual double toReal() const = 0;
+  virtual COptReal toReal() const = 0;
 
-  virtual long toInteger() const { return int(toReal()); }
+  virtual COptLong toInteger() const;
 
   virtual bool toBoolean() const = 0;
+
+  //---
 
   bool isValue() const override { return true; }
 
   virtual bool hasIndex() const { return false; }
-  virtual bool hasIndexValue(int) const { return false; }
-  virtual CJValueP indexValue(int) const { assert(false); return CJValueP(); }
-  virtual void setIndexValue(int, CJValueP) { assert(false); }
-  virtual void deleteIndexValue(int) { assert(false); }
+  virtual bool hasIndexValue(long) const { return false; }
+  virtual CJValueP indexValue(long) const { assert(false); return CJValueP(); }
+  virtual void setIndexValue(long, CJValueP) { assert(false); }
+  virtual void deleteIndexValue(long) { assert(false); }
 
-  virtual bool isWritableIndex(int) const { return true; }
-  virtual void setWritableIndex(int, bool) { assert(false); }
-  virtual bool isEnumerableIndex(int) const { return true; }
-  virtual void setEnumerableIndex(int, bool) { assert(false); }
-  virtual bool isConfigurableIndex(int) const { return true; }
-  virtual void setConfigurableIndex(int, bool) { assert(false); }
+  virtual bool isWritableIndex(long) const { return true; }
+  virtual void setWritableIndex(long, bool) { assert(false); }
+  virtual bool isEnumerableIndex(long) const { return true; }
+  virtual void setEnumerableIndex(long, bool) { assert(false); }
+  virtual bool isConfigurableIndex(long) const { return true; }
+  virtual void setConfigurableIndex(long, bool) { assert(false); }
 
   virtual bool hasProperty() const { return false; }
   virtual bool hasPropertyValue(const std::string &, bool) const { return false; }
@@ -65,7 +70,7 @@ class CJValue : public CJToken, public std::enable_shared_from_this<CJValue> {
 
   virtual KeyNames propertyNames() const { return KeyNames(); }
 
-  virtual long length() const { return 0; }
+  virtual COptLong length() const { return COptLong(); }
 
   virtual int cmp(const CJValue *v) const {
     std::string s1 =    toString();

@@ -47,14 +47,18 @@ toString() const
     return "";
 }
 
-double
+COptLong
+CJTokenValue::
+toInteger() const
+{
+  return (value_ ? value_->toInteger() : COptLong());
+}
+
+COptReal
 CJTokenValue::
 toReal() const
 {
-  if (value_)
-    return value_->toReal();
-  else
-    return 0.0;
+  return (value_ ? value_->toReal() : COptReal());
 }
 
 bool

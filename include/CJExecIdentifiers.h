@@ -14,9 +14,8 @@ class CJExecIdentifiers : public CJToken {
  public:
   CJExecIdentifiers();
 
-  void setIsThis(bool b) {
-    isThis_ = b;
-  }
+  bool isThis() const { return isThis_; }
+  void setIsThis(bool b) { isThis_ = b; }
 
   void addIdentifier(CJIdentifier *identifier) {
     identifiers_.push_back(identifier);

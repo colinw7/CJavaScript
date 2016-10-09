@@ -18,12 +18,10 @@ exec(CJavaScript *js)
   CJValueP value;
 
   for (const auto &varValue : varValues_) {
-    auto identifiers1 = varValue.identifiers->identifiers();
-
-    CJLValueP idValue = js->lookupProperty(identifiers1);
+    CJLValueP idValue = js->lookupProperty(varValue.identifiers);
 
     if (! idValue)
-      idValue = js->lookupProperty(identifiers1, /*create*/true);
+      idValue = js->lookupProperty(varValue.identifiers, /*create*/true);
 
     if      (varValue.expr)
       value = varValue.expr->exec(js);

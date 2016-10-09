@@ -81,3 +81,12 @@
  . add array-like object support for objects
  . inherit prototype values
  . add regexp flags and match index support
+
+# 10/9/2016
+ . Add more generic support to array functions
+ . toLocaleString uses named function
+ . Use sparse implementaion for array data
+ . Take advantage of sparse data in array functions
+ . Add use function support for sort
+ . Support indexed this variable
+ . Use make_shared instead of new calls

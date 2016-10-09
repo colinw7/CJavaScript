@@ -28,7 +28,7 @@ CQJCanvasLinearGradient(CQJavaScript *qjs, double x1, double y1, double x2, doub
 {
   CJavaScript *js = qjs->js();
 
-  objType_->addObjectFunction(js, "addColorStop");
+  objType_->addObjFunction(js, "addColorStop", objType_);
 
   lg_ = QLinearGradient(x1, y1, x2, y2);
 }
@@ -39,7 +39,7 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
 {
   if      (name == "addColorStop") {
     if (values.size() == 3) {
-      double      r         = values[1]->toReal();
+      double      r         = values[1]->toReal().getValue(0);
       std::string colorName = values[2]->toString();
 
       QColor c = CQJUtil::nameToColor(colorName);

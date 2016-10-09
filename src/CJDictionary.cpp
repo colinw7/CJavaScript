@@ -87,9 +87,7 @@ getProperty(CJavaScript *js, const std::string &key) const
   if (propVal && propVal->type() == CJToken::Type::GetterSetter) {
     CJGetterSetterP gs = CJValue::cast<CJGetterSetter>(propVal);
 
-    CJDictionary *th = const_cast<CJDictionary *>(this);
-
-    CJDictionaryP dict = CJValue::cast<CJDictionary>(th->shared_from_this());
+    CJDictionaryP dict = CJValue::cast<CJDictionary>(gs);
 
     js->pushThis(dict);
 
@@ -110,7 +108,7 @@ setProperty(CJavaScript *js, const std::string &key, CJValueP value)
   if (propVal && propVal->type() == CJToken::Type::GetterSetter) {
     CJGetterSetterP gs = CJValue::cast<CJGetterSetter>(propVal);
 
-    CJDictionaryP dict = CJValue::cast<CJDictionary>(shared_from_this());
+    CJDictionaryP dict = CJValue::cast<CJDictionary>(gs);
 
     js->pushThis(dict);
 
@@ -156,7 +154,7 @@ void
 CJDictionary::
 deletePropertyValue(const std::string &key)
 {
-  CJNameSpace::deleteProperty(key);
+  CJNameSpace::deleteProperty(js_, key);
 }
 
 std::vector<std::string>

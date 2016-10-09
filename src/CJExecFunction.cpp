@@ -35,6 +35,8 @@ exec(CJavaScript *js)
     }
 
     if      (identifiers_) {
+      assert(! identifiers_->isThis());
+
       auto identifiers = identifiers_->identifiers();
 
       if (identifiers.size() != 1) {
@@ -93,9 +95,7 @@ exec(CJavaScript *js)
       return CJValueP();
     }
 
-    auto identifiers = identifiers_->identifiers();
-
-    CJavaScript::ValuePair valuePair = js->lookupObjectProperty(identifiers);
+    CJavaScript::ValuePair valuePair = js->lookupObjectProperty(identifiers_);
 
     if (valuePair.first && valuePair.first->isObject())
       obj = CJValue::cast<CJObj>(valuePair.first);
@@ -142,10 +142,15 @@ exec(CJavaScript *js)
     return CJValueP();
   }
 
+  CJDictionaryP thisDict = obj;
+
+  if (! thisDict && values[0]->isDictionary())
+    thisDict = CJValue::cast<CJDictionary>(values[0]);
+
   CJValueP res;
 
-  if (obj) {
-    js->pushThis(obj);
+  if (thisDict) {
+    js->pushThis(thisDict);
 
     res = fn->exec(js, values);
 

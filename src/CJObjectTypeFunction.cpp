@@ -23,24 +23,23 @@ exec(CJavaScript *js, const Values &values)
 
   CJValueP ovalue = values[0];
 
-#if 0
-  if (ovalue->type() == CJToken::Type::Object) {
-    value = ovalue->cast<CJObj>()->execNameFn(js, name(), values);
-  }
-#endif
-  if (ovalue->isObject()) {
-    CJObjP obj = CJValue::cast<CJObj>(ovalue);
+  CJObjTypeP objType = type_;
 
-    if (! obj)
-      return value;
+  if (! objType) {
+    if (ovalue->isObject()) {
+      CJObjP obj = CJValue::cast<CJObj>(ovalue);
 
-    CJObjTypeP objType = obj->objType();
+      if (! obj)
+        return value;
 
-    value = objType->exec(js, name(), values);
+      objType = obj->objType();
+    }
+    else {
+      js->errorMsg("Invalid object function type");
+    }
   }
-  else {
-    js->errorMsg("Invalid object function type");
-  }
+
+  value = objType->exec(js, name(), values);
 
   return value;
 }

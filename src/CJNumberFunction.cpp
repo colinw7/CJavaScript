@@ -11,17 +11,18 @@ CJValueP
 CJNumberFunction::
 exec(CJavaScript *js, const Values &values)
 {
+  // create number primitive
   CJNumberP number;
 
   if (values.size() <= 1)
-    number = js->createNumberValue(0L);
-  else {
-    double r = values[1]->toReal();
+    return js->createNumberValue(0L);
 
-    number = js->createNumberValue(r);
-  }
+  COptReal r = values[1]->toReal();
 
-  number->setIsPrimitive(true);
+  if (r.isValid())
+    number = js->createNumberValue(r.getValue());
+  else
+    number = js->createNumberValue(CJUtil::getNaN());
 
   return number;
 }
@@ -30,17 +31,16 @@ CJValueP
 CJNumberFunction::
 execNew(CJavaScript *js, const Values &values)
 {
+  // create number object
   CJNumberP number;
 
   if (values.size() <= 1)
-    number = js->createNumberValue(0L);
+    number = js->createNumberObject(0L);
   else {
-    double r = values[1]->toReal();
+    double r = values[1]->toReal().getValue(0.0);
 
-    number = js->createNumberValue(r);
+    number = js->createNumberObject(r);
   }
-
-  number->setIsPrimitive(false);
 
   return number;
 }

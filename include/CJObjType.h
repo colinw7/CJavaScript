@@ -26,8 +26,15 @@ class CJObjType : public CJNameSpace, public std::enable_shared_from_this<CJObjT
 
   const NameFunctions &objFunctions() const { return objFunctions_; }
 
-  void addTypeFunction(CJavaScript *js, const std::string &name, CJObjTypeP type=CJObjTypeP());
-  void addObjectFunction(CJavaScript *js, const std::string &name, CJObjTypeP type=CJObjTypeP());
+  CJObjTypeFunctionP addTypeFunction(CJavaScript *js, const std::string &name,
+                                     CJObjTypeP type=CJObjTypeP());
+
+  CJObjectTypeFunctionP addObjectFunction(CJavaScript *js, const std::string &name,
+                                          CJObjTypeP type=CJObjTypeP());
+
+  void addObjectFunction(CJObjectTypeFunctionP fn);
+
+  void addObjFunction(CJavaScript *js, const std::string &name, CJObjTypeP type);
 
   virtual CJValueP construct(CJavaScript *, const Values &) { return CJValueP(); }
 
@@ -38,14 +45,10 @@ class CJObjType : public CJNameSpace, public std::enable_shared_from_this<CJObjT
   bool isInstanceOf(CJObjTypeP type) const;
 
   // exec function for type
-  virtual CJValueP execType(CJavaScript *, const std::string &, const Values &) {
-    return CJValueP();
-  }
+  virtual CJValueP execType(CJavaScript *js, const std::string &name, const Values &value);
 
   // exec function for object of type
-  virtual CJValueP exec(CJavaScript *, const std::string &, const Values &) {
-    return CJValueP();
-  }
+  virtual CJValueP exec(CJavaScript *js, const std::string &name, const Values &value);
 
   std::string toString() const;
 

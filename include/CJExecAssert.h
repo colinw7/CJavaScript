@@ -10,6 +10,9 @@ class CJExecAssert : public CJToken {
 
   CJValueP exec(CJavaScript *js) override;
 
+  bool isEquals() const { return equals_; }
+  void setEquals(bool b) { equals_ = b; }
+
   CJExecExpressionListP exprList() const { return exprList_; }
   void setExprList(CJExecExpressionListP exprList) { exprList_ = exprList; }
 
@@ -19,6 +22,7 @@ class CJExecAssert : public CJToken {
 
  private:
   CJExecExpressionListP exprList_;
+  bool                  equals_ { false };
 };
 
 #endif

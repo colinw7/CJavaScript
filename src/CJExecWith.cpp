@@ -15,7 +15,7 @@ exec(CJavaScript *js)
   CJValueP varValue;
 
   if (identifiers_)
-    varValue = js->lookupValue(identifiers_->identifiers());
+    varValue = js->lookupValue(identifiers_);
 
   CJValueP value;
 

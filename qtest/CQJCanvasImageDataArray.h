@@ -33,9 +33,8 @@ class CQJCanvasImageDataArray : public CQJObject {
 
   bool hasIndex() const override { return true; }
 
-  CJValueP indexValue(int i) const override;
-
-  void setIndexValue(int i, CJValueP value) override;
+  CJValueP indexValue(long i) const override;
+  void setIndexValue(long i, CJValueP value) override;
 
   CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values);
 

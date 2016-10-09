@@ -21,9 +21,15 @@ class CJTypeValue : public CJLValue {
 
   bool hasValue() const;
 
-  double toReal() const override { return hasValue() ? value()->toReal() : 0.0; }
+  //---
+
+  COptReal toReal() const override { return (hasValue() ? value()->toReal() : COptReal()); }
+
+  COptLong toInteger() const override { return (hasValue() ? value()->toInteger() : COptLong()); }
 
   bool toBoolean() const override { return hasValue() ? value()->toBoolean() : false; }
+
+  //---
 
   std::string toString() const override { return hasValue() ? value()->toString() : ""; }
 

@@ -41,7 +41,9 @@ exec(CJavaScript *js, const Values &values)
   }
 
   // create function this global scope and return
-  CJFunctionP userFn(new CJFunction(js, name, args));
+  CJFunctionP userFn = js->createFunction(name, args);
+
+  userFn->init(userFn);
 
   userFn->setScope(js, js->currentUserFunction());
 

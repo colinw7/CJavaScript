@@ -30,9 +30,15 @@ class CJNull : public CJValue {
  public:
   CJValue *dup(CJavaScript *js) const override { return new CJNull(js); }
 
-  double toReal() const override { return 0; }
+  //---
+
+  COptReal toReal() const override { return COptReal(0); }
+
+  COptLong toInteger() const override { return COptLong(0); }
 
   bool toBoolean() const override { return false; }
+
+  //---
 
   std::string toString() const override { return "null"; }
 

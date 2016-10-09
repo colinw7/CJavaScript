@@ -2,10 +2,10 @@
 #define CJObj_H
 
 #include <CJObjType.h>
+#include <CJDictionary.h>
 #include <CJToken.h>
 #include <set>
 #include <algorithm>
-#include <CJDictionary.h>
 
 class CJObj : public CJDictionary {
  public:

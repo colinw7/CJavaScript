@@ -17,7 +17,7 @@ exec(CJavaScript *js)
   if (! identifiers_ || ! op_)
     return value;
 
-  CJLValueP varValue = js->lookupProperty(identifiers_->identifiers(), /*create*/true);
+  CJLValueP varValue = js->lookupProperty(identifiers_, /*create*/true);
 
   CJOperator::Type opType = op_->type();
 

@@ -28,14 +28,18 @@ class CJUserObject : public CJObj {
   // TODO: call object toString method
   std::string toString() const override { return CJObj::toString(); }
 
+  //---
+
   // TODO: call object valueOf method and convert return value to real
-  double toReal() const override { return CJObj::toReal(); }
+  COptReal toReal() const override { return CJObj::toReal(); }
 
   // TODO: call object valueOf method and convert return value to integer
-  long toInteger() const override { return CJObj::toInteger(); }
+  COptLong toInteger() const override { return CJObj::toInteger(); }
 
   // TODO: call object valueOf method and convert return value to bool
   bool toBoolean() const override { return CJObj::toBoolean(); }
+
+  //---
 
   // TODO: call compare ? method
   int cmp(CJObjP obj) const override { return CJObj::cmp(obj); }

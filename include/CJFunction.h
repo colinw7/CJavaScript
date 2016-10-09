@@ -35,6 +35,8 @@ class CJFunction : public CJFunctionBase {
     return new CJFunction(js, name_, args_, block_);
   }
 
+  void init(CJFunctionP fn);
+
   bool isUserFunction() const override { return true; }
 
   bool hasObjectValue() const override { return true; }

@@ -19,7 +19,7 @@ exec(CJavaScript *js, const Values &values)
 
   // create timer to run proc every n miliseconds
   CJValueP fnValue = values[0];
-  double   t       = values[1]->toReal();
+  double   t       = values[1]->toReal().getValue(0);
 
   if (fnValue->type() == CJToken::Type::Function) {
     CJFunctionBaseP timerFn = CJValue::cast<CJFunctionBase>(fnValue);
@@ -31,7 +31,7 @@ exec(CJavaScript *js, const Values &values)
 
 #if 0
   std::string proc     = values[0]->toString();
-  double      interval = values[1]->toReal();
+  double      interval = values[1]->toReal().getValue(0);
 
   timer = js->setInterval(proc, interval);
 #endif
@@ -54,7 +54,7 @@ exec(CJavaScript *, const Values &values)
   if (values.size() != 1)
     return CJValueP();
 
-  long timer = values[0]->toInteger();
+  long timer = values[0]->toInteger().getValue(0);
 
   CQJWindowP window = CJValue::cast<CQJWindow>(qjs_->jsWindow());
 

@@ -307,6 +307,16 @@ namespace CJUtil {
 
     return std::tan(x);
   }
+
+  //---
+
+  inline double maxReal() { return  long(std::numeric_limits<double>::max()); }
+  inline double minReal() { return -long(std::numeric_limits<double>::max()); }
+
+  inline long maxInteger() { return  long(std::numeric_limits<unsigned int>::max()); }
+  inline long minInteger() { return -long(std::numeric_limits<unsigned int>::max()); }
+
+  inline long maxUInteger() { return long(std::numeric_limits<unsigned int>::max()) + 1; }
 }
 
 #endif

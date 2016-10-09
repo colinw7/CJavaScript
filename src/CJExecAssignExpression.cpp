@@ -40,16 +40,16 @@ exec(CJavaScript *js)
     }
 
     if (spos < 0) {
-      js->errorMsg(this, "Missing scope for multiple token assign");
+      js->throwTypeError(this, "Missing scope for multiple token assign");
       return value;
     }
 
     if (spos != int(tokens.size()) - 2) {
-      js->errorMsg(this, "Only one token allowed after scope for multiple token assign");
+      js->throwTypeError(this, "Only one token allowed after scope for multiple token assign");
       return value;
     }
 
-    CJExecExpressionP lexpr1(new CJExecExpression(lexpr_->type()));
+    CJExecExpressionP lexpr1 = js->createExecExpression(lexpr_->type());
 
     for (uint i = 0; i < tokens.size() - 2; ++i)
       lexpr1->addToken(lexpr_->token(i));
@@ -66,63 +66,61 @@ exec(CJavaScript *js)
 
   CJTokenP varToken = tokens.back();
 
-  CJExecIdentifiers *eidentifiers = 0;
+  CJExecIdentifiersP eidentifiers;
 
   std::vector<CJExecExpressionP> indices;
 
   if      (varToken && varToken->type() == CJToken::Type::IndexExpression) {
     CJExecIndexExpression *iexpr = varToken->castP<CJExecIndexExpression>();
 
-    CJExecIdentifiersP identifiers;
+    CJExecIdentifiersP eidentifiers1;
 
-    if (! iexpr->decodeExpressions(identifiers, indices)) {
-      js->errorMsg(this, "Missing variable name for assign");
+    if (! iexpr->decodeExpressions(eidentifiers1, indices)) {
+      js->throwTypeError(this, "Missing variable name for assign");
       return value;
     }
 
-    eidentifiers = identifiers.get();
+    eidentifiers = eidentifiers1;
   }
   else if (varToken && varToken->type() == CJToken::Type::Identifiers) {
-    eidentifiers = varToken->castP<CJExecIdentifiers>();
+    eidentifiers = CJToken::cast<CJExecIdentifiers>(varToken);
   }
 
   //---
 
   if (! eidentifiers) {
-    js->errorMsg(this, "Missing variable name for assign");
+    js->throwTypeError(this, "Missing variable name for assign");
     return value;
   }
 
   //---
 
-  const CJavaScript::Identifiers &identifiers = eidentifiers->identifiers();
-
-  CJLValueP lvalue = js->lookupLValue(identifiers);
+  CJLValueP lvalue = js->lookupLValue(eidentifiers);
 
   if (llvalue) {
     CJPropertyData data(js);
 
     data.setModifiable(true);
 
-    if (! js->lookupValuePropertyData(llvalue, identifiers, data)) {
-      js->errorMsg(this, "No property " + eidentifiers->toString() + " for value " +
-                   llvalue->toString());
+    if (! js->lookupValuePropertyData(llvalue, eidentifiers, data)) {
+      js->throwTypeError(this, "No property " + eidentifiers->toString() + " for value " +
+                         llvalue->toString());
       return value;
     }
 
     lvalue = data.lvalue();
 
     if (! lvalue) {
-      js->errorMsg(this, "Property " + eidentifiers->toString() + " for value " +
-                   llvalue->toString() + " is not an lvalue");
+      js->throwTypeError(this, "Property " + eidentifiers->toString() + " for value " +
+                         llvalue->toString() + " is not an lvalue");
       return value;
     }
   }
   else {
-    lvalue = js->lookupLValue(identifiers);
+    lvalue = js->lookupLValue(eidentifiers);
 
     if (! lvalue)
-      lvalue = js->lookupProperty(identifiers, /*create*/true);
+      lvalue = js->lookupProperty(eidentifiers, /*create*/true);
   }
 
   //---
@@ -148,7 +146,8 @@ exec(CJavaScript *js)
     CJValueP ivalue = indexExpr->exec(js);
 
     if (! ivalue) {
-      js->errorMsg(this, "Invalid array index expression '" + indexExpr->toString() + "'");
+      js->throwTypeError(this, "Invalid array index expression '" +
+                         indexExpr->toString() + "'");
       return value;
     }
 
@@ -167,7 +166,7 @@ exec(CJavaScript *js)
       rvarValue = getIndexValue(js, varValue, ivalues);
 
       if (! rvarValue) {
-        js->errorMsg(this, "Variable is not an array or dictionary");
+        js->throwTypeError(this, "Variable is not an array or dictionary");
         return CJValueP();
       }
     }
@@ -223,7 +222,7 @@ exec(CJavaScript *js)
 
   if (! indices.empty()) {
     if (! setIndexValue(js, varValue, ivalues, rvalue)) {
-      js->errorMsg(this, "Variable is not an array or dictionary");
+      js->throwTypeError(this, "Variable is not an array or dictionary");
       return CJValueP();
     }
   }

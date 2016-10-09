@@ -21,7 +21,7 @@ exec(CJavaScript *js, const Values &values)
     if (CJArrayType::canCreateArrayFromValue(protoValue))
       return CJArrayType::createArrayFromValue(js, protoValue);
 
-    long n = values[1]->toInteger();
+    long n = values[1]->toInteger().getValue(0);
 
     return js->createArrayValue(n);
   }

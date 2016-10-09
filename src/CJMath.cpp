@@ -10,7 +10,7 @@ CJMath(CJavaScript *js)
 {
   // Math Dictionary
   // TODO: mark as internal ? different behavior than user dictionary
-  dict_ = CJDictionaryP(new CJDictionary(js));
+  dict_ = js->createDictValue();
 
   js->setProperty("Math", dict_);
 
@@ -25,33 +25,33 @@ CJMath(CJavaScript *js)
   dict_->setRealProperty(js, "SQRT1_2", sqrt(1.0/2.0));
   dict_->setRealProperty(js, "SQRT2"  , sqrt(2));
 
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMathFunction (js, "abs"   , fabs )));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMathFunction (js, "acos"  , acos )));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMathFunction (js, "acosh" , acosh)));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMathFunction (js, "asin"  , asin )));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMathFunction (js, "asinh" , asinh)));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMathFunction (js, "atan"  , atan )));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJReal2Function(js, "atan2" , atan2)));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMathFunction (js, "ceil"  , ceil )));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMathFunction (js, "cos"   , CJUtil::cos)));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMathFunction (js, "cosh"  , cosh )));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMathFunction (js, "exp"   , CJUtil::exp)));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMathFunction (js, "floor" , floor)));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJReal2Function(js, "hypot" , hypot)));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMathFunction (js, "log"   , CJUtil::log)));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMathFunction (js, "log10" , CJUtil::log10)));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMathFunction (js, "log2"  , CJUtil::log2)));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMaxFunction  (js)));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMinFunction  (js)));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJReal2Function(js, "pow"   , CJUtil::pow)));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJRandFunction (js)));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMathFunction (js, "round" , CJUtil::round)));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMathFunction (js, "sign"  , CJUtil::sign)));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMathFunction (js, "sin"   , CJUtil::sin)));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMathFunction (js, "sinh"  , sinh )));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMathFunction (js, "sqrt"  , CJUtil::sqrt)));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMathFunction (js, "tan"   , CJUtil::tan)));
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMathFunction (js, "tanh"  , tanh )));
+  dict_->setFunctionProperty(js, js->createMathFunction ("abs"   , fabs ));
+  dict_->setFunctionProperty(js, js->createMathFunction ("acos"  , acos ));
+  dict_->setFunctionProperty(js, js->createMathFunction ("acosh" , acosh));
+  dict_->setFunctionProperty(js, js->createMathFunction ("asin"  , asin ));
+  dict_->setFunctionProperty(js, js->createMathFunction ("asinh" , asinh));
+  dict_->setFunctionProperty(js, js->createMathFunction ("atan"  , atan ));
+  dict_->setFunctionProperty(js, js->createReal2Function("atan2" , atan2));
+  dict_->setFunctionProperty(js, js->createMathFunction ("ceil"  , ceil ));
+  dict_->setFunctionProperty(js, js->createMathFunction ("cos"   , CJUtil::cos));
+  dict_->setFunctionProperty(js, js->createMathFunction ("cosh"  , cosh ));
+  dict_->setFunctionProperty(js, js->createMathFunction ("exp"   , CJUtil::exp));
+  dict_->setFunctionProperty(js, js->createMathFunction ("floor" , floor));
+  dict_->setFunctionProperty(js, js->createReal2Function("hypot" , hypot));
+  dict_->setFunctionProperty(js, js->createMathFunction ("log"   , CJUtil::log));
+  dict_->setFunctionProperty(js, js->createMathFunction ("log10" , CJUtil::log10));
+  dict_->setFunctionProperty(js, js->createMathFunction ("log2"  , CJUtil::log2));
+  dict_->setFunctionProperty(js, js->createMaxFunction  ());
+  dict_->setFunctionProperty(js, js->createMinFunction  ());
+  dict_->setFunctionProperty(js, js->createReal2Function("pow"   , CJUtil::pow));
+  dict_->setFunctionProperty(js, js->createRandFunction ());
+  dict_->setFunctionProperty(js, js->createMathFunction ("round" , CJUtil::round));
+  dict_->setFunctionProperty(js, js->createMathFunction ("sign"  , CJUtil::sign));
+  dict_->setFunctionProperty(js, js->createMathFunction ("sin"   , CJUtil::sin));
+  dict_->setFunctionProperty(js, js->createMathFunction ("sinh"  , sinh ));
+  dict_->setFunctionProperty(js, js->createMathFunction ("sqrt"  , CJUtil::sqrt));
+  dict_->setFunctionProperty(js, js->createMathFunction ("tan"   , CJUtil::tan));
+  dict_->setFunctionProperty(js, js->createMathFunction ("tanh"  , tanh ));
 
-  dict_->setFunctionProperty(js, CJFunctionBaseP(new CJMathFunction(js, "toString")));
+  dict_->setFunctionProperty(js, js->createMathFunction("toString"));
 }

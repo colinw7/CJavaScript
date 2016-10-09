@@ -3,6 +3,7 @@
 #include <CJString.h>
 #include <CJGetterSetter.h>
 #include <CJExecExpression.h>
+#include <CJavaScript.h>
 
 CJExecDictionary::
 CJExecDictionary() :
@@ -40,7 +41,7 @@ CJValueP
 CJExecDictionary::
 exec(CJavaScript *js)
 {
-  CJObject *dict = new CJObject(js);
+  CJObjectP dict = js->createObject();
 
   for (const auto &v : values_) {
     CJValueP value = v.expr->exec(js);
@@ -52,10 +53,12 @@ exec(CJavaScript *js)
   }
 
   for (const auto &gs : gsMap_) {
+    gs.second->setParent(dict);
+
     dict->setProperty(js, gs.first, gs.second);
   }
 
-  return CJValueP(dict);
+  return dict;
 }
 
 std::string

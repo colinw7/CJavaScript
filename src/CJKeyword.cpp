@@ -11,6 +11,7 @@ nameToType(const std::string &name)
 
   if (keywords.empty()) {
     keywords["assert"   ] = Type::Assert;
+    keywords["assertEq" ] = Type::AssertEq;
     keywords["break"    ] = Type::Break;
     keywords["case"     ] = Type::Case;
     keywords["catch"    ] = Type::Catch;
@@ -56,6 +57,7 @@ name() const
   switch (type_) {
     case Type::None    : return "<none>";
     case Type::Assert  : return "assert";
+    case Type::AssertEq: return "assertEq";
     case Type::Break   : return "break";
     case Type::Case    : return "case";
     case Type::Catch   : return "catch";

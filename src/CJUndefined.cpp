@@ -1,14 +1,14 @@
 #include <CJUndefined.h>
 #include <CJavaScript.h>
 
-CJObjTypeP CJUndefinedType::type_;
+CJUndefinedTypeP CJUndefinedType::type_;
 
-CJObjTypeP
+CJUndefinedTypeP
 CJUndefinedType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjTypeP(new CJUndefinedType(js));
+    type_ = std::make_shared<CJUndefinedType>(js);
 
     js->addObjectType("undefined", type_);
   }
@@ -31,14 +31,14 @@ exec(CJavaScript *, const std::string &, const Values &)
 
 //------
 
-CJValueP
+CJUndefinedP
 CJUndefined::
 value(CJavaScript *js)
 {
-  static CJValueP undefinedValue;
+  static CJUndefinedP undefinedValue;
 
   if (! undefinedValue)
-    undefinedValue = CJValueP(new CJUndefined(js));
+    undefinedValue = std::make_shared<CJUndefined>(js);
 
   return undefinedValue;
 }

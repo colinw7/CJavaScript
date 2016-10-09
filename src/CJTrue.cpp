@@ -1,14 +1,14 @@
 #include <CJTrue.h>
 #include <CJavaScript.h>
 
-CJObjTypeP CJTrueType::type_;
+CJTrueTypeP CJTrueType::type_;
 
-CJObjTypeP
+CJTrueTypeP
 CJTrueType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjTypeP(new CJTrueType(js));
+    type_ = std::make_shared<CJTrueType>(js);
 
     js->addObjectType("true", type_);
   }
@@ -31,21 +31,21 @@ exec(CJavaScript *js, const std::string &name, const Values &)
   if      (name == "toString")
     return js->createStringValue("true");
   else if (name == "valueOf")
-    return CJValueP(js->createTrueValue());
+    return js->createTrueValue();
   else
     return CJValueP();
 }
 
 //------
 
-CJValueP
+CJTrueP
 CJTrue::
 value(CJavaScript *js)
 {
-  static CJValueP trueValue;
+  static CJTrueP trueValue;
 
   if (! trueValue)
-    trueValue = CJValueP(new CJTrue(js));
+    trueValue = std::make_shared<CJTrue>(js);
 
   return trueValue;
 }
