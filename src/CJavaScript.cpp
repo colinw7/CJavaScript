@@ -1609,7 +1609,11 @@ parseString(const std::string &str)
   while (! parse.eof()) {
     CJToken::Type lastType = lastTokenType();
 
-    bool allowUnary = false;
+    //---
+
+    // check if allow unary operator and keyword after last token type
+    bool allowUnary   = false;
+    bool allowKeyword = true;
 
     if      (lastType == CJToken::Type::None)
       allowUnary = true;
@@ -1618,13 +1622,18 @@ parseString(const std::string &str)
 
       if (CJOperator::isAllowUnary(op->type()))
         allowUnary = true;
+
+      if (op->type() == CJOperator::Type::Scope)
+        allowKeyword = false;
     }
     else if (lastType == CJToken::Type::Keyword)
       allowUnary = true;
 
+    //---
+
     std::string name = getIdentifier(parse, allowUnary);
 
-    if (isOperatorName(name, opType)) {
+    if      (isOperatorName(name, opType)) {
       CJOperatorP op;
 
       if      (opType == CJOperator::Type::Delete) {
@@ -1664,7 +1673,7 @@ parseString(const std::string &str)
 
       tokens_.push_back(CJTokenP(op));
     }
-    else if (isRealValueName(name, allowUnary, realType)) {
+    else if (allowKeyword && isRealValueName(name, allowUnary, realType)) {
       CJTokenP token;
 
       if      (realType == CJNumber::RealType::NaN) {
@@ -1690,17 +1699,6 @@ parseString(const std::string &str)
       tokens_.push_back(token);
     }
     else if (parse.isAlpha() || parse.isOneOf("_$")) {
-      CJToken::Type lastType = lastTokenType();
-
-      bool allowKeyword = true;
-
-      if (lastType == CJToken::Type::Operator) {
-        CJOperatorP op = std::static_pointer_cast<CJOperator>(lastToken());
-
-        if (op->type() == CJOperator::Type::Scope)
-          allowKeyword = false;
-      }
-
       readIdentifier(parse, allowKeyword);
     }
     else if (parse.isDigit()) {
@@ -4972,7 +4970,13 @@ valueToObject(CJValueP value) const
 
   CJFunction::Values values;
 
-  return typeFn->execNew(th, values);
+  CJValueP value1 = typeFn->execNew(th, values);
+
+  if (value->type() == CJToken::Type::True) {
+    CJValue::cast<CJBoolean>(value1)->setBool(true);
+  }
+
+  return value1;
 }
 
 CJObjTypeFunctionP

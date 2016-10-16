@@ -38,16 +38,21 @@ class CJRegExp : public CJObj {
   };
 
  public:
-  CJRegExp(CJavaScript *js, const std::string &text="", const std::string &flags="");
+  CJRegExp(CJavaScript *js, const std::string &text="");
 
   CJRegExp *dup(CJavaScript *js) const override { return new CJRegExp(js, text_); }
 
   const std::string &text() const { return text_; }
   void setText(const std::string &str);
 
+  bool isIgnoreCase() const { return regexp_.isCaseSensitive(); }
   void setIgnoreCase(bool b) { regexp_.setCaseSensitive(! b); }
-  void setGlobalMatch(bool) { }
-  void setMultiLine(bool) { }
+
+  bool isGlobalMatch() const { return global_; }
+  void setGlobalMatch(bool b) { global_ = b; }
+
+  bool isMultiLine() const { return multiLine_; }
+  void setMultiLine(bool b) { multiLine_ = b; }
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
   void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
@@ -59,11 +64,9 @@ class CJRegExp : public CJObj {
   void print(std::ostream &os) const override;
 
  private:
-  void updateFlags();
-
- private:
   std::string text_;
-  std::string flags_;
+  bool        global_ { false };
+  bool        multiLine_ { false };
   CRegExp     regexp_;
 };
 

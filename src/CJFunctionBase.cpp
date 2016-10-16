@@ -1,5 +1,6 @@
 #include <CJFunctionBase.h>
 #include <CJCallFunction.h>
+#include <CJObjValue.h>
 #include <CJavaScript.h>
 
 CJFunctionBaseType::NameTypeMap CJFunctionBaseType::nameTypeMap_;
@@ -70,12 +71,15 @@ CJFunctionBase(CJavaScript *js, const std::string &name, Type type) :
   prototype_ = js->createDictValue();
 
   setProperty(js, "prototype", prototype_);
+
+  //addPseudoProperty("length");
 }
 
 CJFunctionBase::
 CJFunctionBase(CJavaScript *js, const CJObjTypeP &objType, const std::string &name, Type type) :
  CJObj(js, objType), name_(name), type_(type)
 {
+  //addPseudoProperty("length");
 }
 
 void
@@ -88,6 +92,27 @@ addFunctionMethods(CJavaScript *js, CJFunctionBaseP fn, CJObjTypeP type)
     CJValueP(new CJCallFunction(js, fn, CJCallFunction::Type::Call , type)));
   fn->setProperty(js, "apply",
     CJValueP(new CJCallFunction(js, fn, CJCallFunction::Type::Apply, type)));
+
+  CJValueP lenVal(new CJObjValue(js, fn, "length"));
+
+  fn->setPropertyData(js, "length", CJPropertyValue(lenVal, "-wec"));
+}
+
+CJValueP
+CJFunctionBase::
+getProperty(CJavaScript *js, const std::string &key) const
+{
+  if (key == "length")
+    return js->createNumberValue(numArgs());
+
+  return CJObj::getProperty(js, key);
+}
+
+void
+CJFunctionBase::
+setProperty(CJavaScript *js, const std::string &key, CJValueP value)
+{
+  CJObj::setProperty(js, key, value);
 }
 
 std::string

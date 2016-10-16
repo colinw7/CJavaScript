@@ -72,6 +72,12 @@ class CJFunctionBase : public CJObj {
 
   const CJDictionaryP &prototype() const { return prototype_; }
 
+  virtual long numArgs() const { return numArgs_; }
+  void setNumArgs(long n) { numArgs_ = n; }
+
+  CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
+  void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
+
   virtual CJValueP exec(CJavaScript *js, const Values &values) = 0;
 
   std::string toString() const override;
@@ -83,8 +89,9 @@ class CJFunctionBase : public CJObj {
 
  protected:
   std::string   name_;
-  Type          type_;
+  Type          type_ { Type::Normal };
   CJDictionaryP prototype_;
+  long          numArgs_ { 0 };
 };
 
 #endif

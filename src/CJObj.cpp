@@ -9,8 +9,6 @@ CJObjType::
 CJObjType(CJavaScript *js, const CJToken::Type type, const std::string &name) :
  js_(js), type_(type), name_(name)
 {
-  //addPseudoProperty("length");
-
   addPseudoProperty("name");
   addPseudoProperty("arguments");
   addPseudoProperty("caller");
@@ -137,12 +135,7 @@ CJValueP
 CJObjType::
 getProperty(CJavaScript *js, const std::string &key) const
 {
-#if 0
-  if (key == "length") {
-    return js->createNumberValue(1L);
-  }
-#endif
-  if (key == "name") {
+  if      (key == "name") {
     return js->createStringValue(name_);
   }
   else if (key == "arguments") {

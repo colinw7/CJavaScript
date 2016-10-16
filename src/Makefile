@@ -86,6 +86,7 @@ CJObjectTypeFunction.cpp \
 CJObjectValue.cpp \
 CJObjFunction.cpp \
 CJObjTypeFunction.cpp \
+CJObjValue.cpp \
 CJOperator.cpp \
 CJPropertyData.cpp \
 CJPropertyValue.cpp \

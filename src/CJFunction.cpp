@@ -2,16 +2,18 @@
 #include <CJArguments.h>
 #include <CJavaScript.h>
 
-CJObjTypeP CJFunctionType::type_;
+CJFunctionTypeP CJFunctionType::type_;
 
-CJObjTypeP
+CJFunctionTypeP
 CJFunctionType::
 instance(CJavaScript *js)
 {
   if (! type_) {
-    type_ = CJObjTypeP(new CJFunctionType(js));
+    type_ = CJFunctionTypeP(new CJFunctionType(js));
 
-    js->addObjectType("function", type_);
+    type_->init();
+
+    js->addObjectType(type_->name(), type_);
 
     js->addTypeObject(CJToken::Type::Function, type_);
   }
@@ -23,9 +25,15 @@ CJFunctionType::
 CJFunctionType(CJavaScript *js) :
  CJObjType(js, CJToken::Type::Function, "function")
 {
-  addTypeFunction(js, "toString");
+}
 
-  addObjectFunction(js, "toString");
+void
+CJFunctionType::
+init()
+{
+  addTypeFunction(js_, "toString");
+
+  addObjectFunction(js_, "toString");
 }
 
 CJValueP
@@ -95,6 +103,20 @@ init(CJFunctionP fn)
   setProperty(js_, "prototype", prototype_);
 
   prototype_->setPropertyData(js_, "constructor", CJPropertyValue(fn, "-e"));
+}
+
+CJValueP
+CJFunction::
+getProperty(CJavaScript *js, const std::string &key) const
+{
+  return CJFunctionBase::getProperty(js, key);
+}
+
+void
+CJFunction::
+setProperty(CJavaScript *js, const std::string &key, CJValueP value)
+{
+  CJFunctionBase::setProperty(js, key, value);
 }
 
 void

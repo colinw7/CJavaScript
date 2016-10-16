@@ -29,7 +29,10 @@ CJValueP
 CJCallFunction::
 exec(CJavaScript *js, const Values &values)
 {
-  assert(values.size() >= 1);
+  if (values.size() < 1) {
+    js->throwTypeError(this, "No this value for call/apply");
+    return CJValueP();
+  }
 
   CJValueP thisValue = values[0];
 

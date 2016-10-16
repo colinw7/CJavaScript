@@ -55,6 +55,7 @@ class CJToken {
     ExecFunction,
     FunctionBase,
     UserObject,
+    ObjValue,
     This,
     For,
     If,

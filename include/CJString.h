@@ -65,6 +65,13 @@ class CJString : public CJObj {
   std::string substr(long ind) const;
   std::string substr(long ind, long n) const;
 
+  static std::string substr(const std::string &str, long len, long ind);
+  static std::string substr(const std::string &str, long len, long ind, long n);
+
+  std::string trim(bool left, bool right) const;
+
+  static std::string trim(const std::string &str, long len, bool left, bool right);
+
   bool hasProperty() const override { return ! isPrimitive(); }
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;

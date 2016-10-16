@@ -1,5 +1,6 @@
 #include <CJString.h>
 #include <CJRegExp.h>
+#include <CJObjectTypeFunction.h>
 #include <CJavaScript.h>
 #include <CJUtil.h>
 #include <CUtf8.h>
@@ -56,35 +57,36 @@ init()
   // Object.prototype properties
   //  hasOwnProperty, isPrototypeOf, propertyIsEnumerable,
   //  toLocalString,  toSource, toString, unwatch, valueOf, watch
-  addObjectFunction(js_, "anchor"           , type_);
-  addObjectFunction(js_, "charAt"           , type_);
-  addObjectFunction(js_, "charCodeAt"       , type_);
-  addObjectFunction(js_, "codePointAt"      , type_);
-  addObjectFunction(js_, "concat"           , type_);
-  addObjectFunction(js_, "endsWith"         , type_);
-  addObjectFunction(js_, "includes"         , type_);
-  addObjectFunction(js_, "indexOf"          , type_);
-  addObjectFunction(js_, "lastIndexOf"      , type_);
-  addObjectFunction(js_, "link"             , type_);
-  addObjectFunction(js_, "localeCompare"    , type_);
-  addObjectFunction(js_, "match"            , type_);
-  addObjectFunction(js_, "normalize"        , type_);
-  addObjectFunction(js_, "repeat"           , type_);
-  addObjectFunction(js_, "replace"          , type_);
-  addObjectFunction(js_, "search"           , type_);
-  addObjectFunction(js_, "slice"            , type_);
-  addObjectFunction(js_, "split"            , type_);
-  addObjectFunction(js_, "startsWith"       , type_);
-  addObjectFunction(js_, "substr"           , type_);
-  addObjectFunction(js_, "substring"        , type_);
-  addObjectFunction(js_, "toLocaleLowerCase", type_);
-  addObjectFunction(js_, "toLocaleUpperCase", type_);
-  addObjectFunction(js_, "toLowerCase"      , type_);
-  addObjectFunction(js_, "toString"         , type_);
-  addObjectFunction(js_, "toUpperCase"      , type_);
-  addObjectFunction(js_, "trimLeft"         , type_);
-  addObjectFunction(js_, "trimRight"        , type_);
-  addObjectFunction(js_, "valueOf"          , type_);
+  addObjectFunction(js_, "anchor"           , type_)->setNumArgs(1);
+  addObjectFunction(js_, "charAt"           , type_)->setNumArgs(1);
+  addObjectFunction(js_, "charCodeAt"       , type_)->setNumArgs(1);
+  addObjectFunction(js_, "codePointAt"      , type_)->setNumArgs(1);
+  addObjectFunction(js_, "concat"           , type_)->setNumArgs(1);
+  addObjectFunction(js_, "endsWith"         , type_)->setNumArgs(1);
+  addObjectFunction(js_, "includes"         , type_)->setNumArgs(1);
+  addObjectFunction(js_, "indexOf"          , type_)->setNumArgs(1);
+  addObjectFunction(js_, "lastIndexOf"      , type_)->setNumArgs(1);
+  addObjectFunction(js_, "link"             , type_)->setNumArgs(1);
+  addObjectFunction(js_, "localeCompare"    , type_)->setNumArgs(1);
+  addObjectFunction(js_, "match"            , type_)->setNumArgs(1);
+  addObjectFunction(js_, "normalize"        , type_)->setNumArgs(1);
+  addObjectFunction(js_, "repeat"           , type_)->setNumArgs(1);
+  addObjectFunction(js_, "replace"          , type_)->setNumArgs(1);
+  addObjectFunction(js_, "search"           , type_)->setNumArgs(1);
+  addObjectFunction(js_, "slice"            , type_)->setNumArgs(1);
+  addObjectFunction(js_, "split"            , type_)->setNumArgs(1);
+  addObjectFunction(js_, "startsWith"       , type_)->setNumArgs(1);
+  addObjectFunction(js_, "substr"           , type_)->setNumArgs(2);
+  addObjectFunction(js_, "substring"        , type_)->setNumArgs(2);
+  addObjectFunction(js_, "toLocaleLowerCase", type_)->setNumArgs(0);
+  addObjectFunction(js_, "toLocaleUpperCase", type_)->setNumArgs(0);
+  addObjectFunction(js_, "toLowerCase"      , type_)->setNumArgs(0);
+  addObjectFunction(js_, "toString"         , type_)->setNumArgs(0);
+  addObjectFunction(js_, "toUpperCase"      , type_)->setNumArgs(0);
+  addObjectFunction(js_, "trim"             , type_)->setNumArgs(0);
+  addObjectFunction(js_, "trimLeft"         , type_)->setNumArgs(0);
+  addObjectFunction(js_, "trimRight"        , type_)->setNumArgs(0);
+  addObjectFunction(js_, "valueOf"          , type_)->setNumArgs(0);
 }
 
 CJValueP
@@ -150,8 +152,21 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return CJValueP();
   }
 
-  CJStringP cstr = CJValue::cast<CJString>(values[0]);
-  assert(cstr);
+  CJValueP thisValue = values[0];
+
+  std::string str;
+  long        len;
+
+  if (thisValue && thisValue->type() == CJToken::Type::String) {
+    CJStringP cstr = CJValue::cast<CJString>(thisValue);
+
+    str = cstr->text();
+    len = cstr->length().getValue(0);
+  }
+  else {
+    str = thisValue->toString();
+    len = str.size();
+  }
 
   //---
 
@@ -160,34 +175,54 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return CJValueP();
   }
   else if (name == "charAt") {
-    if (values.size() != 2) {
-      js->errorMsg("Invalid number of arguments for " + name);
-      return CJValueP();
+    long ind = 0;
+
+    if (values.size() > 1)
+      ind = (values[1] ? values[1]->toInteger().getValue(0) : 0);
+
+    std::string res;
+
+    if (ind >= 0 && ind < len) {
+      res = CJString::substr(str, len, ind, 1);
     }
 
-    long ind = (values[1] ? values[1]->toInteger().getValue(0) : 0);
-
-    if (ind >= 0 && ind < cstr->length().getValue(0)) {
-      return js->createStringValue(cstr->substr(ind, 1));
-    }
+    return js->createStringValue(res);
   }
   else if (name == "charCodeAt") {
-    return CJValueP();
+    long ind = 0;
+
+    if (values.size() > 1)
+      ind = (values[1] ? values[1]->toInteger().getValue(0) : 0);
+
+    long c = -1;
+
+    if (ind >= 0 && ind < len) {
+      int i1, i2;
+
+      if (! CUtf8::indexChar(str, ind, i1, i2))
+        c = -1;
+
+      c = CUtf8::readNextChar(str, i1, len);
+    }
+
+    if (c >= 0)
+      return js->createNumberValue(c);
+    else
+      return js->createNumberValue(CJUtil::getNaN());
   }
   else if (name == "codePointAt") {
     return CJValueP();
   }
   else if (name == "concat") {
-    if (values.size() != 2) {
-      js->errorMsg("Invalid number of arguments for " + name);
-      return CJValueP();
+    std::string str1;
+
+    for (uint i = 1; i < values.size(); ++i) {
+      str1 = (values[i] ? values[i]->toString() : std::string());
+
+      str += str1;
     }
 
-    std::string str1 = (values[1] ? values[1]->toString() : std::string());
-
-    std::string str = cstr->text();
-
-    return js->createStringValue(str + str1);
+    return js->createStringValue(str);
   }
   else if (name == "endsWith") {
     return CJValueP();
@@ -196,81 +231,198 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return CJValueP();
   }
   else if (name == "indexOf") {
-    if (values.size() != 2) {
-      js->errorMsg("Invalid number of arguments for " + name);
-      return CJValueP();
+    // get key
+    std::string key;
+
+    if (values.size() > 1)
+      key = (values[1] ? values[1]->toString() : std::string());
+
+    // get start
+    COptLong start;
+
+    if (values.size() > 2) {
+      start = values[2]->toInteger().getValue(0);
+
+      if (start < 0)
+        start = 0;
     }
 
-    CJStringP key;
+    // index
+    long ind = -1;
 
-    if (values[1] && values[1]->type() == CJToken::Type::String)
-      key = CJValue::cast<CJString>(values[1]);
+    if (CUtf8::isAscii(str)) {
+      if (start.isValid()) {
+        auto p = str.find(key, start.getValue(0));
 
-    if (! key) {
-      js->errorMsg("Invalid key for " + name);
-      return CJValueP();
+        if (p == std::string::npos)
+          ind = long(-1);
+        else
+          ind = long(p);
+      }
+      else {
+        auto p = str.find(key);
+
+        if (p == std::string::npos)
+          ind = long(-1);
+        else
+          ind = long(p);
+      }
+    }
+    else {
+      int n   = 0;
+      int pos = 0;
+      int len = str.size();
+
+      while (pos < len) {
+        int pos1 = pos;
+
+        (void) CUtf8::readNextChar(str, pos, len);
+
+        if (! start.isValid() || n >= start.getValue(0)) {
+          if (strncmp(&key[0], &str[pos1], key.size()) == 0) {
+            ind = n;
+            break;
+          }
+        }
+
+        ++n;
+      }
     }
 
-    std::string str = cstr->text();
-
-    auto p = str.find(key->text());
-
-    if (p == std::string::npos)
-      return js->createNumberValue(long(-1));
-
-    return js->createNumberValue(long(p));
+    return js->createNumberValue(ind);
   }
   else if (name == "lastIndexOf") {
-    if (values.size() != 2) {
-      js->errorMsg("Invalid number of arguments for " + name);
-      return CJValueP();
+    // get key
+    std::string key;
+
+    if (values.size() > 1)
+      key = (values[1] ? values[1]->toString() : std::string());
+
+    // get start
+    COptLong start;
+
+    if (values.size() > 2) {
+      double rstart = values[2]->toReal().getValue(CJUtil::getNaN());
+
+      if (! CJUtil::isNaN(rstart))
+        start = values[2]->toInteger().getValue(CJUtil::maxInteger());
+      else
+        start = CJUtil::maxInteger();
+
+      if (start < 0)
+        start = 0;
     }
 
-    CJStringP key;
+    // index
+    long ind = -1;
 
-    if (values[1] && values[1]->type() == CJToken::Type::String)
-      key = CJValue::cast<CJString>(values[1]);
+    if (CUtf8::isAscii(str)) {
+      if (start.isValid()) {
+        std::string str1 = str.substr(0, start.getValue(0) + key.size());
 
-    if (! key) {
-      js->errorMsg("Invalid key for " + name);
-      return CJValueP();
+        auto p = str1.rfind(key);
+
+        if (p == std::string::npos)
+          ind = long(-1);
+        else
+          ind = long(p);
+      }
+      else {
+        auto p = str.rfind(key);
+
+        if (p == std::string::npos)
+          ind = long(-1);
+        else
+          ind = long(p);
+      }
+    }
+    else {
+      int n   = 0;
+      int pos = 0;
+      int len = str.size();
+
+      while (pos < len) {
+        int pos1 = pos;
+
+        (void) CUtf8::readNextChar(str, pos, len);
+
+        if (! start.isValid() || n <= start.getValue(0)) {
+          if (strncmp(&key[0], &str[pos1], key.size()) == 0)
+            ind = n;
+        }
+
+        ++n;
+      }
     }
 
-    std::string str = cstr->text();
-
-    auto p = str.rfind(key->text());
-
-    if (p == std::string::npos)
-      return js->createNumberValue(long(-1));
-
-    return js->createNumberValue(long(p));
+    return js->createNumberValue(ind);
   }
   else if (name == "link") {
     return CJValueP();
   }
   else if (name == "localeCompare") {
-    return CJValueP();
+    std::string lhs = str;
+
+    std::string rhs;
+
+    if (values.size() > 1)
+      rhs = (values[1] ? values[1]->toString() : "");
+
+    CJValueP locales;
+
+    if (values.size() > 2)
+      locales = values[2];
+
+    CJValueP options;
+
+    if (values.size() > 2)
+      options = values[2];
+
+    long cmp = strcmp(lhs.c_str(), rhs.c_str());
+
+    long cmp1 = (cmp >= 0 ? (cmp > 0 ? 1 : 0) : -1);
+
+    return js->createNumberValue(cmp1);
   }
   else if (name == "match") {
-    if (values.size() != 2) {
-      js->errorMsg("Invalid number of arguments for " + name);
+    CJValueP rvalue;
+
+    if (values.size() > 1)
+      rvalue = values[1];
+
+    if (rvalue && rvalue->type() != CJToken::Type::RegExp)
+      rvalue = js->createRegExpValue(rvalue->toString());
+
+    if (! rvalue) {
+      js->errorMsg("Invalid regexp for " + name);
       return CJValueP();
     }
 
-    CJValueP rvalue = values[1];
-
-    if (rvalue->type() != CJToken::Type::RegExp)
-      rvalue = js->createRegExpValue(rvalue->toString());
-
     CJRegExpP regexp = CJValue::cast<CJRegExp>(rvalue);
-
-    std::string str = cstr->text();
 
     CJRegExp::MatchData data;
 
     bool b = regexp->find(str, data);
 
-    return js->createBoolValue(b);
+    if (! b)
+      return js->createNullValue();
+
+    CJArrayP array = js->createArrayValue();
+
+    if (regexp->isGlobalMatch()) {
+      array->setIndexValue(0, js->createStringValue(regexp->text()));
+
+      for (uint i = 0; i < data.subMatches.size(); ++i)
+        array->setIndexValue(i + 1, js->createStringValue(data.subMatches[i]));
+    }
+    else {
+      array->setIndexValue(0, js->createStringValue(regexp->text()));
+
+      array->setProperty(js, "index", js->createNumberValue(long(data.range.first)));
+      array->setProperty(js, "input", js->createStringValue(str));
+    }
+
+    return array;
   }
   else if (name == "normalize") {
     return CJValueP();
@@ -279,15 +431,10 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return CJValueP();
   }
   else if (name == "replace") {
-    if (values.size() != 3) {
-      js->errorMsg("Invalid number of arguments for " + name);
-      return CJValueP();
-    }
-
     CJRegExpP   regexp;
     std::string substr;
 
-    if (values[1]) {
+    if (values.size() > 1 && values[1]) {
       if (values[1]->type() == CJToken::Type::RegExp)
         regexp = CJValue::cast<CJRegExp>(values[1]);
       else
@@ -297,15 +444,12 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     CJFunctionBaseP fn;
     std::string     newSubstr;
 
-    if (values[2]) {
+    if (values.size() > 2 && values[2]) {
       if (values[2]->isFunction())
         fn = CJValue::cast<CJFunctionBase>(values[1]);
       else
         newSubstr = values[2]->toString();
     }
-
-    std::string str = cstr->text();
-    long        len = cstr->length().getValue(0);
 
     std::string::size_type start = 0, end = len - 1;
 
@@ -313,7 +457,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       CJRegExp::MatchData data;
 
       if (! regexp->find(str, data))
-        return cstr;
+        return thisValue;
 
       start = data.range.first;
       end   = data.range.second;
@@ -339,14 +483,14 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       start = str.find(substr);
 
       if (start == std::string::npos)
-        return cstr;
+        return thisValue;
 
       end = start + substr.length() - 1;
     }
 
     if (fn) {
       js->errorMsg("Function not supported for " + name);
-      return cstr;
+      return thisValue;
     }
 
     str.replace(start, end - start + 1, newSubstr);
@@ -354,19 +498,20 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return js->createStringValue(str);
   }
   else if (name == "search") {
-    if (values.size() != 2) {
-      js->errorMsg("Invalid number of arguments for " + name);
+    CJValueP rvalue;
+
+    if (values.size() > 1)
+      rvalue = values[1];
+
+    if (rvalue && rvalue->type() != CJToken::Type::RegExp)
+      rvalue = js->createRegExpValue(rvalue->toString());
+
+    if (! rvalue) {
+      js->errorMsg("Invalid regexp for " + name);
       return CJValueP();
     }
 
-    CJValueP rvalue = values[1];
-
-    if (rvalue->type() != CJToken::Type::RegExp)
-      rvalue = js->createRegExpValue(rvalue->toString());
-
     CJRegExpP regexp = CJValue::cast<CJRegExp>(rvalue);
-
-    std::string str = cstr->text();
 
     CJRegExp::MatchData data;
 
@@ -376,62 +521,126 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return js->createNumberValue(long(data.range.first));
   }
   else if (name == "slice") {
-    if (values.size() != 2 && values.size() != 3) {
-      js->errorMsg("Invalid number of arguments for " + name);
-      return CJValueP();
+    // get start ind
+    long ind1 = 0;
+
+    if (values.size() > 1) {
+      ind1 = (values[1] ? values[1]->toInteger().getValue(0) : 0);
+
+      if (ind1 < 0)
+        ind1 = len + ind1;
+
+      ind1 = CJUtil::clamp(ind1, 0L, len);
     }
 
-    long ind1 = (values[1] ? values[1]->toInteger().getValue(0) : 0);
+    //---
 
-    if (values.size() == 3) {
-      long ind2 = (values[2] ? values[2]->toInteger().getValue(0) : 0);
+    std::string res;
 
-      long len = cstr->length().getValue(0);
+    if (values.size() > 2) {
+      // get end index
+      long ind2 = (values[2] ? values[2]->toInteger().getValue(len) : len);
 
       if (ind2 < 0)
         ind2 = len + ind2;
 
-      if ((ind1 >= 0 && ind1 < len) && (ind2 >= 0 && ind2 < len) && ind1 <= ind2) {
-        std::string str1 = cstr->substr(ind1, ind2 - ind1);
+      ind2 = CJUtil::clamp(ind2, 0L, len);
 
-        return js->createStringValue(str1);
+      //---
+
+      if ((ind1 >= 0 && ind1 < len) && (ind2 >= 0 && ind2 <= len) && ind1 <= ind2) {
+        res = CJString::substr(str, len, ind1, ind2 - ind1);
       }
     }
     else {
-      long len = cstr->length().getValue(0);
-
       if (ind1 >= 0 && ind1 < len) {
-        return js->createStringValue(cstr->substr(ind1));
+        res = CJString::substr(str, len, ind1);
       }
     }
+
+    return js->createStringValue(res);
   }
   else if (name == "split") {
-    if (values.size() != 2) {
-      js->errorMsg("Invalid number of arguments for " + name);
-      return CJValueP();
-    }
-
-    std::string str = cstr->text();
-
     std::vector<std::string> strs;
 
-    std::string sstr = (values[1] ? values[1]->toString() : std::string());
+    COptString sstr;
+    CJRegExpP  regexp;
 
-    if (! sstr.empty()) {
-      auto p = str.find(sstr);
+    if (values.size() > 1) {
+      if (values[1] && values[1]->type() == CJToken::Type::RegExp)
+        regexp = CJValue::cast<CJRegExp>(values[1]);
+      else
+        sstr = (values[1] ? values[1]->toString() : std::string());
+    }
 
-      while (p != std::string::npos) {
-        strs.push_back(str.substr(0, p));
+    COptLong limit;
 
-        str = str.substr(p + sstr.size());
+    if (values.size() > 2) {
+      if (! values[2] || js->isUndefinedOrNullValue(values[2]))
+        limit = CJUtil::maxInteger();
+      else
+        limit = values[2]->toInteger().getValue(0);
 
-        p = str.find(sstr);
-      }
+      if (limit < 0)
+        limit.setInvalid();
+    }
 
+    if      (! sstr.isValid() && ! regexp) {
       strs.push_back(str);
     }
-    else
-      strs.push_back(str);
+    else if (regexp) {
+      CJRegExp::MatchData data;
+
+      std::string str1 = str;
+
+      while (regexp->find(str1, data)) {
+        std::string lhs = str1.substr(0, data.range.first);
+        std::string rhs = str1.substr(data.range.second + 1);
+
+        if (! limit.isValid() || long(strs.size()) < limit.getValue(0))
+          strs.push_back(lhs);
+
+        str1 = rhs;
+      }
+
+      if (! limit.isValid() || long(strs.size()) < limit.getValue(0))
+        strs.push_back(str1);
+    }
+    else if (sstr.isValid() && ! sstr.getValue().empty()) {
+      auto p = str.find(sstr.getValue());
+
+      while (p != std::string::npos) {
+        if (! limit.isValid() || long(strs.size()) < limit.getValue(0))
+          strs.push_back(str.substr(0, p));
+
+        str = str.substr(p + sstr.getValue().size());
+
+        p = str.find(sstr.getValue());
+      }
+
+      if (! limit.isValid() || long(strs.size()) < limit.getValue(0))
+        strs.push_back(str);
+    }
+    else {
+      int pos = 0;
+      int len = str.size();
+
+      while (pos < len) {
+        ulong c = CUtf8::readNextChar(str, pos, len);
+
+        std::string str1;
+
+        CUtf8::append(str1, c);
+
+        if (! limit.isValid() || long(strs.size()) < limit.getValue(0))
+          strs.push_back(str1);
+      }
+
+      if (strs.empty()) {
+        if (! limit.isValid() || long(strs.size()) < limit.getValue(0))
+          strs.push_back("");
+      }
+    }
 
     //---
 
@@ -449,66 +658,114 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return CJValueP();
   }
   else if (name == "substr") {
-    if (values.size() != 2 && values.size() != 3) {
-      js->errorMsg("Invalid number of arguments for " + name);
-      return CJValueP();
+    // get start ind
+    long start = 0;
+
+    if (values.size() > 1) {
+      start = (values[1] ? values[1]->toInteger().getValue(0) : 0);
+
+      if (start < 0)
+        start += len;
     }
 
-    long start = (values[1] ? values[1]->toInteger().getValue(0) : 0);
+    //---
 
-    if (values.size() == 3) {
-      long len1 = (values[2] ? values[2]->toInteger().getValue(0) : 0);
+    std::string res;
+
+    if (values.size() > 2) {
+      // get length
+      long len1 = (values[2] ? values[2]->toInteger().getValue(len) : len);
 
       long end = start + len1;
 
-      long len = cstr->length().getValue(0);
+      end = CJUtil::clamp(end, 0L, len);
 
-      if ((start >= 0 && start < len) && (end >= 0 && end < len) && start <= end) {
-        return js->createStringValue(cstr->substr(start, end - start));
+      //---
+
+      if ((start >= 0 && start < len) && (end >= 0 && end <= len) && start <= end) {
+        res = CJString::substr(str, len, start, end - start);
       }
     }
     else {
-      long len = cstr->length().getValue(0);
-
       if (start >= 0 && start < len) {
-        return js->createStringValue(cstr->substr(start));
+        res = CJString::substr(str, len, start);
       }
     }
+
+    return js->createStringValue(res);
   }
   else if (name == "substring") {
-    if (values.size() != 2 && values.size() != 3) {
-      js->errorMsg("Invalid number of arguments for " + name);
-      return CJValueP();
+    // get start ind
+    long ind1 = 0;
+
+    if (values.size() > 1) {
+      ind1 = (values[1] ? values[1]->toInteger().getValue(0) : 0);
+
+      ind1 = CJUtil::clamp(ind1, 0L, len);
     }
 
-    long ind1 = (values[1] ? values[1]->toInteger().getValue(0) : 0);
+    //---
 
-    if (values.size() == 3) {
-      long ind2 = (values[2] ? values[2]->toInteger().getValue(0) : 0);
+    std::string res;
 
-     long len = cstr->length().getValue(0);
+    if (values.size() > 2) {
+      // get end
+      long ind2 = (values[2] ? values[2]->toInteger().getValue(len) : len);
 
-      if ((ind1 >= 0 && ind1 < len) && (ind2 >= 0 && ind2 < len) && ind1 <= ind2) {
-        return js->createStringValue(cstr->substr(ind1, ind2 - ind1));
+      ind2 = CJUtil::clamp(ind2, 0L, len);
+
+      if (ind1 > ind2)
+        std::swap(ind1, ind2);
+
+      //---
+
+      if ((ind1 >= 0 && ind1 < len) && (ind2 >= 0 && ind2 <= len) && ind1 <= ind2) {
+        res = CJString::substr(str, len, ind1, ind2 - ind1);
       }
     }
     else {
-     long len = cstr->length().getValue(0);
-
       if (ind1 >= 0 && ind1 < len) {
-        return js->createStringValue(cstr->substr(ind1));
+        res = CJString::substr(str, len, ind1);
       }
     }
+
+    return js->createStringValue(res);
   }
   else if (name == "toLocalLowerCase") {
-    return CJValueP();
+    int pos = 0;
+    int len = str.size();
+
+    std::string str1;
+
+    while (pos < len) {
+      ulong c = CUtf8::readNextChar(str, pos, len);
+
+      if (c < 0x7f)
+        c = tolower(c);
+
+      CUtf8::append(str1, c);
+    }
+
+    return js->createStringValue(str1);
   }
   else if (name == "toLocalUpperCase") {
-    return CJValueP();
+    int pos = 0;
+    int len = str.size();
+
+    std::string str1;
+
+    while (pos < len) {
+      ulong c = CUtf8::readNextChar(str, pos, len);
+
+      if (c < 0x7f)
+        c = toupper(c);
+
+      CUtf8::append(str1, c);
+    }
+
+    return js->createStringValue(str1);
   }
   else if (name == "toLowerCase") {
-    std::string str = cstr->text();
-
     int pos = 0;
     int len = str.size();
 
@@ -526,13 +783,9 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return js->createStringValue(str1);
   }
   else if (name == "toString") {
-    std::string str = cstr->text();
-
     return js->createStringValue(str);
   }
   else if (name == "toUpperCase") {
-    std::string str = cstr->text();
-
     int pos = 0;
     int len = str.size();
 
@@ -550,13 +803,19 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return js->createStringValue(str1);
   }
   else if (name == "trim") {
-    return CJValueP();
+    std::string str1 = CJString::trim(str, len, true, true);
+
+    return js->createStringValue(str1);
   }
   else if (name == "trimLeft") {
-    return CJValueP();
+    std::string str1 = CJString::trim(str, len, true, false);
+
+    return js->createStringValue(str1);
   }
   else if (name == "trimRight") {
-    return CJValueP();
+    std::string str1 = CJString::trim(str, len, false, true);
+
+    return js->createStringValue(str1);
   }
   else if (name == "valueOf") {
     return CJValueP();
@@ -654,7 +913,7 @@ parseFloat(const std::string &text, bool extraChars)
   const char *p1 = &text[pos];
 
   if (strncmp(p1, "NaN", 3) == 0)
-    return COptReal(CJUtil::getPosInf());
+    return COptReal(CJUtil::getNaN());
 
   if (strncmp(p1, "Infinity", 8) == 0)
     return COptReal(CJUtil::getPosInf());
@@ -887,7 +1146,107 @@ std::string
 CJString::
 substr(long ind, long n) const
 {
-  return CUtf8::substr(text_, ind, n);
+  return substr(text_, ind, n);
+}
+
+std::string
+CJString::
+substr(const std::string &text, long /*len*/, long ind)
+{
+  return CUtf8::substr(text, ind);
+}
+
+std::string
+CJString::
+substr(const std::string &text, long /*len*/, long ind, long n)
+{
+  return CUtf8::substr(text, ind, n);
+}
+
+std::string
+CJString::
+trim(bool left, bool right) const
+{
+  std::string str = this->text();
+
+  return trim(str, str.size(), left, right);
+}
+
+std::string
+CJString::
+trim(const std::string &str, long len, bool left, bool right)
+{
+  int pos = 0;
+
+  //---
+
+  // find last start space and first end space
+  bool start = true;
+  bool end   = true;
+
+  int startPos = 0;
+  int endPos   = len;
+
+  while (pos < len) {
+    int pos1 = pos;
+
+    ulong c = CUtf8::readNextChar(str, pos, len);
+
+    if      (CUtf8::isSpace(c)) {
+      if      (start)
+        startPos = pos1;
+      else if (end) {
+        endPos = pos1;
+        end    = false;
+      }
+    }
+    else {
+      if (start) {
+        startPos = pos1;
+
+        start = false;
+        end   = true;
+      }
+      else {
+        end = true;
+      }
+    }
+  }
+
+  //---
+
+  // if still looking for start we have all spaces
+  if (start)
+    return "";
+
+  //---
+
+  // adjust start and end depending on whether found ot trimming at start/end
+  if (! left || start)
+    startPos = 0;
+
+  if (! right || end)
+    endPos = len;
+
+  //---
+
+  // add characters between start/end
+  std::string str1;
+
+  pos = 0;
+
+  while (pos < len) {
+    int pos1 = pos;
+
+    ulong c = CUtf8::readNextChar(str, pos, len);
+
+    if (pos1 < startPos || pos1 >= endPos)
+      continue;
+
+    CUtf8::append(str1, c);
+  }
+
+  return str1;
 }
 
 std::string

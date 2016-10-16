@@ -358,10 +358,10 @@ class CJavaScript {
     return std::make_shared<CJDictionary>(th, s);
   }
 
-  CJRegExpP createRegExpValue(const std::string &s="", const std::string &f="") const {
+  CJRegExpP createRegExpValue(const std::string &s="") const {
     CJavaScript *th = const_cast<CJavaScript *>(this);
 
-    return std::make_shared<CJRegExp>(th, s, f);
+    return std::make_shared<CJRegExp>(th, s);
   }
 
   CJDateP createDateValue(const Values &values) const {

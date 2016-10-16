@@ -116,10 +116,10 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 //------
 
 CJRegExp::
-CJRegExp(CJavaScript *js, const std::string &text, const std::string &flags) :
- CJObj(js, CJRegExpType::instance(js)), text_(text), flags_(flags), regexp_(text_)
+CJRegExp(CJavaScript *js, const std::string &text) :
+ CJObj(js, CJRegExpType::instance(js)), text_(text), regexp_(text_)
 {
-  updateFlags();
+  regexp_.setExtended(true);
 }
 
 void
@@ -130,28 +130,7 @@ setText(const std::string &str)
 
   regexp_ = CRegExp(text_);
 
-  updateFlags();
-}
-
-void
-CJRegExp::
-updateFlags()
-{
   regexp_.setExtended(true);
-
-  for (auto & elem : flags_) {
-    if      (elem == 'g') {
-    }
-    else if (elem == 'i') {
-      regexp_.setCaseSensitive(true);
-    }
-    else if (elem == 'm') {
-    }
-    else if (elem == 'u') {
-    }
-    else if (elem == 'y') {
-    }
-  }
 }
 
 CJValueP

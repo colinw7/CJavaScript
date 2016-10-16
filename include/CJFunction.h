@@ -6,7 +6,7 @@
 // User Function Type
 class CJFunctionType : public CJObjType {
  public:
-  static CJObjTypeP instance(CJavaScript *js);
+  static CJFunctionTypeP instance(CJavaScript *js);
 
   CJFunctionType(CJavaScript *js);
 
@@ -17,7 +17,10 @@ class CJFunctionType : public CJObjType {
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
  private:
-  static CJObjTypeP type_;
+  void init();
+
+ private:
+  static CJFunctionTypeP type_;
 };
 
 //------
@@ -51,6 +54,11 @@ class CJFunction : public CJFunctionBase {
 
   const CJDictionaryP &scope() const { return scope_; }
   void setScope(const CJDictionaryP &v) { scope_ = v; }
+
+  long numArgs() const override { return long(args_.size()); }
+
+  CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
+  void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
 
   CJValueP getScopeProperty(const std::string &name) const;
   void setScopeProperty(const std::string &name, CJValueP value);

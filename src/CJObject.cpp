@@ -828,12 +828,36 @@ toString() const
 
   //---
 
-  std::ostringstream ss;
+  return "[object " + name() + "]";
+}
+
+void
+CJObject::
+print(std::ostream &os) const
+{
+  CJValueP prop = getProperty(js_, "toString");
+
+  if (prop) {
+    CJFunctionBaseP fn = js_->valueToFunction(prop);
+
+    if (fn && fn->isUserFunction()) {
+      CJFunctionBase::Values values;
+
+      values.push_back(CJValueP());
+
+      CJValueP value = fn->exec(js_, values);
+
+      if (value)
+        return value->print(os);
+    }
+  }
+
+  //---
 
   if (typeName_ != "")
-    ss << typeName_ << " ";
+    os << typeName_ << " ";
 
-  ss << "{";
+  os << "{";
 
   int i = 0;
 
@@ -842,26 +866,17 @@ toString() const
       continue;
 
     if (i > 0)
-      ss << ",";
+      os << ",";
 
-    ss << " " << kv.first << ": ";
+    os << " " << kv.first << ": ";
 
     if (kv.second.value)
-      ss << *kv.second.value;
+      os << *kv.second.value;
     else
-      ss << "null";
+      os << "null";
 
     ++i;
   }
 
-  ss << " }";
-
-  return ss.str();
-}
-
-void
-CJObject::
-print(std::ostream &os) const
-{
-  os << toString();
+  os << " }";
 }

@@ -110,7 +110,7 @@ namespace CJUtil {
       return getNaN();
     }
 
-    int factor = int(real1/real2);
+    long factor = int(real1/real2);
 
     double result = real1 - (real2*factor);
 
@@ -134,9 +134,110 @@ namespace CJUtil {
     return ss.str();
   }
 
+  inline std::string integerToString(double r, int base=10) {
+    static const char ichars[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+
+    std::string str;
+
+    bool isNeg = (r < 0);
+
+    double r1 = std::abs(r);
+
+    if (r1 < 1)
+      return "0";
+
+    while (r1 >= 1) {
+      long i1 = fmod(r1, base);
+
+      str += ichars[i1];
+
+      r1 = (r1 - i1)/base;
+    }
+
+    int len = str.size();
+
+    for (int i = 0; i < len/2; ++i)
+      std::swap(str[i], str[len - i - 1]);
+
+    if (isNeg)
+      return "-" + str;
+    else
+      return str;
+  }
+
+  inline std::string realToBaseString(double r, int base) {
+    static const char ichars[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+
+    if      (isPosInf(r))
+      return "Infinity";
+    else if (isNegInf(r))
+      return "-Infinity";
+    else if (isNaN(r))
+      return "NaN";
+
+    //---
+
+    bool isNeg = (r < 0);
+
+    double r1 = std::abs(r);
+
+    //---
+
+    double r2 = std::floor(r1);
+
+    std::string lstr = integerToString(r2, base);
+
+    //---
+
+    //uint digits = std::numeric_limits<double>::max_digits10;
+    uint digits = 256;
+
+    std::string rstr;
+
+    r2 = r1 - std::floor(r1);
+
+    while (r2 > 0 && rstr.size() < digits) {
+      long i1 = long(r2*base);
+
+      rstr += ichars[i1];
+
+      r2 = r2*base - i1;
+    }
+
+    //---
+
+    std::string str;
+
+    if (isNeg)
+      str += "-";
+
+    if (lstr != "")
+      str += lstr;
+    else
+      str += "0";
+
+    if (rstr != "")
+      str += "." + rstr;
+
+    return str;
+  }
+
   inline bool isInteger(double r) {
     return (long(r) == r);
   }
+
+  //---
+
+  inline std::string nchars(int n, char c) {
+    std::string str;
+
+    for (int i = 0; i < n; ++i)
+      str += c;
+
+    return str;
+  }
+
+  //---
 
   inline double max(double a, double b) {
     if (isNaN(a) || isNaN(b)) return getNaN();
@@ -310,13 +411,16 @@ namespace CJUtil {
 
   //---
 
-  inline double maxReal() { return  long(std::numeric_limits<double>::max()); }
-  inline double minReal() { return -long(std::numeric_limits<double>::max()); }
+  inline double maxReal() { return std::numeric_limits<double>::max(); }
+  inline double minReal() { return std::numeric_limits<double>::min(); }
 
   inline long maxInteger() { return  long(std::numeric_limits<unsigned int>::max()); }
   inline long minInteger() { return -long(std::numeric_limits<unsigned int>::max()); }
 
   inline long maxUInteger() { return long(std::numeric_limits<unsigned int>::max()) + 1; }
+
+  inline long maxSafeInteger() { return  long((1L<<53) - 1); }
+  inline long minSafeInteger() { return -maxSafeInteger(); }
 }
 
 #endif

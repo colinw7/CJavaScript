@@ -1468,7 +1468,7 @@ toReal() const
     return (value ? COptReal(value->toReal()) : COptReal());
   }
   else
-    return COptReal();
+    return COptReal(CJUtil::getNaN());
 }
 
 COptLong
@@ -1485,7 +1485,7 @@ toInteger() const
     return (value ? COptLong(value->toInteger()) : COptLong());
   }
   else
-    return COptLong();
+    return COptLong(0);
 }
 
 void

@@ -19,6 +19,8 @@ class CJCallFunction : public CJFunctionBase {
     return new CJCallFunction(js, function_, type_, objType_);
   }
 
+  bool hasObjectValue() const override { return false; }
+
   CJValueP getProperty(CJavaScript *js, const std::string &name) const override;
   void setProperty(CJavaScript *js, const std::string &name, CJValueP value) override;
 

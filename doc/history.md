@@ -90,3 +90,6 @@
  . Add use function support for sort
  . Support indexed this variable
  . Use make_shared instead of new calls
+
+# 10/16/2016
+ . Improve Number, String and Array function implementation

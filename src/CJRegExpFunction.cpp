@@ -17,12 +17,28 @@ exec(CJavaScript *js, const Values &values)
 
   std::string s = values[1]->toString();
 
-  std::string f;
+  CJRegExpP regexp = js->createRegExpValue(s);
 
-  if (values.size() > 2)
-    f = values[2]->toString();
+  if (values.size() > 2) {
+    std::string flags = values[2]->toString();
 
-  return js->createRegExpValue(s, f);
+    for (auto &f : flags) {
+      if      (f == 'g') {
+        regexp->setGlobalMatch(true);
+      }
+      else if (f == 'i') {
+        regexp->setIgnoreCase(true);
+      }
+      else if (f == 'm') {
+      }
+      else if (f == 'u') {
+      }
+      else if (f == 'y') {
+      }
+    }
+  }
+
+  return regexp;
 }
 
 CJValueP

@@ -34,9 +34,12 @@ class CJBoolean : public CJObj {
 
   CJBoolean *dup(CJavaScript *js) const override { return new CJBoolean(js, b_); }
 
-  std::string toString() const override;
+  void setBool(bool b) { b_ = b; }
+  bool getBool() const { return b_; }
 
   //---
+
+  std::string toString() const override;
 
   COptReal toReal() const override { return COptReal(b_ ? 1.0 : 0.0); }
 
