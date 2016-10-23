@@ -29,12 +29,10 @@ CJValueP
 CJCallFunction::
 exec(CJavaScript *js, const Values &values)
 {
-  if (values.size() < 1) {
-    js->throwTypeError(this, "No this value for call/apply");
-    return CJValueP();
-  }
+  CJValueP thisValue;
 
-  CJValueP thisValue = values[0];
+  if (values.size() > 0)
+    thisValue = values[0];
 
   //---
 
@@ -43,10 +41,12 @@ exec(CJavaScript *js, const Values &values)
   if (objType_) {
     CJObjP obj;
 
-    if      (thisValue->isObject())
-      obj = CJValue::cast<CJObj>(thisValue);
-    else if (thisValue->isPrimitive())
-      obj = CJValue::cast<CJObj>(js->valueToObject(thisValue));
+    if (thisValue) {
+      if      (thisValue->isObject())
+        obj = CJValue::cast<CJObj>(thisValue);
+      else if (thisValue->isPrimitive())
+        obj = CJValue::cast<CJObj>(js->valueToObject(thisValue));
+    }
 
     //---
 
@@ -104,8 +104,10 @@ exec(CJavaScript *js, const Values &values)
         array = CJValue::cast<CJArray>(values[1]);
     }
 
-    for (int i = 0; i < array->length(); ++i)
-      callValues.push_back(array->indexValue(i));
+    if (array) {
+      for (int i = 0; i < array->length(); ++i)
+        callValues.push_back(array->indexValue(i));
+    }
   }
   else if (type_ == Type::Bind) {
     callValues = values;
@@ -123,7 +125,13 @@ exec(CJavaScript *js, const Values &values)
     res = function_->exec(js, callValues);
   }
   else {
-    res = CJValueP(new CJBindFunction(js, function_, thisValue, callValues));
+    CJBindFunctionP fn(new CJBindFunction(js, function_, thisValue, callValues));
+
+    fn->setProperty(js, "prototype", js->createUndefinedValue());
+
+    fn->addFunctionMethods(js, fn, CJObjTypeP());
+
+    res = fn;
   }
 
   return res;

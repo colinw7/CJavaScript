@@ -55,8 +55,10 @@ class CJFunctionBase : public CJObj {
  public:
   CJFunctionBase(CJavaScript *js, const std::string &name="", Type type=Type::Normal);
 
-  CJFunctionBase(CJavaScript *js, const CJObjTypeP &objType,
-                 const std::string &name="", Type type=Type::Normal);
+  CJFunctionBase(CJavaScript *js, const CJObjTypeP &objType, const std::string &name="",
+                 Type type=Type::Normal);
+
+  CJFunctionBase(const CJFunctionBase &f);
 
   CJValue *dup(CJavaScript *) const override { assert(false); return 0; }
 
@@ -71,6 +73,7 @@ class CJFunctionBase : public CJObj {
   const Type &type() const { return type_; }
 
   const CJDictionaryP &prototype() const { return prototype_; }
+  void setPrototype(CJDictionaryP prototype) { prototype_ = prototype; }
 
   virtual long numArgs() const { return numArgs_; }
   void setNumArgs(long n) { numArgs_ = n; }

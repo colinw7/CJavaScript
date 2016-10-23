@@ -93,3 +93,8 @@
 
 # 10/16/2016
  . Improve Number, String and Array function implementation
+
+# 10/23/2016
+ . Support closure scope unification
+ . Ensure new assign variables are created in global scope
+ . Improve regexp parse and functions

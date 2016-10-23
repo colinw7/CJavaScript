@@ -46,11 +46,11 @@ class CJReal2Function : public CJFunctionBase {
 // min of values
 class CJMinFunction : public CJFunctionBase {
  public:
-  CJMinFunction(CJavaScript *js) :
-   CJFunctionBase(js, "min", CJFunctionBase::Type::Min) {
-  }
+  CJMinFunction(CJavaScript *js);
 
   CJValue *dup(CJavaScript *js) const override { return new CJMinFunction(js); }
+
+  bool hasObjectValue() const override { return true; }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 
@@ -62,11 +62,11 @@ class CJMinFunction : public CJFunctionBase {
 // min of values
 class CJMaxFunction : public CJFunctionBase {
  public:
-  CJMaxFunction(CJavaScript *js) :
-   CJFunctionBase(js, "max", CJFunctionBase::Type::Max) {
-  }
+  CJMaxFunction(CJavaScript *js);
 
   CJValue *dup(CJavaScript *js) const override { return new CJMaxFunction(js); }
+
+  bool hasObjectValue() const override { return true; }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 

@@ -80,23 +80,48 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
   // object functions
   if      (name == "compile") {
-    if (values.size() != 2) {
-      js->errorMsg("Invalid number of arguments for " + name);
-      return CJValueP();
-    }
+    std::string str;
 
-    std::string str = (values[1] ? values[1]->toString() : std::string());
+    if (values.size() >= 2)
+      str = (values[1] ? values[1]->toString() : std::string());
 
     return js->createRegExpValue(str);
   }
   else if (name == "exec") {
-    return CJValueP();
+    if (values.size() < 2)
+      return js->createNullValue();
+
+    std::string str = (values[1] ? values[1]->toString() : std::string());
+
+    CJRegExp::MatchData data;
+
+    bool b = regexp->find(str, data);
+
+    if (! b)
+      return js->createNullValue();
+
+    CJArrayP array = js->createArrayValue();
+
+    if (regexp->isGlobalMatch()) {
+      array->setIndexValue(0, js->createStringValue(regexp->text()));
+
+      for (uint i = 0; i < data.subMatches.size(); ++i)
+        array->setIndexValue(i + 1, js->createStringValue(data.subMatches[i]));
+    }
+    else {
+      array->setIndexValue(0, js->createStringValue(regexp->text()));
+
+      array->setProperty(js, "index", js->createNumberValue(long(data.range.first)));
+      array->setProperty(js, "input", js->createStringValue(str));
+    }
+
+    regexp->setProperty(js, "lastIndex", js->createNumberValue(long(data.range.second)));
+
+    return array;
   }
   else if (name == "test") {
-    if (values.size() != 2) {
-      js->errorMsg("Invalid number of arguments for " + name);
-      return CJValueP();
-    }
+    if (values.size() < 2)
+      js->createBoolValue(false);
 
     std::string str = (values[1] ? values[1]->toString() : std::string());
 
@@ -107,7 +132,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return js->createBoolValue(b);
   }
   else {
-    js->errorMsg("Invalid string function " + name);
+    js->errorMsg("Invalid regexp function " + name);
   }
 
   return CJValueP();
@@ -120,6 +145,12 @@ CJRegExp(CJavaScript *js, const std::string &text) :
  CJObj(js, CJRegExpType::instance(js)), text_(text), regexp_(text_)
 {
   regexp_.setExtended(true);
+
+  addPseudoProperty("lastIndex");
+  addPseudoProperty("ignoreCase");
+  addPseudoProperty("global");
+  addPseudoProperty("multiline");
+  addPseudoProperty("source");
 }
 
 void
@@ -137,14 +168,36 @@ CJValueP
 CJRegExp::
 getProperty(CJavaScript *js, const std::string &key) const
 {
-  return CJObj::getProperty(js, key);
+  if      (key == "lastIndex")
+    return js->createNumberValue(lastIndex());
+  else if (key == "ignoreCase")
+    return js->createBoolValue(isIgnoreCase());
+  else if (key == "global")
+    return js->createBoolValue(isGlobalMatch());
+  else if (key == "multiline")
+    return js->createBoolValue(isMultiLine());
+  else if (key == "source")
+    return js->createStringValue(text());
+  else
+    return CJObj::getProperty(js, key);
 }
 
 void
 CJRegExp::
 setProperty(CJavaScript *js, const std::string &key, CJValueP value)
 {
-  CJObj::setProperty(js, key, value);
+  if      (key == "lastIndex")
+    setLastIndex(value->toInteger().getValue(0));
+  else if (key == "ignoreCase")
+    setIgnoreCase(value->toBoolean());
+  else if (key == "global")
+    setGlobalMatch(value->toBoolean());
+  else if (key == "multiline")
+    setMultiLine(value->toBoolean());
+  else if (key == "source")
+    setText(value->toString());
+  else
+    CJObj::setProperty(js, key, value);
 }
 
 bool

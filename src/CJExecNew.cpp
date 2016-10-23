@@ -138,6 +138,8 @@ exec(CJavaScript *js)
 
         obj->setProperty(js, name, value);
       }
+
+      obj->setProtoValue(protoDict);
     }
     else if (protoObj) {
       for (const auto &name : protoObj->propertyNames()) {
@@ -148,6 +150,8 @@ exec(CJavaScript *js)
 
         obj->setProperty(js, name, value);
       }
+
+      obj->setProtoValue(protoObj);
     }
 
     newValue = obj;

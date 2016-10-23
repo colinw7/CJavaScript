@@ -42,18 +42,27 @@ init()
   addTypeFunction(js_, "freeze"                  , type_);
   addTypeFunction(js_, "getOwnPropertyDescriptor", type_);
   addTypeFunction(js_, "getOwnPropertyNames"     , type_);
+  addTypeFunction(js_, "getOwnPropertySymbols"   , type_);
   addTypeFunction(js_, "getPrototypeOf"          , type_);
+  addTypeFunction(js_, "is"                      , type_);
   addTypeFunction(js_, "isExtensible"            , type_);
   addTypeFunction(js_, "isFrozen"                , type_);
   addTypeFunction(js_, "isSealed"                , type_);
   addTypeFunction(js_, "keys"                    , type_);
   addTypeFunction(js_, "preventExtensions"       , type_);
   addTypeFunction(js_, "seal"                    , type_);
+  addTypeFunction(js_, "setPrototypeOf"          , type_);
   addTypeFunction(js_, "toString"                , type_);
 
   addObjectFunction(js_, "hasOwnProperty"      , type_); // TODO: move to base class
   addObjectFunction(js_, "isPrototypeOf"       , type_);
   addObjectFunction(js_, "propertyIsEnumerable", type_); // TODO: move to base class
+  addObjectFunction(js_, "toLocaleString"      , type_); // TODO: move to base class
+//addObjectFunction(js_, "toSource"            , type_); // TODO: move to base class
+  addObjectFunction(js_, "toString"            , type_); // TODO: move to base class
+//addObjectFunction(js_, "unwatch"             , type_); // TODO: move to base class
+  addObjectFunction(js_, "valueOf"             , type_); // TODO: move to base class
+//addObjectFunction(js_, "watch"               , type_); // TODO: move to base class
 }
 
 CJValueP
@@ -101,31 +110,50 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
   }
   else if (name == "create") {
     // Object.create(proto[, propertiesObject])
-    if (values.size() < 2)
+    if (values.size() < 2) {
+      js->throwTypeError(0, "Invalid arguments for " + name);
       return CJValueP();
+    }
 
+    // get prototype object and value
     CJValueP protoValue = values[1];
+
+    if (! protoValue->isObject() && protoValue->type() != CJToken::Type::Null) {
+      js->throwTypeError(protoValue, "Invalid argument type for " + name);
+      return CJValueP();
+    }
 
     CJValueP propValue;
 
     if (values.size() > 2)
       propValue = values[2];
 
+    //---
+
+    // create new object using prototype function of object (if any) or basic create
     CJObjTypeFunctionP protoFn = js->valueTypeFunction(protoValue);
 
-    if (! protoFn)
-      return CJValueP();
+    CJObjP newObj;
 
-    CJFunction::Values values;
+    if (protoFn) {
+      CJFunction::Values values;
 
-    CJValueP newValue = protoFn->exec(js, values);
+      CJValueP newValue = protoFn->exec(js, values);
 
-    if (protoValue->isObject() && newValue->isObject()) {
-      CJObjP newObj = CJValue::cast<CJObj>(newValue);
-
-      newObj->setProtoValue(protoValue);
+      if (newValue->isObject())
+        newObj = CJValue::cast<CJObj>(newValue);
     }
+    else {
+      newObj = js->createObject();
+   }
 
+   // set proto value
+   if (newObj)
+     newObj->setProtoValue(protoValue);
+
+    //---
+
+    // add properties
     if (propValue) {
       if (propValue->type() != CJToken::Type::Object) {
         js->throwTypeError(propValue, "Invalid create properties argument type");
@@ -134,11 +162,11 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
 
       CJObjectP propObj = CJValue::cast<CJObject>(propValue);
 
-      if (! setObjNamePropertiesValues(js, newValue, propObj))
+      if (! setObjNamePropertiesValues(js, newObj, propObj))
         return CJValueP();
     }
 
-    return newValue;
+    return newObj;
   }
   else if (name == "defineProperty") {
     if (values.size() != 4)
@@ -349,11 +377,10 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
 
     CJValueP ovalue = values[1];
 
-    if (! ovalue)
+    if (! ovalue || ! ovalue->isObject()) {
+      js->throwTypeError(ovalue, "Invalid argument type for " + name);
       return CJValueP();
-
-    if (! ovalue->isObject())
-      return CJValueP();
+    }
 
     CJObjectP obj = CJValue::cast<CJObject>(ovalue);
 
@@ -491,10 +518,8 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
   // object functions
   if      (name == "propertyIsEnumerable") {
-    if (values.size() != 2) {
-      js->errorMsg("Invalid number of arguments for " + name);
-      return CJValueP();
-    }
+    if (values.size() != 2)
+      return js->createBoolValue(false);
 
     std::string ind = values[1]->toString();
 
@@ -506,31 +531,29 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return js->createBoolValue(b);
   }
   else if (name == "hasOwnProperty") {
-    if (values.size() != 2) {
-      js->errorMsg("Invalid number of arguments for " + name);
-      return CJValueP();
-    }
+    if (values.size() != 2)
+      return js->createBoolValue(false);
 
     return js->createBoolValue(js->hasIndexValue(values[0], values[1], /*inherit*/false));
   }
   else if (name == "isPrototypeOf") {
-    if (values.size() != 2) {
-      js->errorMsg("Invalid number of arguments for " + name);
-      return CJValueP();
-    }
+    if (values.size() != 2)
+      return js->createBoolValue(false);
 
     CJValueP pvalue = values[0];
     CJValueP ovalue = values[1];
 
-    if (! ovalue)
-      return js->createBoolValue(false);
-
-    if (! ovalue->isObject())
+    if (! ovalue || ! ovalue->isObject())
       return js->createBoolValue(false);
 
     CJObjectP obj = CJValue::cast<CJObject>(ovalue);
 
     return js->createBoolValue(obj->isProtoValue(pvalue));
+  }
+  else if (name == "toLocaleString") {
+    std::string str = obj->toString();
+
+    return js->createStringValue(str);
   }
   else {
     js->errorMsg("Invalid object instance function " + name);
@@ -736,6 +759,19 @@ CJObject::
 CJObject(CJavaScript *js) :
  CJObj(js, CJObjectType::instance(js))
 {
+}
+
+CJObject::
+CJObject(const CJObject &obj) :
+ CJObj(obj), typeName_(obj.typeName_)
+{
+}
+
+CJValue *
+CJObject::
+dup(CJavaScript *) const
+{
+  return new CJObject(*this);
 }
 
 COptLong

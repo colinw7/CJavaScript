@@ -28,8 +28,12 @@ exec(CJavaScript *js, const Values &values)
     // text [, reviver ]
     std::string str;
 
-    if (values.size() >= 1)
-      str = values[0]->toString();
+    if (values.size() >= 1) {
+      if (values[0]->isObject())
+        str = js->valueToPrimitive(values[0])->toString();
+      else
+        str = values[0]->toString();
+    }
 
     CJFunctionBaseP reviver;
 
@@ -46,7 +50,7 @@ exec(CJavaScript *js, const Values &values)
     json.setStrict(true);
 
     if (! json.loadString(str, value)) {
-      js->throwSyntaxError(this, "Unexpected token");
+      js->throwSyntaxError(this, "Unexpected Json token in '" + str + "'");
       return CJValueP();
     }
 
@@ -185,7 +189,7 @@ parseToValue(CJavaScript *js, CJValueP key, CJson::Value *value, CJFunctionBaseP
   else if (value->isObject()) {
     CJson::Object *obj = value->cast<CJson::Object>();
 
-    CJDictionaryP dict = js->createDictValue();
+    CJObjectP newObj = js->createObject();
 
     std::vector<std::string> names;
 
@@ -198,21 +202,21 @@ parseToValue(CJavaScript *js, CJValueP key, CJson::Value *value, CJFunctionBaseP
 
       CJValueP value2 = parseToValue(js, key, value1);
 
-      dict->setProperty(js, name, value2);
+      newObj->setProperty(js, name, value2);
     }
 
-    value1 = dict;
+    value1 = newObj;
 
     if (reviver) {
-      for (const auto &name : dict->propertyNames()) {
-        CJValueP value2 = dict->propertyValue(name);
+      for (const auto &name : newObj->propertyNames()) {
+        CJValueP value2 = newObj->propertyValue(name);
 
         CJValueP key1 = js->createStringValue(name);
 
-        CJValueP value3 = parseCallFunc(js, key1, value2, reviver);
+        CJValueP value3 = parseCallFunc(js, key1, value2, reviver, newObj);
 
         if (value3)
-          dict->setPropertyValue(name, value3);
+          newObj->setPropertyValue(name, value3);
       }
 
       parseCallFunc(js, key, value1, reviver);
@@ -247,13 +251,27 @@ parseToValue(CJavaScript *js, CJValueP key, CJson::Value *value, CJFunctionBaseP
 
 CJValueP
 CJJSONFunction::
-parseCallFunc(CJavaScript *js, CJValueP key, CJValueP value, CJFunctionBaseP reviver)
+parseCallFunc(CJavaScript *js, CJValueP key, CJValueP value,
+              CJFunctionBaseP reviver, CJDictionaryP thisValue)
 {
   if (! reviver) return CJValueP();
 
   std::vector<CJValueP> values = { CJValueP(), key, value };
 
-  return reviver->exec(js, values);
+  CJValueP res;
+
+  if (thisValue) {
+    js->pushThis(thisValue);
+
+    res = reviver->exec(js, values);
+
+    js->popThis();
+  }
+  else {
+    res = reviver->exec(js, values);
+  }
+
+  return res;
 }
 
 bool

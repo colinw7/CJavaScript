@@ -42,8 +42,11 @@ CJValueP
 CJGetterSetter::
 getValue() const
 {
-  if (! getter_)
+  if (! getter_) {
+    if (js_->isStrict())
+      js_->throwTypeError(0, "No Getter for property");
     return CJValueP();
+  }
 
   CJFunctionBase::Values values;
 
@@ -56,8 +59,11 @@ void
 CJGetterSetter::
 setValue(CJValueP value)
 {
-  if (! setter_)
+  if (! setter_) {
+    if (js_->isStrict())
+      js_->throwTypeError(0, "No Setter for property");
     return;
+  }
 
   CJFunctionBase::Values values;
 

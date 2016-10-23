@@ -82,12 +82,12 @@ exec(CJavaScript *js)
           if (! valueArray->isEnumerableProperty(ind))
             continue;
 
-          CJValueP ivalue1 = valueArray->propertyValue(ind);
+          //CJValueP ivalue1 = valueArray->propertyValue(ind);
 
-          if (js->isUndefinedValue(ivalue1))
-            continue;
+          //if (js->isUndefinedValue(ivalue1))
+          //  continue;
 
-          CJValueP value1(js->createStringValue(ind));
+          CJStringP value1 = js->createStringValue(ind);
 
           ivalue->setValue(value1);
 
@@ -116,12 +116,12 @@ exec(CJavaScript *js)
         if (valueDict && ! valueDict->isEnumerableProperty(ind))
           continue;
 
-        CJValueP ivalue1 = value->propertyValue(ind);
+        //CJValueP ivalue1 = value->propertyValue(ind);
 
-        if (js->isUndefinedValue(ivalue1))
-          continue;
+        //if (js->isUndefinedValue(ivalue1))
+        //  continue;
 
-        CJValueP value1(js->createStringValue(ind));
+        CJStringP value1 = js->createStringValue(ind);
 
         ivalue->setValue(value1);
 

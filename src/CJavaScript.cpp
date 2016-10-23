@@ -73,7 +73,7 @@ CJavaScript()
   //------
 
   // Types (prototype ?)
-  rootScope_    = createDictValue("__root__");
+  rootScope_    = createObject();
   currentScope_ = rootScope_;
 
   //------
@@ -410,12 +410,20 @@ popUserFunction()
   userFunctions_.pop_back();
 }
 
-CJDictionaryP
+CJFunctionP
 CJavaScript::
 currentUserFunction() const
 {
-  CJDictionaryP scope;
+  if (userFunctions_.empty())
+    return CJFunctionP();
 
+  return userFunctions_.back();
+}
+
+CJDictionaryP
+CJavaScript::
+currentUserFunctionScope() const
+{
   if (userFunctions_.empty())
     return CJDictionaryP();
 
@@ -452,6 +460,10 @@ void
 CJavaScript::
 startBlock(CJExecBlockP block)
 {
+  bool is_strict = (block_ ? block_->isStrict() : isStrict());
+
+  block->setStrict(is_strict);
+
   blockStack_.push_back(block_);
 
   block_ = block;
@@ -738,14 +750,20 @@ lookupPropertyData(const Identifiers &identifiers, CJPropertyData &data)
 
   CJDictionaryP scope = currentScope();
 
-  if (lookupScopePropertyData(scope, identifiers, data, 0))
+  if (! scope)
+    return false;
+
+  if (lookupScopePropertyData(scope, identifiers, data))
     return true;
 
-  while (scope->getParent()) {
-    scope = scope->getParent();
+  // strict mode can't create outside of scope
+  if (! isStrict()) {
+    while (scope->getParent()) {
+      scope = scope->getParent();
 
-    if (lookupScopePropertyData(scope, identifiers, data, 0))
-      return true;
+      if (lookupScopePropertyData(scope, identifiers, data))
+        return true;
+    }
   }
 
   if (create) {
@@ -753,13 +771,13 @@ lookupPropertyData(const Identifiers &identifiers, CJPropertyData &data)
 
     CJDictionaryP scope = currentScope();
 
-    if (lookupScopePropertyData(scope, identifiers, data, 0))
+    if (lookupScopePropertyData(scope, identifiers, data))
       return true;
 
     while (scope->getParent()) {
       scope = scope->getParent();
 
-      if (lookupScopePropertyData(scope, identifiers, data, 0))
+      if (lookupScopePropertyData(scope, identifiers, data))
         return true;
     }
   }
@@ -1239,6 +1257,11 @@ CJLValueP
 CJavaScript::
 lookupProperty(const CJExecIdentifiersP &eidentifiers, bool create)
 {
+  CJPropertyData data(this);
+
+  data.setModifiable(true);
+  data.setCreate    (create);
+
   const CJavaScript::Identifiers &identifiers = eidentifiers->identifiers();
 
   if (eidentifiers->isThis()) {
@@ -1249,18 +1272,35 @@ lookupProperty(const CJExecIdentifiersP &eidentifiers, bool create)
 
     //---
 
-    CJPropertyData data(this);
-
-    data.setModifiable(true);
-    data.setCreate    (create);
-
     if (! lookupScopePropertyData(scope, identifiers, data))
       return CJLValueP();
 
     return data.lvalue();
   }
-  else
-    return lookupProperty(identifiers, create);
+  else {
+    if (! lookupPropertyData(identifiers, data))
+      return CJLValueP();
+
+    return data.lvalue();
+  }
+}
+
+CJLValueP
+CJavaScript::
+lookupScopeProperty(const CJDictionaryP &scope, const CJExecIdentifiersP &eidentifiers,
+                    bool create)
+{
+  CJPropertyData data(this);
+
+  data.setModifiable(true);
+  data.setCreate    (create);
+
+  const CJavaScript::Identifiers &identifiers = eidentifiers->identifiers();
+
+  if (! lookupScopePropertyData(scope, identifiers, data))
+    return CJLValueP();
+
+  return data.lvalue();
 }
 
 CJLValueP
@@ -1414,6 +1454,12 @@ deleteProperty(CJDictionaryP scope, const Identifiers &identifiers, const Values
           if (dict) {
             dict->deletePropertyIndices(this, identifiers[i]->name(), values);
             return true;
+          }
+        }
+        else {
+          if (isStrict()) {
+            throwTypeError(varValue, "Invalid value for delete");
+            return false;
           }
         }
       }
@@ -1725,7 +1771,10 @@ parseString(const std::string &str)
         parse.skipChars("*/");
     }
     else if (allowUnary && parse.isChar('/')) {
-      readRegExp(parse);
+      if (! readRegExp(parse)) {
+        throwSyntaxError(0, "Invalid regexp: '" + parse.getAt() + "'");
+        break;
+      }
     }
     else if (parse.isOneOf("{}()[].;,<>=!+-*%/<>=&|^~?:")) {
       readOperator(parse, allowUnary);
@@ -2025,8 +2074,9 @@ interp(CJExecData &execData)
     }
     // value
     else if (type == CJToken::Type::Number || type == CJToken::Type::String ||
-             type == CJToken::Type::Undefined || type == CJToken::Type::Null ||
-             type == CJToken::Type::True || type == CJToken::Type::False) {
+             type == CJToken::Type::RegExp || type == CJToken::Type::Undefined ||
+             type == CJToken::Type::Null || type == CJToken::Type::True ||
+             type == CJToken::Type::False) {
       CJExecExpressionListP exprList = interpExpressionList();
 
       if (! exprList) {
@@ -2256,15 +2306,22 @@ interp(CJExecData &execData)
           break;
         }
 
-        CJDictionaryP scope = currentUserFunction();
+        CJFunctionP fn = currentUserFunction();
 
-        if (! scope) {
+        if (! fn) {
           CJDictionaryP scope = currentScope();
 
           scope->setProperty(this, efunction->name(), efunction);
         }
         else {
-          execData_->addEToken(efunction);
+          //execData_->addEToken(efunction);
+          //fn->setProperty(this, efunction->name(), efunction);
+
+          fn->scope()->setProperty(this, efunction->name(), efunction);
+        }
+
+        if (isExecOperator(CJOperator::Type::SemiColon)) {
+          execData_->next();
         }
       }
       // try <block> [catch (<parameter>) <block>] [finally <block>]
@@ -4024,7 +4081,7 @@ interpUserFunction(bool named)
   //---
 
 //printUserFunctions("interpUserFunction");
-  userFn->setScope(this, currentUserFunction());
+  userFn->setScope(this, currentUserFunctionScope());
 
   // { <block> }
   if (! isExecOperator(CJOperator::Type::OpenBrace)) {
@@ -4409,7 +4466,7 @@ interpExpression()
           expr->addToken(incrDecr);
         }
         else {
-          throwSyntaxError(expr, "invalid increment/decrement rhs");
+          throwReferenceError(expr, "invalid increment/decrement rhs");
           return CJExecExpressionP();
         }
       }
@@ -4979,6 +5036,26 @@ valueToObject(CJValueP value) const
   return value1;
 }
 
+CJValueP
+CJavaScript::
+valueToPrimitive(CJValueP value) const
+{
+  assert(value->isObject());
+
+  if      (value->type() == CJToken::Type::Number) {
+    return createNumberValue(CJValue::cast<CJNumber>(value)->toReal().getValue(0));
+  }
+  else if (value->type() == CJToken::Type::String) {
+    return createStringValue(CJValue::cast<CJString>(value)->toString());
+  }
+  else if (value->type() == CJToken::Type::Boolean) {
+    return createBoolValue(CJValue::cast<CJBoolean>(value)->toBoolean());
+  }
+  else {
+    return value;
+  }
+}
+
 CJObjTypeFunctionP
 CJavaScript::
 valueTypeFunction(CJValueP value) const
@@ -5512,6 +5589,9 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
       }
       else
         valueType2 = value2->valueType();
+
+      if (! valueType1)
+        return createFalseValue();
 
       return createBoolValue(valueType1->isInstanceOf(valueType2));
     }
@@ -6489,17 +6569,21 @@ readSingleString(CStrParse &parse)
   tokens_.push_back(token);
 }
 
-void
+bool
 CJavaScript::
 readRegExp(CStrParse &parse)
 {
+  int pos = parse.getPos();
+
   std::string str;
 
   parse.skipChar();
 
+  int sbracket = 0;
+
   // parse expression
-  while (! parse.eof() && ! parse.isChar('/')) {
-    if (parse.isChar('\\')) {
+  while (! parse.eof()) {
+    if      (parse.isChar('\\')) {
       char c = parse.readChar();
 
       if (! parse.eof()) {
@@ -6515,12 +6599,37 @@ readRegExp(CStrParse &parse)
       else
         str += '\\';
     }
+    else if (parse.isChar('/')) {
+      if (sbracket == 0)
+        break;
+
+      str += parse.readChar();
+    }
+    else if (parse.isChar('[')) {
+      str += parse.readChar();
+
+      ++sbracket;
+    }
+    else if (parse.isChar(']')) {
+      str += parse.readChar();
+
+      --sbracket;
+
+      if (sbracket < 0) {
+        parse.setPos(pos);
+        return false;
+      }
+    }
     else
       str += parse.readChar();
   }
 
-  if (parse.isChar('/'))
-    parse.skipChar();
+  if (! parse.isChar('/')) {
+    parse.setPos(pos);
+    return false;
+  }
+
+  parse.skipChar();
 
   //---
 
@@ -6548,6 +6657,8 @@ readRegExp(CStrParse &parse)
   re->setLineNum(parse.lineNum());
 
   tokens_.push_back(re);
+
+  return true;
 }
 
 CJToken::Type
@@ -6595,6 +6706,28 @@ execFunction(CJFunctionBaseP fn, const CJFunctionBase::Values &values, CJValueP 
   }
 
   return res;
+}
+
+//------
+
+bool
+CJavaScript::
+isStrict() const
+{
+  if (getCurrentBlock())
+    return getCurrentBlock()->isStrict();
+  else
+    return strict_;
+}
+
+void
+CJavaScript::
+setStrict(bool b)
+{
+  if (getCurrentBlock())
+    getCurrentBlock()->setStrict(b);
+  else
+    strict_ = b;
 }
 
 //------

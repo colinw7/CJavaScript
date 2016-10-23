@@ -17,7 +17,7 @@ exec(CJavaScript *js, const Values &values)
 
   callValues.push_back(thisValue_);
 
-  for (uint i = 0; i < values.size(); ++i)
+  for (uint i = 1; i < values.size(); ++i)
     callValues.push_back(values[i]);
 
   for (uint i = 1; i < values_.size(); ++i)

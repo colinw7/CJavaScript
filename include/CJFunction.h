@@ -34,9 +34,11 @@ class CJFunction : public CJFunctionBase {
   CJFunction(CJavaScript *js, const std::string &name="",
              const Args &args=Args(), CJExecBlockP block=CJExecBlockP());
 
-  CJValue *dup(CJavaScript *js) const override {
-    return new CJFunction(js, name_, args_, block_);
-  }
+  CJFunction(const CJFunction &f);
+
+  CJValue *dup(CJavaScript *js) const override;
+
+  void makeUnique(CJavaScript *js);
 
   void init(CJFunctionP fn);
 

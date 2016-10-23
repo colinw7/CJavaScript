@@ -51,7 +51,9 @@ class CJObject : public CJObj {
  public:
   CJObject(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *) const override { return new CJObject(js_); }
+  CJObject(const CJObject &obj);
+
+  CJValue *dup(CJavaScript *) const override;
 
   bool isNative() const override { return false; }
 

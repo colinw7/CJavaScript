@@ -46,9 +46,24 @@ CJDictionary(CJavaScript *js, CJObjTypeP type) :
 }
 
 CJDictionary::
-CJDictionary(CJavaScript *js, const std::string &name, const KeyValues &keyValues) :
- CJValue(CJDictionaryType::instance(js)), CJNameSpace(keyValues), js_(js), name_(name)
+CJDictionary(CJavaScript *js, const std::string &name) :
+ CJValue(CJDictionaryType::instance(js)), js_(js), name_(name)
 {
+}
+
+CJDictionary::
+CJDictionary(const CJDictionary &dict) :
+ CJValue(dict), CJNameSpace(dict), js_(dict.js_), name_(dict.name_), parent_(dict.parent_)
+{
+}
+
+CJValue *
+CJDictionary::
+dup(CJavaScript *) const
+{
+  CJDictionary *dict = new CJDictionary(*this);
+
+  return dict;
 }
 
 std::string

@@ -22,7 +22,7 @@ class CJSystemExecFunction : public CJFunctionBase {
 
 CJSystem::
 CJSystem(CJavaScript *js) :
- CJDictionary(js)
+ CJDictionary(js, "")
 {
   setFunctionProperty(js, CJFunctionBaseP(new CJSystemExecFunction(js)));
 }

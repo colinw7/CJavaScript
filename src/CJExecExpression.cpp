@@ -32,10 +32,14 @@ exec(CJavaScript *js)
       //}
 
       if (js_->isExprDebug()) {
+        std::cerr << "pushValue " << *identifiers << "=";
+
         if (value)
-          std::cerr << "pushValue " << *identifiers << "=" << *value << std::endl;
+          std::cerr << *value;
         else
-          std::cerr << "pushValue " << *identifiers << "=<null>" << std::endl;
+          std::cerr << "<null>";
+
+        std::cerr << std::endl;
       }
 
       //if (! value)
@@ -46,10 +50,14 @@ exec(CJavaScript *js)
 
     void pushValue(CJValueP value) {
       if (js_->isExprDebug()) {
+        std::cerr << "pushValue ";
+
         if (value)
-          std::cerr << "pushValue " << *value << std::endl;
+          std::cerr << *value;
         else
-          std::cerr << "pushValue <null>" << std::endl;
+          std::cerr << "<null>";
+
+        std::cerr << std::endl;
       }
 
       values_.push_back(value);
@@ -57,10 +65,14 @@ exec(CJavaScript *js)
 
     void pushTokenValue(CJTokenP token, CJValueP value) {
       if (js_->isExprDebug()) {
+        std::cerr << "pushTokenValue " << *token << "(";
+
         if (value)
-          std::cerr << "pushTokenValue " << *token << "(" << *value << ")" << std::endl;
+          std::cerr << *value;
         else
-          std::cerr << "pushTokenValue " << *token << "(<null>>" << std::endl;
+          std::cerr << "<null>";
+
+        std::cerr << ")" << std::endl;
       }
 
       CJTokenValueP tvalue(new CJTokenValue(js_));
@@ -124,7 +136,7 @@ exec(CJavaScript *js)
      }
 
    private:
-    CJavaScript *js_;
+    CJavaScript *js_ { 0 };
     Values       values_;
     Operators    operators_;
   };
@@ -138,9 +150,19 @@ exec(CJavaScript *js)
 
   int len = tokens_.size();
 
-  for (int i = 0; i < len; ++i) {
-    CJTokenP token = tokens_[i];
+  if (len == 1 && tokens_[0]->type() == CJToken::Type::String) {
+    CJValueP value = CJToken::cast<CJValue>(tokens_[0]);
 
+    CJStringP str = CJValue::cast<CJString>(value);
+
+    if (str && str->text() == "use strict") {
+      js->setStrict(true);
+
+      return CJValueP();
+    }
+  }
+
+  for (auto &token : tokens_) {
     if (! token)
       return CJValueP();
 

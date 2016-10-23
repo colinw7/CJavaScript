@@ -68,7 +68,7 @@ CJFunctionBase::
 CJFunctionBase(CJavaScript *js, const std::string &name, Type type) :
  CJObj(js, CJFunctionBaseType::instance(js, name)), name_(name), type_(type)
 {
-  prototype_ = js->createDictValue();
+  prototype_ = js->createObject();
 
   setProperty(js, "prototype", prototype_);
 
@@ -78,6 +78,17 @@ CJFunctionBase(CJavaScript *js, const std::string &name, Type type) :
 CJFunctionBase::
 CJFunctionBase(CJavaScript *js, const CJObjTypeP &objType, const std::string &name, Type type) :
  CJObj(js, objType), name_(name), type_(type)
+{
+  prototype_ = js->createObject();
+
+  setProperty(js, "prototype", prototype_);
+
+  //addPseudoProperty("length");
+}
+
+CJFunctionBase::
+CJFunctionBase(const CJFunctionBase &f) :
+ CJObj(f), name_(f.name_), type_(f.type_), prototype_(f.prototype_), numArgs_(f.numArgs_)
 {
   //addPseudoProperty("length");
 }

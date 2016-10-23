@@ -83,16 +83,22 @@ print(std::ostream &os) const
 
 //------
 
+CJMinFunction::
+CJMinFunction(CJavaScript *js) :
+ CJFunctionBase(js, "min", CJFunctionBase::Type::Min)
+{
+}
+
 CJValueP
 CJMinFunction::
 exec(CJavaScript *js, const Values &values)
 {
-  if (values.size() == 0)
+  if (values.size() <= 1)
     return js->createNumberValue(CJUtil::getPosInf());
 
-  double res = values[0]->toReal().getValue(0.0);
+  double res = values[1]->toReal().getValue(0.0);
 
-  for (uint i = 1; i < values.size(); ++i) {
+  for (uint i = 2; i < values.size(); ++i) {
     double r = values[i]->toReal().getValue(0.0);
 
     res = CJUtil::min(res, r);
@@ -119,16 +125,22 @@ print(std::ostream &os) const
 
 //------
 
+CJMaxFunction::
+CJMaxFunction(CJavaScript *js) :
+ CJFunctionBase(js, "max", CJFunctionBase::Type::Max)
+{
+}
+
 CJValueP
 CJMaxFunction::
 exec(CJavaScript *js, const Values &values)
 {
-  if (values.size() == 0)
+  if (values.size() <= 1)
     return js->createNumberValue(CJUtil::getNegInf());
 
-  double res = values[0]->toReal().getValue(0.0);
+  double res = values[1]->toReal().getValue(0.0);
 
-  for (uint i = 1; i < values.size(); ++i) {
+  for (uint i = 2; i < values.size(); ++i) {
     double r = values[i]->toReal().getValue(0.0);
 
     res = CJUtil::max(res, r);

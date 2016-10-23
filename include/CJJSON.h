@@ -72,7 +72,8 @@ class CJJSONFunction : public CJFunctionBase {
   CJValueP parseToValue(CJavaScript *js, CJValueP key, CJson::Value *value,
                         CJFunctionBaseP func=CJFunctionBaseP());
 
-  CJValueP parseCallFunc(CJavaScript *js, CJValueP key, CJValueP value, CJFunctionBaseP func);
+  CJValueP parseCallFunc(CJavaScript *js, CJValueP key, CJValueP value, CJFunctionBaseP func,
+                         CJDictionaryP thisValue=CJDictionaryP());
 
   bool stringify(CJavaScript *js, CJValueP key, CJValueP value, const Indent &indent,
                  int depth, std::string &str, bool &skip) const;

@@ -20,6 +20,14 @@ exec(CJavaScript *js)
   CJExecBlockP block = js->getCurrentBlock();
 
   if (block) {
+    if (value && value->type() == CJToken::Type::Function) {
+      CJFunction *fn = dynamic_cast<CJFunction *>(value->dup(js));
+
+      fn->makeUnique(js);
+
+      value = CJValueP(fn);
+    }
+
     block->setRetVal(value);
 
     block->setReturnFlag(true);

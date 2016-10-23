@@ -1,6 +1,17 @@
 #include <CJNameSpace.h>
 #include <CJavaScript.h>
 
+CJNameSpace::
+CJNameSpace()
+{
+}
+
+CJNameSpace::
+CJNameSpace(const CJNameSpace &ns) :
+ keyValues_(ns.keyValues_), keyNames_(ns.keyNames_)
+{
+}
+
 void
 CJNameSpace::
 setRealProperty(CJavaScript *js, const std::string &key, double r)

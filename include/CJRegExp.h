@@ -45,7 +45,7 @@ class CJRegExp : public CJObj {
   const std::string &text() const { return text_; }
   void setText(const std::string &str);
 
-  bool isIgnoreCase() const { return regexp_.isCaseSensitive(); }
+  bool isIgnoreCase() const { return ! regexp_.isCaseSensitive(); }
   void setIgnoreCase(bool b) { regexp_.setCaseSensitive(! b); }
 
   bool isGlobalMatch() const { return global_; }
@@ -53,6 +53,9 @@ class CJRegExp : public CJObj {
 
   bool isMultiLine() const { return multiLine_; }
   void setMultiLine(bool b) { multiLine_ = b; }
+
+  long lastIndex() const { return lastIndex_; }
+  void setLastIndex(long i) { lastIndex_ = i; }
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
   void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
@@ -67,6 +70,7 @@ class CJRegExp : public CJObj {
   std::string text_;
   bool        global_ { false };
   bool        multiLine_ { false };
+  long        lastIndex_ { 0 };
   CRegExp     regexp_;
 };
 

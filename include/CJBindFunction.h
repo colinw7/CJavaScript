@@ -13,6 +13,8 @@ class CJBindFunction : public CJFunctionBase {
     return new CJBindFunction(js, function_, thisValue_, values_);
   }
 
+  bool hasObjectValue() const override { return true; }
+
   CJValueP exec(CJavaScript *js, const Values &values) override;
 
   std::string toString() const override;

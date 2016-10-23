@@ -15,9 +15,9 @@ class CJNameSpace {
   typedef std::vector<CJValueP>                 Values;
 
  public:
-  CJNameSpace(const KeyValues &keyValues=KeyValues()) :
-   keyValues_(keyValues) {
-  }
+  CJNameSpace();
+
+  CJNameSpace(const CJNameSpace &ns);
 
   virtual ~CJNameSpace() { }
 

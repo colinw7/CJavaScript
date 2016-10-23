@@ -119,8 +119,21 @@ exec(CJavaScript *js)
   else {
     lvalue = js->lookupLValue(eidentifiers);
 
-    if (! lvalue)
-      lvalue = js->lookupProperty(eidentifiers, /*create*/true);
+    if (! lvalue) {
+      if (! js->isStrict()) {
+        // create variable in global scope if not found
+        CJDictionaryP scope = js->rootScope();
+
+        lvalue = js->lookupScopeProperty(scope, eidentifiers, /*create*/true);
+
+        //lvalue = js->lookupProperty(eidentifiers, /*create*/true);
+      }
+    }
+
+    if (! lvalue) {
+      js->throwTypeError(this, "Variable " + eidentifiers->toString() + " does not exist");
+      return CJValueP();
+    }
   }
 
   //---

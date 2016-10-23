@@ -144,8 +144,10 @@ exec(CJavaScript *js)
 
   CJDictionaryP thisDict = obj;
 
-  if (! thisDict && values[0]->isDictionary())
-    thisDict = CJValue::cast<CJDictionary>(values[0]);
+  if (! thisDict) {
+    if (values.size() > 0 && values[0] && values[0]->isDictionary())
+      thisDict = CJValue::cast<CJDictionary>(values[0]);
+  }
 
   CJValueP res;
 

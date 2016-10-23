@@ -3,3 +3,4 @@
  . Detect recursion
  . Remove isProtoValue
  . Array non-integer arguments
+ . Unicode in variable names

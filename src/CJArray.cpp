@@ -1329,22 +1329,21 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return js->createNumberValue(res);
   }
   else if (name == "propertyIsEnumerable") {
-    if (values.size() != 2) {
-      js->errorMsg("Invalid number of arguments for " + name);
-      return CJValueP();
-    }
+    if (values.size() < 2)
+      return js->createBoolValue(false);
 
-    long ind = values[1]->toInteger().getValue(0);
+    COptLong ind = values[1]->toInteger();
 
-    bool b = (array ? array->isEnumerableIndex(ind) : false);
+    bool b = false;
+
+    if (array && ind.isValid())
+      b = array->isEnumerableIndex(ind.getValue());
 
     return js->createBoolValue(b);
   }
   else if (name == "hasOwnProperty") {
-    if (values.size() != 2) {
-      js->errorMsg("Invalid number of arguments for " + name);
-      return CJValueP();
-    }
+    if (values.size() < 2)
+      return js->createBoolValue(false);
 
     return js->createBoolValue(js->hasIndexValue(values[0], values[1]));
   }

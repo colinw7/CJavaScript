@@ -22,6 +22,8 @@ addTypeFunction(CJavaScript *js, const std::string &name, CJObjTypeP type)
 
   setFunctionProperty(js, fn, type);
 
+  setEnumerableProperty(name, false);
+
   typeFunctions_[name] = fn;
 
   return fn;
@@ -56,6 +58,8 @@ addObjFunction(CJavaScript *js, const std::string &name, CJObjTypeP type)
   CJObjFunctionP fn(new CJObjFunction(js, name));
 
   setFunctionProperty(js, fn, type);
+
+  setEnumerableProperty(name, false);
 }
 
 CJNameSpace::KeyNames
@@ -170,6 +174,20 @@ CJObj(CJavaScript *js, CJObjTypeP objType) :
 {
 }
 
+CJObj::
+CJObj(const CJObj &obj) :
+ CJDictionary(obj), objType_(obj.objType_), protoValue_(obj.protoValue_),
+ extensible_(obj.extensible_), frozen_(obj.frozen_), sealed_(obj.sealed_)
+{
+}
+
+CJValue *
+CJObj::
+dup(CJavaScript *) const
+{
+  return new CJObj(*this);
+}
+
 const std::string &
 CJObj::
 name() const
@@ -202,8 +220,11 @@ void
 CJObj::
 setPropertyValue(const std::string &key, CJValueP value)
 {
-  if (! isWritableProperty(key))
+  if (! isWritableProperty(key)) {
+    if (js_->isStrict())
+      js_->throwTypeError(this, "Property " + key + " is not writable");
     return;
+  }
 
   setProperty(js_, key, value);
 }
@@ -212,8 +233,11 @@ void
 CJObj::
 configPropertyValue(const std::string &key, CJValueP value)
 {
-  if (! isConfigurableProperty(key))
+  if (! isConfigurableProperty(key)) {
+    if (js_->isStrict())
+      js_->throwTypeError(this, "Property " + key + " is not configurable");
     return;
+  }
 
   setProperty(js_, key, value);
 }

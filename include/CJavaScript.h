@@ -155,6 +155,9 @@ class CJavaScript {
   CJLValueP lookupProperty(const CJExecIdentifiersP &eidentifiers, bool create=false);
   CJLValueP lookupProperty(const Identifiers &identifiers, bool create=false);
 
+  CJLValueP lookupScopeProperty(const CJDictionaryP &scope,
+                                const CJExecIdentifiersP &eidentifiers, bool create=false);
+
   ValuePair lookupObjectProperty(const CJExecIdentifiersP &eidentifiers, bool create=false);
   ValuePair lookupObjectProperty(const Identifiers &identifiers, bool create=false);
 
@@ -208,7 +211,9 @@ class CJavaScript {
 
   const UserFunctions &userFunctions() const { return userFunctions_; }
 
-  CJDictionaryP currentUserFunction() const;
+  CJFunctionP currentUserFunction() const;
+
+  CJDictionaryP currentUserFunctionScope() const;
 
   void printUserFunctions(const std::string &msg="") const;
 
@@ -235,6 +240,8 @@ class CJavaScript {
   CJFunctionBaseP valueToFunction(CJValueP value) const;
 
   CJValueP valueToObject(CJValueP value) const;
+
+  CJValueP valueToPrimitive(CJValueP value) const;
 
   CJObjTypeFunctionP valueTypeFunction(CJValueP value) const;
 
@@ -479,6 +486,11 @@ class CJavaScript {
 
   //---
 
+  bool isStrict() const;
+  void setStrict(bool b);
+
+  //---
+
   void throwException(CJExceptionType type);
 
   void throwTypeError     (CJTokenP token, const std::string &msg);
@@ -527,7 +539,7 @@ class CJavaScript {
 
   void readDoubleString(CStrParse &parse);
   void readSingleString(CStrParse &parse);
-  void readRegExp(CStrParse &parse);
+  bool readRegExp(CStrParse &parse);
 
   CJTokenP      lastToken() const;
   CJToken::Type lastTokenType() const;
@@ -623,6 +635,7 @@ class CJavaScript {
   BlockStack      blockStack_;
   UserFunctions   userFunctions_;
   FunctionStack   functions_;
+  bool            strict_ { false };
 };
 
 #endif

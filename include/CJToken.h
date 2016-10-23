@@ -86,6 +86,8 @@ class CJToken {
  public:
   CJToken(Type type);
 
+  CJToken(const CJToken &t);
+
   virtual ~CJToken() { }
 
   Type type() const { return type_; }

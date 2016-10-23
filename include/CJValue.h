@@ -18,6 +18,8 @@ class CJValue : public CJToken, public std::enable_shared_from_this<CJValue> {
  public:
   CJValue(CJObjTypeP valueType);
 
+  CJValue(const CJValue &v);
+
   virtual ~CJValue() { }
 
   virtual CJValue *dup(CJavaScript *) const = 0;

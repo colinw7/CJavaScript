@@ -45,7 +45,7 @@ exec(CJavaScript *js, const Values &values)
 
   userFn->init(userFn);
 
-  userFn->setScope(js, js->currentUserFunction());
+  userFn->setScope(js, js->currentUserFunctionScope());
 
   userFn->addFunctionMethods(js, userFn, CJObjTypeP());
 

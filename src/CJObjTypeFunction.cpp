@@ -47,9 +47,13 @@ exec(CJavaScript *js, const Values &values)
 
   if (! objType) {
     if (ovalue->isFunction()) {
-      CJObjTypeFunctionP typeFn = CJValue::cast<CJObjTypeFunction>(ovalue);
+      CJFunctionBaseP fn = CJValue::cast<CJFunctionBase>(ovalue);
 
-      objType = typeFn->objectType();
+      if (fn->type() == CJFunctionBase::Type::ObjType) {
+        CJObjTypeFunctionP typeFn = CJValue::cast<CJObjTypeFunction>(ovalue);
+
+        objType = typeFn->objectType();
+      }
     }
     else {
       objType = js->getTypeObject(ovalue->type());

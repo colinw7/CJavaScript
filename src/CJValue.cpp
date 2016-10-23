@@ -8,6 +8,12 @@ CJValue(CJObjTypeP valueType) :
 {
 }
 
+CJValue::
+CJValue(const CJValue &v) :
+ CJToken(v), std::enable_shared_from_this<CJValue>(v), valueType_(v.valueType_)
+{
+}
+
 COptLong
 CJValue::
 toInteger() const

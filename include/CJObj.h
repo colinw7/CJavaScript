@@ -15,9 +15,9 @@ class CJObj : public CJDictionary {
  public:
   CJObj(CJavaScript *js, CJObjTypeP objType);
 
-  CJValue *dup(CJavaScript *js) const override {
-    return new CJObj(js, objType_);
-  }
+  CJObj(const CJObj &obj);
+
+  CJValue *dup(CJavaScript *js) const override;
 
   bool isObject() const override { return true; }
 

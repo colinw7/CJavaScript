@@ -46,6 +46,9 @@ class CJExecBlock : public CJToken {
   bool isReturnFlag() const { return returnFlag_; }
   void setReturnFlag(bool b) { returnFlag_ = b; }
 
+  bool isStrict() const { return strict_; }
+  void setStrict(bool b) { strict_ = b; }
+
   const Errors &errors() { return errors_; }
   void setErrors(const Errors &errors) { errors_ = errors; }
 
@@ -81,6 +84,7 @@ class CJExecBlock : public CJToken {
   bool     breakFlag_    { false };
   bool     continueFlag_ { false };
   bool     returnFlag_   { false };
+  bool     strict_       { false };
   Errors   errors_;
 };
 

@@ -29,12 +29,13 @@ class CJDictionary : public CJValue, public CJNameSpace {
  public:
   CJDictionary(CJavaScript *js, CJObjTypeP type);
 
-  CJDictionary(CJavaScript *js, const std::string &name="",
-               const KeyValues &keyValues=KeyValues());
+  CJDictionary(CJavaScript *js, const std::string &name);
 
-  CJValue *dup(CJavaScript *js) const override {
-    return new CJDictionary(js, name_, keyValues_);
-  }
+  CJDictionary(const CJDictionary &dict);
+
+  CJValue *dup(CJavaScript *js) const override;
+
+  void makeUnique();
 
   CJavaScript *js() const { return js_; }
 

@@ -94,11 +94,42 @@ CJFunction(CJavaScript *js, const std::string &name, const Args &args, CJExecBlo
 {
 }
 
+CJFunction::
+CJFunction(const CJFunction &f) :
+ CJFunctionBase(f), args_(f.args_), block_(f.block_), scope_(f.scope_)
+{
+}
+
+CJValue *
+CJFunction::
+dup(CJavaScript *) const
+{
+  // dup block ?
+  CJFunction *fn = new CJFunction(*this);
+
+  return fn;
+}
+
+void
+CJFunction::
+makeUnique(CJavaScript *js)
+{
+  scope_ = CJDictionaryP(dynamic_cast<CJDictionary *>(scope_->dup(js)));
+
+  CJDictionaryP scope = scope_;
+
+  while (scope->getParent()) {
+    scope->setParent(CJDictionaryP(dynamic_cast<CJDictionary *>(scope->getParent()->dup(js))));
+
+    scope = scope->getParent();
+  }
+}
+
 void
 CJFunction::
 init(CJFunctionP fn)
 {
-  prototype_ = js_->createDictValue();
+  prototype_ = js_->createObject();
 
   setProperty(js_, "prototype", prototype_);
 
@@ -123,7 +154,8 @@ void
 CJFunction::
 setScope(CJavaScript *js, CJDictionaryP parentScope)
 {
-  scope_ = js->createDictValue(name_);
+  //scope_ = js->createDictionary(name_);
+  scope_ = js->createObject();
 
   if (parentScope)
     scope_->setParent(parentScope);
