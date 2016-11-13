@@ -1,6 +1,18 @@
 #include <CJObjFunction.h>
 #include <CJavaScript.h>
 
+CJObjFunction::
+CJObjFunction(CJavaScript *js, const std::string &name) :
+ CJFunctionBase(js, name, CJFunctionBase::Type::Object)
+{
+}
+
+CJObjFunction::
+CJObjFunction(const CJObjFunction &fn) :
+ CJFunctionBase(fn)
+{
+}
+
 CJValueP
 CJObjFunction::
 exec(CJavaScript *js, const Values &values)

@@ -23,7 +23,9 @@ class CJConsoleObject : public CJObj {
  public:
   CJConsoleObject(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJConsoleObject(js); }
+  CJConsoleObject(const CJConsoleObject &obj);
+
+  CJValue *dup(CJavaScript *) const override { return new CJConsoleObject(*this); }
 
   CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values) override;
 };

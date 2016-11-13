@@ -18,11 +18,11 @@ class CJJSON {
 
 class CJJSONFunction : public CJFunctionBase {
  public:
-  CJJSONFunction(CJavaScript *js, const std::string &name) :
-   CJFunctionBase(js, name, CJFunctionBase::Type::JSON), name_(name) {
-  }
+  CJJSONFunction(CJavaScript *js, const std::string &name);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJJSONFunction(js, name_); }
+  CJJSONFunction(const CJJSONFunction &fn);
+
+  CJValue *dup(CJavaScript *) const override { return new CJJSONFunction(*this); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 

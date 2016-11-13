@@ -7,6 +7,13 @@ CJOperator(const Type &type, int precedence, Associativty associativty, Ary ary)
 {
 }
 
+CJOperator::
+CJOperator(const CJOperator &op) :
+ CJToken(op), type_(op.type_), precedence_(op.precedence_),
+ associativty_(op.associativty_), ary_(op.ary_)
+{
+}
+
 bool
 CJOperator::
 isAssign() const

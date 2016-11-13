@@ -7,6 +7,12 @@ CJRequireFunction(CJavaScript *js) :
 {
 }
 
+CJRequireFunction::
+CJRequireFunction(const CJRequireFunction &fn) :
+ CJFunctionBase(fn)
+{
+}
+
 CJValueP
 CJRequireFunction::
 exec(CJavaScript *js, const Values &values)

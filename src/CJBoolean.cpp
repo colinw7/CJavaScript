@@ -93,6 +93,12 @@ CJBoolean(CJavaScript *js, bool b) :
 {
 }
 
+CJBoolean::
+CJBoolean(const CJBoolean &b) :
+ CJObj(b), b_(b.b_)
+{
+}
+
 std::string
 CJBoolean::
 toString() const

@@ -25,6 +25,8 @@ class CQJSCanvas : public QFrame {
   void setStrokeCap     (Qt::PenCapStyle  cap);
   void setStrokeJoin    (Qt::PenJoinStyle join);
 
+  void setOpacity(double a);
+
   void fillRect (double x, double y, double w, double h);
   void drawRect (double x, double y, double w, double h);
   void clearRect(double x, double y, double w, double h);

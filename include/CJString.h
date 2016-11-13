@@ -35,7 +35,9 @@ class CJString : public CJObj {
  public:
   CJString(CJavaScript *js, const std::string &text="", char c='\"');
 
-  CJString *dup(CJavaScript *js) const override { return new CJString(js, text_, c_); }
+  CJString(const CJString &str);
+
+  CJString *dup(CJavaScript *) const override { return new CJString(*this); }
 
   bool isPrimitive() const override { return primitive_; }
   void setIsPrimitive(bool b) { primitive_ = b; }

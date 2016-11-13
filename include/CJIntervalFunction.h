@@ -7,7 +7,9 @@ class CJSetInterval : public CJFunctionBase {
  public:
   CJSetInterval(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJSetInterval(js); }
+  CJSetInterval(const CJSetInterval &i);
+
+  CJValue *dup(CJavaScript *) const override { return new CJSetInterval(*this); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 };
@@ -16,7 +18,9 @@ class CJClearInterval : public CJFunctionBase {
  public:
   CJClearInterval(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJClearInterval(js); }
+  CJClearInterval(const CJClearInterval &i);
+
+  CJValue *dup(CJavaScript *) const override { return new CJClearInterval(*this); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 };

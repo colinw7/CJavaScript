@@ -8,6 +8,12 @@ CJBooleanFunction(CJavaScript *js) :
 {
 }
 
+CJBooleanFunction::
+CJBooleanFunction(const CJBooleanFunction &fn) :
+ CJObjTypeFunction(fn)
+{
+}
+
 CJValueP
 CJBooleanFunction::
 exec(CJavaScript *js, const Values &values)

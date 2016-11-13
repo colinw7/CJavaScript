@@ -6,11 +6,11 @@
 // function calling API with signature: double result = fn(double r);
 class CJGlobalFunction : public CJFunctionBase {
  public:
-  CJGlobalFunction(CJavaScript *js, const std::string &name) :
-   CJFunctionBase(js, name, CJFunctionBase::Type::Global) {
-  }
+  CJGlobalFunction(CJavaScript *js, const std::string &name);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJGlobalFunction(js, name_); }
+  CJGlobalFunction(const CJGlobalFunction &fn);
+
+  CJValue *dup(CJavaScript *) const override { return new CJGlobalFunction(*this); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 

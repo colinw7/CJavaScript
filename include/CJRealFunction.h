@@ -6,11 +6,11 @@
 // function calling API with signature: double result = fn(double r);
 class CJMathFunction : public CJFunctionBase {
  public:
-  CJMathFunction(CJavaScript *js, const std::string &name, CJRealFn1 fn=0) :
-   CJFunctionBase(js, name, CJFunctionBase::Type::Real), fn_(fn) {
-  }
+  CJMathFunction(CJavaScript *js, const std::string &name, CJRealFn1 fn=0);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJMathFunction(js, name_, fn_); }
+  CJMathFunction(const CJMathFunction &fn);
+
+  CJValue *dup(CJavaScript *) const override { return new CJMathFunction(*this); }
 
   bool hasObjectValue() const override { return true; }
 
@@ -27,11 +27,11 @@ class CJMathFunction : public CJFunctionBase {
 // function calling API with signature: double result = fn(double r1, double r2);
 class CJReal2Function : public CJFunctionBase {
  public:
-  CJReal2Function(CJavaScript *js, const std::string &name, CJRealFn2 fn) :
-   CJFunctionBase(js, name, CJFunctionBase::Type::Real2), fn_(fn) {
-  }
+  CJReal2Function(CJavaScript *js, const std::string &name, CJRealFn2 fn);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJReal2Function(js, name_, fn_); }
+  CJReal2Function(const CJReal2Function &fn);
+
+  CJValue *dup(CJavaScript *) const override { return new CJReal2Function(*this); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 
@@ -48,7 +48,9 @@ class CJMinFunction : public CJFunctionBase {
  public:
   CJMinFunction(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJMinFunction(js); }
+  CJMinFunction(const CJMinFunction &fn);
+
+  CJValue *dup(CJavaScript *) const override { return new CJMinFunction(*this); }
 
   bool hasObjectValue() const override { return true; }
 
@@ -64,7 +66,9 @@ class CJMaxFunction : public CJFunctionBase {
  public:
   CJMaxFunction(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJMaxFunction(js); }
+  CJMaxFunction(const CJMaxFunction &fn);
+
+  CJValue *dup(CJavaScript *) const override { return new CJMaxFunction(*this); }
 
   bool hasObjectValue() const override { return true; }
 

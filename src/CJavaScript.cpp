@@ -1747,10 +1747,7 @@ parseString(const std::string &str)
     else if (parse.isAlpha() || parse.isOneOf("_$")) {
       readIdentifier(parse, allowKeyword);
     }
-    else if (parse.isDigit()) {
-      readNumber(parse);
-    }
-    else if (parse.isOneOf("+-.") && parse.isDigitAt(1) && allowUnary) {
+    else if (isNumber(parse, allowUnary)) {
       readNumber(parse);
     }
     else if (parse.isString("//")) {
@@ -2577,6 +2574,30 @@ interpExecFor()
     std::cerr << "interpExecFor: " << *efor << std::endl;
 
   return efor;
+}
+
+bool
+CJavaScript::
+isNumber(CStrParse &parse, bool allowUnary) const
+{
+  if (parse.isDigit())
+    return true;
+
+  if (! allowUnary)
+    return false;
+
+  if      (parse.isOneOf("+-")) {
+    if (parse.isDigitAt(1))
+      return true;
+
+    if (parse.getCharAfter() == '.' && parse.isDigitAt(2))
+      return true;
+  }
+  else if (parse.isOneOf(".")) {
+    return parse.isDigitAt(1);
+  }
+
+  return false;
 }
 
 bool

@@ -28,7 +28,9 @@ class CJArguments : public CJObj {
  public:
   CJArguments(CJavaScript *js, const Values &values=Values());
 
-  CJArguments *dup(CJavaScript *js) const override { return new CJArguments(js, values_); }
+  CJArguments(const CJArguments &args);
+
+  CJArguments *dup(CJavaScript *) const override { return new CJArguments(*this); }
 
   Values values() const { return values_; }
   void setValues(const Values &values) { values_ = values; }

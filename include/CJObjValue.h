@@ -26,7 +26,9 @@ class CJObjValue : public CJValue, public CJNameSpace {
  public:
   CJObjValue(CJavaScript *js, CJObjP obj, const std::string &name);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJObjValue(js, obj_, name_); }
+  CJObjValue(const CJObjValue &value);
+
+  CJValue *dup(CJavaScript *) const override { return new CJObjValue(*this); }
 
   CJavaScript *js() const { return js_; }
 

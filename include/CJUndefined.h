@@ -25,7 +25,9 @@ class CJUndefined : public CJValue {
  public:
   CJUndefined(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJUndefined(js); }
+  CJUndefined(const CJUndefined &undef);
+
+  CJValue *dup(CJavaScript *) const override { return new CJUndefined(*this); }
 
   //---
 

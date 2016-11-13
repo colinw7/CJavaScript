@@ -7,6 +7,12 @@ CJObjectFunction(CJavaScript *js) :
 {
 }
 
+CJObjectFunction::
+CJObjectFunction(const CJObjectFunction &fn) :
+ CJObjTypeFunction(fn)
+{
+}
+
 CJValueP
 CJObjectFunction::
 exec(CJavaScript *js, const Values &values)

@@ -8,6 +8,12 @@ CJArrayFunction(CJavaScript *js) :
 {
 }
 
+CJArrayFunction::
+CJArrayFunction(const CJArrayFunction &fn) :
+ CJObjTypeFunction(fn)
+{
+}
+
 CJValueP
 CJArrayFunction::
 exec(CJavaScript *js, const Values &values)

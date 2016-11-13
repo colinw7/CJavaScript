@@ -1382,6 +1382,12 @@ CJArray(CJavaScript *js, const std::vector<CJValueP> &values) :
   addPseudoProperty("length");
 }
 
+CJArray::
+CJArray(const CJArray &array) :
+ CJObj(array), values_(array.values_), len_(array.len_)
+{
+}
+
 void
 CJArray::
 setValues(const std::vector<CJValueP> &values)

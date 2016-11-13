@@ -39,7 +39,7 @@ CQJImage(CQJavaScript *qjs) :
   CJavaScript *js = qjs_->js();
 
   setStringProperty(js, "src"   , "");
-  setStringProperty(js, "onLoad", "");
+  setStringProperty(js, "onload", "");
 }
 
 CJValueP
@@ -70,13 +70,13 @@ setProperty(CJavaScript *js, const std::string &name, CJValueP value)
   }
   else if (name == "onload") {
     if (value->type() == CJToken::Type::Function) {
-      CJFunctionBaseP fn = CJValue::cast<CJFunctionBase>(value);
+      onLoad_ = CJValue::cast<CJFunctionBase>(value);
 
       CJObjType::Values values;
 
       values.push_back(shared_from_this());
 
-      fn->exec(js, values);
+      onLoad_->exec(js, values);
     }
   }
 }

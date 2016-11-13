@@ -181,13 +181,6 @@ CJObj(const CJObj &obj) :
 {
 }
 
-CJValue *
-CJObj::
-dup(CJavaScript *) const
-{
-  return new CJObj(*this);
-}
-
 const std::string &
 CJObj::
 name() const

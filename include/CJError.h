@@ -76,7 +76,9 @@ class CJError : public CJErrorBase {
  public:
   CJError(CJavaScript *js);
 
-  CJError *dup(CJavaScript *js) const override { return new CJError(js); }
+  CJError(const CJError &error);
+
+  CJError *dup(CJavaScript *) const override { return new CJError(*this); }
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
   void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
@@ -110,7 +112,9 @@ class CJTypeError : public CJErrorBase {
  public:
   CJTypeError(CJavaScript *js);
 
-  CJTypeError *dup(CJavaScript *js) const override { return new CJTypeError(js); }
+  CJTypeError(const CJTypeError &error);
+
+  CJTypeError *dup(CJavaScript *) const override { return new CJTypeError(*this); }
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
   void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
@@ -138,7 +142,9 @@ class CJReferenceError : public CJErrorBase {
  public:
   CJReferenceError(CJavaScript *js);
 
-  CJReferenceError *dup(CJavaScript *js) const override { return new CJReferenceError(js); }
+  CJReferenceError(const CJReferenceError &error);
+
+  CJReferenceError *dup(CJavaScript *) const override { return new CJReferenceError(*this); }
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
   void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
@@ -166,7 +172,9 @@ class CJEvalError : public CJErrorBase {
  public:
   CJEvalError(CJavaScript *js);
 
-  CJEvalError *dup(CJavaScript *js) const override { return new CJEvalError(js); }
+  CJEvalError(const CJEvalError &error);
+
+  CJEvalError *dup(CJavaScript *) const override { return new CJEvalError(*this); }
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
   void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
@@ -194,7 +202,9 @@ class CJRangeError : public CJErrorBase {
  public:
   CJRangeError(CJavaScript *js);
 
-  CJRangeError *dup(CJavaScript *js) const override { return new CJRangeError(js); }
+  CJRangeError(const CJRangeError &error);
+
+  CJRangeError *dup(CJavaScript *) const override { return new CJRangeError(*this); }
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
   void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
@@ -222,7 +232,9 @@ class CJSyntaxError : public CJErrorBase {
  public:
   CJSyntaxError(CJavaScript *js);
 
-  CJSyntaxError *dup(CJavaScript *js) const override { return new CJSyntaxError(js); }
+  CJSyntaxError(const CJSyntaxError &error);
+
+  CJSyntaxError *dup(CJavaScript *) const override { return new CJSyntaxError(*this); }
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
   void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
@@ -250,7 +262,9 @@ class CJURIError : public CJErrorBase {
  public:
   CJURIError(CJavaScript *js);
 
-  CJURIError *dup(CJavaScript *js) const override { return new CJURIError(js); }
+  CJURIError(const CJURIError &error);
+
+  CJURIError *dup(CJavaScript *) const override { return new CJURIError(*this); }
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
   void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;

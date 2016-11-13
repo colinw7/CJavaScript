@@ -25,9 +25,11 @@ class CJTrue : public CJValue {
  public:
   CJTrue(CJavaScript *js);
 
+  CJTrue(const CJTrue &t);
+
   bool isPrimitive() const override { return true; }
 
-  CJValue *dup(CJavaScript *js) const override { return new CJTrue(js); }
+  CJValue *dup(CJavaScript *) const override { return new CJTrue(*this); }
 
   //---
 

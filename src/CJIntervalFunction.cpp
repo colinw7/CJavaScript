@@ -7,6 +7,12 @@ CJSetInterval(CJavaScript *js) :
 {
 }
 
+CJSetInterval::
+CJSetInterval(const CJSetInterval &i) :
+ CJFunctionBase(i)
+{
+}
+
 CJValueP
 CJSetInterval::
 exec(CJavaScript *js, const Values &values)
@@ -28,6 +34,12 @@ exec(CJavaScript *js, const Values &values)
 CJClearInterval::
 CJClearInterval(CJavaScript *js) :
  CJFunctionBase(js, "clearInterval")
+{
+}
+
+CJClearInterval::
+CJClearInterval(const CJClearInterval &i) :
+ CJFunctionBase(i)
 {
 }
 

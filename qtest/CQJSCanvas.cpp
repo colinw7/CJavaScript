@@ -90,6 +90,15 @@ setStrokeJoin(Qt::PenJoinStyle join)
 
 void
 CQJSCanvas::
+setOpacity(double a)
+{
+  ip_->setOpacity(a);
+}
+
+//------
+
+void
+CQJSCanvas::
 fillRect(double x, double y, double w, double h)
 {
   setBrush();

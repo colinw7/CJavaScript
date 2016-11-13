@@ -34,6 +34,12 @@ CJUserObject(CJavaScript *js, CJObjTypeP userType, CJFunctionBaseP userFn) :
 {
 }
 
+CJUserObject::
+CJUserObject(const CJUserObject &obj) :
+ CJObj(obj), userType_(obj.userType_), userFn_(obj.userFn_)
+{
+}
+
 CJValueP
 CJUserObject::
 getProperty(CJavaScript *js, const std::string &name) const

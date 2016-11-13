@@ -4,6 +4,8 @@
 
 namespace {
   long convertKeyCode(int key) {
+    if (key <= 0xFF) return key;
+
     switch (key) {
       case Qt::Key_Left : return 37;
       case Qt::Key_Up   : return 38;

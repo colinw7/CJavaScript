@@ -8,7 +8,11 @@ class CJErrorToStringFunction : public CJFunctionBase {
    CJFunctionBase(base->js(), "toString"), base_(base) {
   }
 
-  CJValue *dup(CJavaScript *) const override { return new CJErrorToStringFunction(base_); }
+  CJErrorToStringFunction(const CJErrorToStringFunction &fn) :
+   CJFunctionBase(fn), base_(fn.base_) {
+  }
+
+  CJValue *dup(CJavaScript *) const override { return new CJErrorToStringFunction(*this); }
 
   CJValueP exec(CJavaScript *js, const Values &) override {
     return js->createStringValue(base_->name());
@@ -59,6 +63,12 @@ CJErrorFunction(CJavaScript *js) :
 {
 }
 
+CJErrorFunction::
+CJErrorFunction(const CJErrorFunction &fn) :
+ CJErrorFunctionBase(fn)
+{
+}
+
 CJValueP
 CJErrorFunction::
 exec(CJavaScript *js, const Values &values)
@@ -76,6 +86,12 @@ exec(CJavaScript *js, const Values &values)
 CJTypeErrorFunction::
 CJTypeErrorFunction(CJavaScript *js) :
  CJErrorFunctionBase(js, "TypeError", CJTypeErrorType::instance(js))
+{
+}
+
+CJTypeErrorFunction::
+CJTypeErrorFunction(const CJTypeErrorFunction &fn) :
+ CJErrorFunctionBase(fn)
 {
 }
 
@@ -99,6 +115,12 @@ CJReferenceErrorFunction(CJavaScript *js) :
 {
 }
 
+CJReferenceErrorFunction::
+CJReferenceErrorFunction(const CJReferenceErrorFunction &fn) :
+ CJErrorFunctionBase(fn)
+{
+}
+
 CJValueP
 CJReferenceErrorFunction::
 exec(CJavaScript *js, const Values &values)
@@ -116,6 +138,12 @@ exec(CJavaScript *js, const Values &values)
 CJEvalErrorFunction::
 CJEvalErrorFunction(CJavaScript *js) :
  CJErrorFunctionBase(js, "EvalError", CJEvalErrorType::instance(js))
+{
+}
+
+CJEvalErrorFunction::
+CJEvalErrorFunction(const CJEvalErrorFunction &fn) :
+ CJErrorFunctionBase(fn)
 {
 }
 
@@ -139,6 +167,12 @@ CJRangeErrorFunction(CJavaScript *js) :
 {
 }
 
+CJRangeErrorFunction::
+CJRangeErrorFunction(const CJRangeErrorFunction &fn) :
+ CJErrorFunctionBase(fn)
+{
+}
+
 CJValueP
 CJRangeErrorFunction::
 exec(CJavaScript *js, const Values &values)
@@ -159,6 +193,12 @@ CJSyntaxErrorFunction(CJavaScript *js) :
 {
 }
 
+CJSyntaxErrorFunction::
+CJSyntaxErrorFunction(const CJSyntaxErrorFunction &fn) :
+ CJErrorFunctionBase(fn)
+{
+}
+
 CJValueP
 CJSyntaxErrorFunction::
 exec(CJavaScript *js, const Values &values)
@@ -176,6 +216,12 @@ exec(CJavaScript *js, const Values &values)
 CJURIErrorFunction::
 CJURIErrorFunction(CJavaScript *js) :
  CJErrorFunctionBase(js, "URIError", CJURIErrorType::instance(js))
+{
+}
+
+CJURIErrorFunction::
+CJURIErrorFunction(const CJURIErrorFunction &fn) :
+ CJErrorFunctionBase(fn)
 {
 }
 

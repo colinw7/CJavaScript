@@ -430,6 +430,12 @@ CJDate(CJavaScript *js, const Values &values) :
 {
 }
 
+CJDate::
+CJDate(const CJDate &d) :
+ CJObj(d), t_(d.t_)
+{
+}
+
 CJValueP
 CJDate::
 getProperty(CJavaScript *js, const std::string &key) const

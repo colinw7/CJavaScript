@@ -22,7 +22,9 @@ class CJErrorFunction : public CJErrorFunctionBase {
  public:
   CJErrorFunction(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJErrorFunction(js); }
+  CJErrorFunction(const CJErrorFunction &error);
+
+  CJValue *dup(CJavaScript *) const override { return new CJErrorFunction(*this); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 };
@@ -34,7 +36,9 @@ class CJTypeErrorFunction : public CJErrorFunctionBase {
  public:
   CJTypeErrorFunction(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJTypeErrorFunction(js); }
+  CJTypeErrorFunction(const CJTypeErrorFunction &error);
+
+  CJValue *dup(CJavaScript *) const override { return new CJTypeErrorFunction(*this); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 };
@@ -46,7 +50,9 @@ class CJReferenceErrorFunction : public CJErrorFunctionBase {
  public:
   CJReferenceErrorFunction(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJReferenceErrorFunction(js); }
+  CJReferenceErrorFunction(const CJReferenceErrorFunction &error);
+
+  CJValue *dup(CJavaScript *) const override { return new CJReferenceErrorFunction(*this); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 };
@@ -58,7 +64,9 @@ class CJEvalErrorFunction : public CJErrorFunctionBase {
  public:
   CJEvalErrorFunction(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJEvalErrorFunction(js); }
+  CJEvalErrorFunction(const CJEvalErrorFunction &error);
+
+  CJValue *dup(CJavaScript *) const override { return new CJEvalErrorFunction(*this); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 };
@@ -70,7 +78,9 @@ class CJRangeErrorFunction : public CJErrorFunctionBase {
  public:
   CJRangeErrorFunction(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJRangeErrorFunction(js); }
+  CJRangeErrorFunction(const CJRangeErrorFunction &error);
+
+  CJValue *dup(CJavaScript *) const override { return new CJRangeErrorFunction(*this); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 };
@@ -82,7 +92,9 @@ class CJSyntaxErrorFunction : public CJErrorFunctionBase {
  public:
   CJSyntaxErrorFunction(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJSyntaxErrorFunction(js); }
+  CJSyntaxErrorFunction(const CJSyntaxErrorFunction &error);
+
+  CJValue *dup(CJavaScript *) const override { return new CJSyntaxErrorFunction(*this); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 };
@@ -94,7 +106,9 @@ class CJURIErrorFunction : public CJErrorFunctionBase {
  public:
   CJURIErrorFunction(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJURIErrorFunction(js); }
+  CJURIErrorFunction(const CJURIErrorFunction &error);
+
+  CJValue *dup(CJavaScript *) const override { return new CJURIErrorFunction(*this); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 };

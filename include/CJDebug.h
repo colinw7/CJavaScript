@@ -21,7 +21,9 @@ class CJDebugObject : public CJObj {
  public:
   CJDebugObject(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJDebugObject(js); }
+  CJDebugObject(const CJDebugObject &obj);
+
+  CJValue *dup(CJavaScript *) const override { return new CJDebugObject(*this); }
 
   CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values) override;
 

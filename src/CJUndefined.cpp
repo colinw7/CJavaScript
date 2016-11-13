@@ -49,6 +49,12 @@ CJUndefined(CJavaScript *js) :
 {
 }
 
+CJUndefined::
+CJUndefined(const CJUndefined &undef) :
+ CJValue(undef)
+{
+}
+
 void
 CJUndefined::
 print(std::ostream &os) const

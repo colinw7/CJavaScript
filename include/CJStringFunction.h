@@ -8,7 +8,9 @@ class CJStringFunction : public CJObjTypeFunction {
  public:
   CJStringFunction(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJStringFunction(js); }
+  CJStringFunction(const CJStringFunction &fn);
+
+  CJValue *dup(CJavaScript *) const override { return new CJStringFunction(*this); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 

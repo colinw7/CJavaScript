@@ -60,10 +60,8 @@ void
 CQJCanvas::
 updateSize()
 {
-  CJavaScript *js = qjs_->js();
-
-  setRealProperty(js, "width" , qjs_->canvas()->width ());
-  setRealProperty(js, "height", qjs_->canvas()->height());
+  setRealProperty(js_, "width" , qjs_->canvas()->width ());
+  setRealProperty(js_, "height", qjs_->canvas()->height());
 }
 
 CJValueP

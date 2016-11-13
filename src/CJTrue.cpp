@@ -56,6 +56,12 @@ CJTrue(CJavaScript *js) :
 {
 }
 
+CJTrue::
+CJTrue(const CJTrue &t) :
+ CJValue(t)
+{
+}
+
 void
 CJTrue::
 print(std::ostream &os) const

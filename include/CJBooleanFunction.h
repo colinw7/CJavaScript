@@ -8,7 +8,9 @@ class CJBooleanFunction : public CJObjTypeFunction {
  public:
   CJBooleanFunction(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJBooleanFunction(js); }
+  CJBooleanFunction(const CJBooleanFunction &fn);
+
+  CJValue *dup(CJavaScript *) const override { return new CJBooleanFunction(*this); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 

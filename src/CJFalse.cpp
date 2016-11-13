@@ -56,6 +56,12 @@ CJFalse(CJavaScript *js) :
 {
 }
 
+CJFalse::
+CJFalse(const CJFalse &f) :
+ CJValue(f)
+{
+}
+
 void
 CJFalse::
 print(std::ostream &os) const

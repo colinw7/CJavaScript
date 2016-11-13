@@ -3,6 +3,18 @@
 #include <CJUtil.h>
 #include <CUtf8.h>
 
+CJGlobalFunction::
+CJGlobalFunction(CJavaScript *js, const std::string &name) :
+ CJFunctionBase(js, name, CJFunctionBase::Type::Global)
+{
+}
+
+CJGlobalFunction::
+CJGlobalFunction(const CJGlobalFunction &fn) :
+ CJFunctionBase(fn)
+{
+}
+
 CJValueP
 CJGlobalFunction::
 exec(CJavaScript *js, const Values &values)

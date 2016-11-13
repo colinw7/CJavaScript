@@ -8,6 +8,12 @@ CJRegExpFunction(CJavaScript *js) :
 {
 }
 
+CJRegExpFunction::
+CJRegExpFunction(const CJRegExpFunction &fn) :
+ CJObjTypeFunction(fn)
+{
+}
+
 CJValueP
 CJRegExpFunction::
 exec(CJavaScript *js, const Values &values)

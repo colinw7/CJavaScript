@@ -27,8 +27,10 @@ class CJNull : public CJValue {
  private:
   CJNull(CJavaScript *js);
 
+  CJNull(const CJNull &n);
+
  public:
-  CJValue *dup(CJavaScript *js) const override { return new CJNull(js); }
+  CJValue *dup(CJavaScript *) const override { return new CJNull(*this); }
 
   //---
 

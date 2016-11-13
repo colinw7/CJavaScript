@@ -553,6 +553,12 @@ CJNumber(CJavaScript *js, double real) :
 {
 }
 
+CJNumber::
+CJNumber(const CJNumber &n) :
+ CJObj(n), real_(n.real_), primitive_(n.primitive_)
+{
+}
+
 std::string
 CJNumber::
 toString() const

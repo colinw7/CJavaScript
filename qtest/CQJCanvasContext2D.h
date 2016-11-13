@@ -2,6 +2,7 @@
 #define CQJCanvasContext2D_H
 
 #include <CJObj.h>
+#include <CQJavaScript.h>
 
 class CQJavaScript;
 
@@ -28,6 +29,8 @@ class CQJCanvasContext2D : public CJObj {
   CQJavaScript *qjs() const { return qjs_; }
 
   CJValue *dup(CJavaScript *) const override { return new CQJCanvasContext2D(qjs_); }
+
+  CQJSCanvas *canvas() const { return qjs_->canvas(); }
 
   std::string toString() const override {
     std::ostringstream ss; ss << *this;

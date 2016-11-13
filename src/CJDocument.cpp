@@ -38,6 +38,12 @@ CJDocumentObject(CJavaScript *js) :
   objType_->addObjFunction(js, "write", objType_);
 }
 
+CJDocumentObject::
+CJDocumentObject(const CJDocumentObject &d) :
+ CJObj(d)
+{
+}
+
 CJValueP
 CJDocumentObject::
 execNameFn(CJavaScript *js, const std::string &name, const Values &values)

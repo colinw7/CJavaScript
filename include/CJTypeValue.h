@@ -11,7 +11,9 @@ class CJTypeValue : public CJLValue {
  public:
   CJTypeValue(CJavaScript *js, CJObjTypeP objType, const std::string &name);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJTypeValue(js, objType_, name_); }
+  CJTypeValue(const CJTypeValue &value);
+
+  CJValue *dup(CJavaScript *) const override { return new CJTypeValue(*this); }
 
   CJObjTypeP getObjType() const { return objType_; }
 

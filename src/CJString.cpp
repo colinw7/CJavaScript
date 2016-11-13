@@ -836,6 +836,12 @@ CJString(CJavaScript *js, const std::string &text, char c) :
   addPseudoProperty("length");
 }
 
+CJString::
+CJString(const CJString &str) :
+ CJObj(str), text_(str.text_), c_(str.c_)
+{
+}
+
 CJValueP
 CJString::
 getProperty(CJavaScript *js, const std::string &key) const

@@ -8,6 +8,12 @@ CJStringFunction(CJavaScript *js) :
 {
 }
 
+CJStringFunction::
+CJStringFunction(const CJStringFunction &fn) :
+ CJObjTypeFunction(fn)
+{
+}
+
 CJValueP
 CJStringFunction::
 exec(CJavaScript *js, const Values &values)

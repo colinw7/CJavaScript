@@ -6,11 +6,11 @@
 // object function
 class CJObjFunction : public CJFunctionBase {
  public:
-  CJObjFunction(CJavaScript *js, const std::string &name) :
-   CJFunctionBase(js, name, CJFunctionBase::Type::Object) {
-  }
+  CJObjFunction(CJavaScript *js, const std::string &name);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJObjFunction(js, name_); }
+  CJObjFunction(const CJObjFunction &fn);
+
+  CJValue *dup(CJavaScript *) const override { return new CJObjFunction(*this); }
 
   bool hasObjectValue() const override { return true; }
 

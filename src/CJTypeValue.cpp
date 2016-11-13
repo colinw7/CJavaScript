@@ -7,6 +7,12 @@ CJTypeValue(CJavaScript *js, CJObjTypeP objType, const std::string &name) :
 {
 }
 
+CJTypeValue::
+CJTypeValue(const CJTypeValue &value) :
+ CJLValue(value), js_(value.js_), objType_(value.objType_), name_(value.name_)
+{
+}
+
 bool
 CJTypeValue::
 hasValue() const

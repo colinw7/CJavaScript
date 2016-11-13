@@ -9,6 +9,12 @@ CJFunctionFunction(CJavaScript *js) :
 {
 }
 
+CJFunctionFunction::
+CJFunctionFunction(const CJFunctionFunction &fn) :
+ CJObjTypeFunction(fn)
+{
+}
+
 // new Function([args, ...], body);
 CJValueP
 CJFunctionFunction::

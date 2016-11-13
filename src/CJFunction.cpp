@@ -100,16 +100,6 @@ CJFunction(const CJFunction &f) :
 {
 }
 
-CJValue *
-CJFunction::
-dup(CJavaScript *) const
-{
-  // dup block ?
-  CJFunction *fn = new CJFunction(*this);
-
-  return fn;
-}
-
 void
 CJFunction::
 makeUnique(CJavaScript *js)

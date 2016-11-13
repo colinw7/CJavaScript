@@ -7,6 +7,12 @@ CJNumberFunction(CJavaScript *js) :
 {
 }
 
+CJNumberFunction::
+CJNumberFunction(const CJNumberFunction &fn) :
+ CJObjTypeFunction(fn)
+{
+}
+
 CJValueP
 CJNumberFunction::
 exec(CJavaScript *js, const Values &values)

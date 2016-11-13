@@ -7,7 +7,9 @@ class CJAlertFunction : public CJFunctionBase {
  public:
   CJAlertFunction(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJAlertFunction(js); }
+  CJAlertFunction(const CJAlertFunction &fn);
+
+  CJValue *dup(CJavaScript *) const override { return new CJAlertFunction(*this); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 };

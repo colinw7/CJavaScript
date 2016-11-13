@@ -7,6 +7,12 @@ CJNameSpaceValue(CJavaScript *js, CJNameSpaceP scope, const std::string &name) :
 {
 }
 
+CJNameSpaceValue::
+CJNameSpaceValue(const CJNameSpaceValue &value) :
+ CJLValue(value), js_(value.js_), scope_(value.scope_), name_(value.name_)
+{
+}
+
 std::string
 CJNameSpaceValue::
 toString() const

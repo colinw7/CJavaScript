@@ -40,6 +40,12 @@ CJConsoleObject(CJavaScript *js) :
   objType_->addObjFunction(js, "log", objType_);
 }
 
+CJConsoleObject::
+CJConsoleObject(const CJConsoleObject &c) :
+ CJObj(c)
+{
+}
+
 CJValueP
 CJConsoleObject::
 execNameFn(CJavaScript *js, const std::string &name, const Values &values)

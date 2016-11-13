@@ -32,7 +32,9 @@ class CJBoolean : public CJObj {
  public:
   CJBoolean(CJavaScript *js, bool b=false);
 
-  CJBoolean *dup(CJavaScript *js) const override { return new CJBoolean(js, b_); }
+  CJBoolean(const CJBoolean &b);
+
+  CJBoolean *dup(CJavaScript *) const override { return new CJBoolean(*this); }
 
   void setBool(bool b) { b_ = b; }
   bool getBool() const { return b_; }

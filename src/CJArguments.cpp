@@ -49,6 +49,12 @@ CJArguments(CJavaScript *js, const Values &values) :
   addPseudoProperty("length");
 }
 
+CJArguments::
+CJArguments(const CJArguments &args) :
+ CJObj(args), values_(args.values_), callee_(args.callee_)
+{
+}
+
 void
 CJArguments::
 addValue(CJValueP value)

@@ -27,9 +27,9 @@ class CJGetterSetter : public CJValue, public CJNameSpace {
   CJGetterSetter(CJavaScript *js, CJFunctionP getter=CJFunctionP(),
                  CJFunctionP setter=CJFunctionP());
 
-  CJValue *dup(CJavaScript *js) const override {
-    return new CJGetterSetter(js, getter_, setter_);
-  }
+  CJGetterSetter(const CJGetterSetter &gs);
+
+  CJValue *dup(CJavaScript *) const override { return new CJGetterSetter(*this); }
 
   CJavaScript *js() const { return js_; }
 

@@ -9,9 +9,9 @@ class CJBindFunction : public CJFunctionBase {
   CJBindFunction(CJavaScript *js, CJFunctionBaseP function,
                  CJValueP thisValue, const Values &values);
 
-  CJValue *dup(CJavaScript *js) const override {
-    return new CJBindFunction(js, function_, thisValue_, values_);
-  }
+  CJBindFunction(const CJBindFunction &fn);
+
+  CJValue *dup(CJavaScript *) const override { return new CJBindFunction(*this); }
 
   bool hasObjectValue() const override { return true; }
 

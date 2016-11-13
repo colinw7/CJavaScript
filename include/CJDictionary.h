@@ -33,7 +33,7 @@ class CJDictionary : public CJValue, public CJNameSpace {
 
   CJDictionary(const CJDictionary &dict);
 
-  CJValue *dup(CJavaScript *js) const override;
+  CJValue *dup(CJavaScript *) const override { return new CJDictionary(*this); }
 
   void makeUnique();
 

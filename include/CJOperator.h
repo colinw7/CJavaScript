@@ -79,7 +79,9 @@ class CJOperator : public CJToken {
  public:
   CJOperator(const Type &type, int precedence, Associativty associativty, Ary ary);
 
-  CJOperator *dup() const { return new CJOperator(type_, precedence_, associativty_, ary_); }
+  CJOperator(const CJOperator &op);
+
+  CJOperator *dup() const { return new CJOperator(*this); }
 
   Type type() const { return type_; }
 

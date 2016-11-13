@@ -3,6 +3,7 @@ APPNAME = CQJavaScript
 include($$(MAKE_DIR)/qt_app.mk)
 
 SOURCES += \
+CQJMain.cpp \
 CQJavaScript.cpp \
 CQJCanvasContext2D.cpp \
 CQJCanvas.cpp \

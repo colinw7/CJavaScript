@@ -44,6 +44,12 @@ CJDebugObject(CJavaScript *js) :
   objType_->addObjFunction(js, "printUserFunctions", objType_);
 }
 
+CJDebugObject::
+CJDebugObject(const CJDebugObject &d) :
+ CJObj(d)
+{
+}
+
 CJValueP
 CJDebugObject::
 execNameFn(CJavaScript *js, const std::string &name, const Values &values)

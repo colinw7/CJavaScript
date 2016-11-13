@@ -21,7 +21,9 @@ class CJUserObject : public CJObj {
  public:
   CJUserObject(CJavaScript *js, CJObjTypeP userType, CJFunctionBaseP userFn);
 
-  CJValue *dup(CJavaScript *) const override { return new CJUserObject(js_, userType_, userFn_); }
+  CJUserObject(const CJUserObject &obj);
+
+  CJValue *dup(CJavaScript *) const override { return new CJUserObject(*this); }
 
   CJFunctionBaseP userFn() const { return userFn_; }
 

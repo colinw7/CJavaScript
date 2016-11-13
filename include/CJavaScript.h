@@ -510,15 +510,15 @@ class CJavaScript {
 
   //---
 
- private:
-  void initNameMaps();
-
   template<typename FUNC, typename PROTO>
   void defineObjectT(CJavaScript *js, const std::string &name) {
     js->defineObject(name, CJObjTypeFunctionP(new FUNC(js)), CJObjP(new PROTO(js)));
   }
 
   void defineObject(const std::string &name, CJObjTypeFunctionP typeFn, CJObjP value);
+
+ private:
+  void initNameMaps();
 
   bool loadText(const std::string &str);
 
@@ -545,6 +545,8 @@ class CJavaScript {
   CJToken::Type lastTokenType() const;
 
   std::pair<bool, CJKeyword::Type> isKeyword(const std::string &name) const;
+
+  bool isNumber(CStrParse &parse, bool allowUnary) const;
 
   bool isInterpDictionary() const;
   bool isInterpForIn() const;

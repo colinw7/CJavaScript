@@ -11,6 +11,12 @@ CJCallFunction(CJavaScript *js, CJFunctionBaseP function, Type type, CJObjTypeP 
 {
 }
 
+CJCallFunction::
+CJCallFunction(const CJCallFunction &fn) :
+ CJFunctionBase(fn), function_(fn.function_), type_(fn.type_), objType_(fn.objType_)
+{
+}
+
 CJValueP
 CJCallFunction::
 getProperty(CJavaScript *js, const std::string &name) const

@@ -8,7 +8,7 @@ class CJDateFunction : public CJObjTypeFunction {
  public:
   CJDateFunction(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJDateFunction(js); }
+  CJValue *dup(CJavaScript *) const override { return new CJDateFunction(*this); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 

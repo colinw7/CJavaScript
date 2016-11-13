@@ -40,7 +40,9 @@ class CJNumber : public CJObj {
  public:
   CJNumber(CJavaScript *js, double real=0.0);
 
-  CJNumber *dup(CJavaScript *js) const override { return new CJNumber(js, real_); }
+  CJNumber(const CJNumber &n);
+
+  CJNumber *dup(CJavaScript *) const override { return new CJNumber(*this); }
 
   bool isPrimitive() const override { return primitive_; }
   void setIsPrimitive(bool b) { primitive_ = b; }

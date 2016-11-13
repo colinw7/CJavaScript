@@ -21,7 +21,9 @@ class CJDocumentObject : public CJObj {
  public:
   CJDocumentObject(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJDocumentObject(js); }
+  CJDocumentObject(const CJDocumentObject &obj);
+
+  CJValue *dup(CJavaScript *) const override { return new CJDocumentObject(*this); }
 
   bool isHost() const override { return true; }
 

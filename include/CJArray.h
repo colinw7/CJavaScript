@@ -39,7 +39,9 @@ class CJArray : public CJObj {
   CJArray(CJavaScript *js, const std::vector<CJValueP> &values);
   CJArray(CJavaScript *js, const IndValues &values, long len);
 
-  CJArray *dup(CJavaScript *js) const override { return new CJArray(js, values_, len_); }
+  CJArray(const CJArray &array);
+
+  CJArray *dup(CJavaScript *) const override { return new CJArray(*this); }
 
   bool isArray() const override { return true; }
 

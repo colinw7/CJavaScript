@@ -9,6 +9,12 @@ CJBindFunction(CJavaScript *js, CJFunctionBaseP function,
 {
 }
 
+CJBindFunction::
+CJBindFunction(const CJBindFunction &fn) :
+ CJFunctionBase(fn), function_(fn.function_), thisValue_(fn.thisValue_), values_(fn.values_)
+{
+}
+
 CJValueP
 CJBindFunction::
 exec(CJavaScript *js, const Values &values)

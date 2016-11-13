@@ -98,3 +98,7 @@
  . Support closure scope unification
  . Ensure new assign variables are created in global scope
  . Improve regexp parse and functions
+
+# 11/13/2016
+ . Update dup method
+ . Fix parse error on -.5

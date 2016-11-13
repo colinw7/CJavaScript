@@ -49,6 +49,12 @@ CJNull(CJavaScript *js) :
 {
 }
 
+CJNull::
+CJNull(const CJNull &n) :
+ CJValue(n)
+{
+}
+
 void
 CJNull::
 print(std::ostream &os) const

@@ -38,6 +38,12 @@ CJObjValue(CJavaScript *js, CJObjP obj, const std::string &name) :
 {
 }
 
+CJObjValue::
+CJObjValue(const CJObjValue &value) :
+ CJValue(value), CJNameSpace(value), js_(value.js_), obj_(value.obj_), name_(value.name_)
+{
+}
+
 CJValueP
 CJObjValue::
 getValue() const

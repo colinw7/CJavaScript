@@ -8,7 +8,9 @@ class CJArrayFunction : public CJObjTypeFunction {
  public:
   CJArrayFunction(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJArrayFunction(js); }
+  CJArrayFunction(const CJArrayFunction &fn);
+
+  CJValue *dup(CJavaScript *) const override { return new CJArrayFunction(*this); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 

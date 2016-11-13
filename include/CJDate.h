@@ -29,7 +29,9 @@ class CJDate : public CJObj {
   CJDate(CJavaScript *js, time_t t=0);
   CJDate(CJavaScript *js, const Values &values);
 
-  CJDate *dup(CJavaScript *js) const override { return new CJDate(js, t_); }
+  CJDate(const CJDate &d);
+
+  CJDate *dup(CJavaScript *) const override { return new CJDate(*this); }
 
   time_t t() const { return t_; }
   void setT(time_t t) { t_ = t; }

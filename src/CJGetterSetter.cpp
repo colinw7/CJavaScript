@@ -38,6 +38,13 @@ CJGetterSetter(CJavaScript *js, CJFunctionP getter, CJFunctionP setter) :
 {
 }
 
+CJGetterSetter::
+CJGetterSetter(const CJGetterSetter &gs) :
+ CJValue(gs), CJNameSpace(gs), js_(gs.js_), getter_(gs.getter_), setter_(gs.setter_),
+ value_(gs.value_)
+{
+}
+
 CJValueP
 CJGetterSetter::
 getValue() const

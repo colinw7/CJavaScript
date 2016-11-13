@@ -8,12 +8,12 @@ class CJObjectTypeFunction : public CJFunctionBase {
  public:
   CJObjectTypeFunction(CJavaScript *js, const std::string &name, CJObjTypeP type=CJObjTypeP());
 
+  CJObjectTypeFunction(const CJObjectTypeFunction &fn);
+
   CJObjTypeP objectType() const { return type_; }
   void setObjectType(CJObjTypeP type) { type_ = type; }
 
-  CJValue *dup(CJavaScript *js) const override {
-    return new CJObjectTypeFunction(js, name_, type_);
-  }
+  CJValue *dup(CJavaScript *) const override { return new CJObjectTypeFunction(*this); }
 
   CJObjTypeP type() const { return type_; }
 

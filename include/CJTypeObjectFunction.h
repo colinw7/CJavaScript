@@ -7,9 +7,9 @@ class CJTypeObjectFunction : public CJFunctionBase {
  public:
   CJTypeObjectFunction(CJavaScript *js, CJObjTypeP obj, const std::string &name);
 
-  CJValue *dup(CJavaScript *js) const override {
-    return new CJTypeObjectFunction(js, objType_, name_);
-  }
+  CJTypeObjectFunction(const CJTypeObjectFunction &fn);
+
+  CJValue *dup(CJavaScript *) const override { return new CJTypeObjectFunction(*this); }
 
   bool hasObjectValue() const override { return hasObjValue_; }
   void setHasObjectValue(bool b) { hasObjValue_ = b; }

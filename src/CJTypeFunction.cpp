@@ -9,6 +9,12 @@ CJTypeFunction(CJavaScript *js, const std::string &name, CJObjTypeP type) :
 {
 }
 
+CJTypeFunction::
+CJTypeFunction(const CJTypeFunction &fn) :
+ CJFunctionBase(fn), type_(fn.type_)
+{
+}
+
 CJValueP
 CJTypeFunction::
 getProperty(CJavaScript *js, const std::string &name) const

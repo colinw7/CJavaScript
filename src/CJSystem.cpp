@@ -9,7 +9,11 @@ class CJSystemExecFunction : public CJFunctionBase {
    CJFunctionBase(js, "exec", CJFunctionBase::Type::System) {
   }
 
-  CJValue *dup(CJavaScript *js) const override { return new CJSystemExecFunction(js); }
+  CJSystemExecFunction(const CJSystemExecFunction &fn) :
+   CJFunctionBase(fn) {
+  }
+
+  CJValue *dup(CJavaScript *) const override { return new CJSystemExecFunction(*this); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 

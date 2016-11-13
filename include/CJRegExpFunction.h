@@ -8,7 +8,9 @@ class CJRegExpFunction : public CJObjTypeFunction {
  public:
   CJRegExpFunction(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJRegExpFunction(js); }
+  CJRegExpFunction(const CJRegExpFunction &fn);
+
+  CJValue *dup(CJavaScript *) const override { return new CJRegExpFunction(*this); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 

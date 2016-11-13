@@ -37,6 +37,12 @@ CJTokenValue(CJavaScript *js, const Tokens &tokens, const CJValueP &value) :
 {
 }
 
+CJTokenValue::
+CJTokenValue(const CJTokenValue &value) :
+ CJValue(value), tokens_(value.tokens_), value_(value.value_)
+{
+}
+
 std::string
 CJTokenValue::
 toString() const

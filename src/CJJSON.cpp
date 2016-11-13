@@ -20,6 +20,18 @@ CJJSON(CJavaScript *js)
 
 //------
 
+CJJSONFunction::
+CJJSONFunction(CJavaScript *js, const std::string &name) :
+ CJFunctionBase(js, name, CJFunctionBase::Type::JSON), name_(name)
+{
+}
+
+CJJSONFunction::
+CJJSONFunction(const CJJSONFunction &fn) :
+ CJFunctionBase(fn)
+{
+}
+
 CJValueP
 CJJSONFunction::
 exec(CJavaScript *js, const Values &values)

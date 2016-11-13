@@ -36,7 +36,7 @@ class CJFunction : public CJFunctionBase {
 
   CJFunction(const CJFunction &f);
 
-  CJValue *dup(CJavaScript *js) const override;
+  CJValue *dup(CJavaScript *) const override { return new CJFunction(*this); }
 
   void makeUnique(CJavaScript *js);
 

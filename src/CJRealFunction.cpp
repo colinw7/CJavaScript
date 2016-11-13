@@ -2,6 +2,18 @@
 #include <CJavaScript.h>
 #include <CJUtil.h>
 
+CJMathFunction::
+CJMathFunction(CJavaScript *js, const std::string &name, CJRealFn1 fn) :
+ CJFunctionBase(js, name, CJFunctionBase::Type::Real), fn_(fn)
+{
+}
+
+CJMathFunction::
+CJMathFunction(const CJMathFunction &fn) :
+ CJFunctionBase(fn), fn_(fn.fn_)
+{
+}
+
 CJValueP
 CJMathFunction::
 exec(CJavaScript *js, const Values &values)
@@ -48,6 +60,18 @@ print(std::ostream &os) const
 
 //------
 
+CJReal2Function::
+CJReal2Function(CJavaScript *js, const std::string &name, CJRealFn2 fn) :
+ CJFunctionBase(js, name, CJFunctionBase::Type::Real2), fn_(fn)
+{
+}
+
+CJReal2Function::
+CJReal2Function(const CJReal2Function &fn) :
+ CJFunctionBase(fn), fn_(fn.fn_)
+{
+}
+
 CJValueP
 CJReal2Function::
 exec(CJavaScript *js, const Values &values)
@@ -86,6 +110,12 @@ print(std::ostream &os) const
 CJMinFunction::
 CJMinFunction(CJavaScript *js) :
  CJFunctionBase(js, "min", CJFunctionBase::Type::Min)
+{
+}
+
+CJMinFunction::
+CJMinFunction(const CJMinFunction &fn) :
+ CJFunctionBase(fn)
 {
 }
 
@@ -128,6 +158,12 @@ print(std::ostream &os) const
 CJMaxFunction::
 CJMaxFunction(CJavaScript *js) :
  CJFunctionBase(js, "max", CJFunctionBase::Type::Max)
+{
+}
+
+CJMaxFunction::
+CJMaxFunction(const CJMaxFunction &fn) :
+ CJFunctionBase(fn)
 {
 }
 

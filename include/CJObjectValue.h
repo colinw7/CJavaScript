@@ -12,7 +12,9 @@ class CJObjectValue : public CJLValue {
  public:
   CJObjectValue(CJavaScript *js, CJObjP obj, const std::string &name);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJObjectValue(js, obj_, name_); }
+  CJObjectValue(const CJObjectValue &value);
+
+  CJValue *dup(CJavaScript *) const override { return new CJObjectValue(*this); }
 
   CJObjP getObject() const { return obj_; }
 

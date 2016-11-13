@@ -57,15 +57,6 @@ CJDictionary(const CJDictionary &dict) :
 {
 }
 
-CJValue *
-CJDictionary::
-dup(CJavaScript *) const
-{
-  CJDictionary *dict = new CJDictionary(*this);
-
-  return dict;
-}
-
 std::string
 CJDictionary::
 toString() const

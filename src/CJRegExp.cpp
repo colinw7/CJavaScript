@@ -153,6 +153,13 @@ CJRegExp(CJavaScript *js, const std::string &text) :
   addPseudoProperty("source");
 }
 
+CJRegExp::
+CJRegExp(const CJRegExp &regexp) :
+ CJObj(regexp), text_(regexp.text_), global_(regexp.global_), multiLine_(regexp.multiLine_),
+ lastIndex_(regexp.lastIndex_), regexp_(regexp.regexp_)
+{
+}
+
 void
 CJRegExp::
 setText(const std::string &str)

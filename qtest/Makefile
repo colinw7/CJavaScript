@@ -48,7 +48,8 @@ OBJECTS_DIR   = $(OBJ_DIR)/CQJavaScript/
 
 ####### Files
 
-SOURCES       = CQJavaScript.cpp \
+SOURCES       = CQJMain.cpp \
+		CQJavaScript.cpp \
 		CQJCanvasContext2D.cpp \
 		CQJCanvas.cpp \
 		CQJCanvasFontMetrics.cpp \
@@ -77,7 +78,8 @@ SOURCES       = CQJavaScript.cpp \
 		.moc/moc_CQJSCanvas.cpp \
 		.moc/moc_CQJWindow.cpp \
 		.moc/moc_CQJWindowTimer.cpp
-OBJECTS       = $(OBJ_DIR)/CQJavaScript/CQJavaScript.o \
+OBJECTS       = $(OBJ_DIR)/CQJavaScript/CQJMain.o \
+		$(OBJ_DIR)/CQJavaScript/CQJavaScript.o \
 		$(OBJ_DIR)/CQJavaScript/CQJCanvasContext2D.o \
 		$(OBJ_DIR)/CQJavaScript/CQJCanvas.o \
 		$(OBJ_DIR)/CQJavaScript/CQJCanvasFontMetrics.o \
@@ -123,7 +125,6 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_core_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_dbus.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_dbus_private.pri \
-		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_declarative.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_eglfs_device_lib_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_gui.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_gui_private.pri \
@@ -143,7 +144,6 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_testlib_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_widgets.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_widgets_private.pri \
-		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_x11extras.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_xcb_qpa_lib_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_xml.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_xml_private.pri \
@@ -186,7 +186,8 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		CQJWindow.h \
 		CQJWindowTimer.h \
 		CQJIntervalFunction.h \
-		CQJRequestAnimationFrame.h CQJavaScript.cpp \
+		CQJRequestAnimationFrame.h CQJMain.cpp \
+		CQJavaScript.cpp \
 		CQJCanvasContext2D.cpp \
 		CQJCanvas.cpp \
 		CQJCanvasFontMetrics.cpp \
@@ -252,7 +253,6 @@ Makefile: CQJavaScript.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64/qm
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_core_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_dbus.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_dbus_private.pri \
-		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_declarative.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_eglfs_device_lib_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_gui.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_gui_private.pri \
@@ -272,7 +272,6 @@ Makefile: CQJavaScript.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64/qm
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_testlib_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_widgets.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_widgets_private.pri \
-		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_x11extras.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_xcb_qpa_lib_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_xml.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_xml_private.pri \
@@ -318,7 +317,6 @@ Makefile: CQJavaScript.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64/qm
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_core_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_dbus.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_dbus_private.pri:
-/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_declarative.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_eglfs_device_lib_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_gui.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_gui_private.pri:
@@ -338,7 +336,6 @@ Makefile: CQJavaScript.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64/qm
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_testlib_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_widgets.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_widgets_private.pri:
-/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_x11extras.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_xcb_qpa_lib_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_xml.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_xml_private.pri:
@@ -382,7 +379,7 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents CQJavaScript.h CQJCanvasContext2D.h CQJCanvasFontMetrics.h CQJCanvas.h CQJCanvasImageDataArray.h CQJCanvasImageData.h CQJCanvasLinearGradient.h CQJCanvasPattern.h CQJCanvasRadialGradient.h CQJDialog.h CQJDocument.h CQJEvent.h CQJImage.h CQJObject.h CQJSCanvas.h CQJWindow.h CQJWindowTimer.h CQJIntervalFunction.h CQJRequestAnimationFrame.h $(DISTDIR)/
-	$(COPY_FILE) --parents CQJavaScript.cpp CQJCanvasContext2D.cpp CQJCanvas.cpp CQJCanvasFontMetrics.cpp CQJCanvasImageDataArray.cpp CQJCanvasImageData.cpp CQJCanvasLinearGradient.cpp CQJCanvasPattern.cpp CQJCanvasRadialGradient.cpp CQJDialog.cpp CQJDocument.cpp CQJEvent.cpp CQJImage.cpp CQJObject.cpp CQJSCanvas.cpp CQJWindow.cpp CQJWindowTimer.cpp CQJIntervalFunction.cpp CQJRequestAnimationFrame.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents CQJMain.cpp CQJavaScript.cpp CQJCanvasContext2D.cpp CQJCanvas.cpp CQJCanvasFontMetrics.cpp CQJCanvasImageDataArray.cpp CQJCanvasImageData.cpp CQJCanvasLinearGradient.cpp CQJCanvasPattern.cpp CQJCanvasRadialGradient.cpp CQJDialog.cpp CQJDocument.cpp CQJEvent.cpp CQJImage.cpp CQJObject.cpp CQJSCanvas.cpp CQJWindow.cpp CQJWindowTimer.cpp CQJIntervalFunction.cpp CQJRequestAnimationFrame.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -416,6 +413,7 @@ compiler_moc_header_clean:
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJKeyword.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJIdentifier.h \
 		$(INC_DIR)/CJavaScript/CJObj.h \
@@ -437,15 +435,23 @@ compiler_moc_header_clean:
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJavaScript.h
 	@echo moc CQJavaScript.h && /usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/colinw/git/CJavaScript/qtest -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQApp' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQUtil' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQPixmapCache' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CJavaScript' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQHistoryLineEdit' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CStrParse' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CRegExp' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/COptVal' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/COS' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CAutoPtr' -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include CQJavaScript.h -o .moc/moc_CQJavaScript.cpp
 
@@ -453,6 +459,7 @@ compiler_moc_header_clean:
 		$(INC_DIR)/CJavaScript/CJObjType.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
 		$(INC_DIR)/CJavaScript/CJTypes.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJDictionary.h \
@@ -476,15 +483,23 @@ compiler_moc_header_clean:
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJCanvasFontMetrics.h
 	@echo moc CQJCanvasFontMetrics.h && /usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/colinw/git/CJavaScript/qtest -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQApp' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQUtil' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQPixmapCache' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CJavaScript' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQHistoryLineEdit' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CStrParse' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CRegExp' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/COptVal' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/COS' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CAutoPtr' -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include CQJCanvasFontMetrics.h -o .moc/moc_CQJCanvasFontMetrics.cpp
 
@@ -494,6 +509,7 @@ compiler_moc_header_clean:
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJKeyword.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJIdentifier.h \
 		$(INC_DIR)/CJavaScript/CJObj.h \
@@ -515,15 +531,23 @@ compiler_moc_header_clean:
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJCanvas.h
 	@echo moc CQJCanvas.h && /usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/colinw/git/CJavaScript/qtest -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQApp' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQUtil' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQPixmapCache' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CJavaScript' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQHistoryLineEdit' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CStrParse' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CRegExp' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/COptVal' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/COS' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CAutoPtr' -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include CQJCanvas.h -o .moc/moc_CQJCanvas.cpp
 
@@ -531,6 +555,7 @@ compiler_moc_header_clean:
 		$(INC_DIR)/CJavaScript/CJObjType.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
 		$(INC_DIR)/CJavaScript/CJTypes.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJDictionary.h \
@@ -554,15 +579,23 @@ compiler_moc_header_clean:
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJCanvasImageData.h \
 		CQJCanvasImageDataArray.h
 	@echo moc CQJCanvasImageDataArray.h && /usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/colinw/git/CJavaScript/qtest -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQApp' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQUtil' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQPixmapCache' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CJavaScript' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQHistoryLineEdit' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CStrParse' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CRegExp' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/COptVal' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/COS' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CAutoPtr' -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include CQJCanvasImageDataArray.h -o .moc/moc_CQJCanvasImageDataArray.cpp
@@ -571,6 +604,7 @@ compiler_moc_header_clean:
 		$(INC_DIR)/CJavaScript/CJObjType.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
 		$(INC_DIR)/CJavaScript/CJTypes.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJDictionary.h \
@@ -594,15 +628,23 @@ compiler_moc_header_clean:
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJCanvasImageData.h
 	@echo moc CQJCanvasImageData.h && /usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/colinw/git/CJavaScript/qtest -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQApp' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQUtil' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQPixmapCache' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CJavaScript' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQHistoryLineEdit' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CStrParse' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CRegExp' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/COptVal' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/COS' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CAutoPtr' -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include CQJCanvasImageData.h -o .moc/moc_CQJCanvasImageData.cpp
 
@@ -615,6 +657,7 @@ compiler_moc_header_clean:
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJKeyword.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJIdentifier.h \
 		$(INC_DIR)/CJavaScript/CJObj.h \
@@ -636,15 +679,23 @@ compiler_moc_header_clean:
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJDocument.h
 	@echo moc CQJDocument.h && /usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/colinw/git/CJavaScript/qtest -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQApp' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQUtil' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQPixmapCache' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CJavaScript' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQHistoryLineEdit' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CStrParse' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CRegExp' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/COptVal' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/COS' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CAutoPtr' -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include CQJDocument.h -o .moc/moc_CQJDocument.cpp
 
@@ -653,6 +704,7 @@ compiler_moc_header_clean:
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJKeyword.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJIdentifier.h \
 		$(INC_DIR)/CJavaScript/CJObj.h \
@@ -674,15 +726,23 @@ compiler_moc_header_clean:
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJObject.h
 	@echo moc CQJObject.h && /usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/colinw/git/CJavaScript/qtest -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQApp' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQUtil' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQPixmapCache' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CJavaScript' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQHistoryLineEdit' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CStrParse' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CRegExp' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/COptVal' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/COS' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CAutoPtr' -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include CQJObject.h -o .moc/moc_CQJObject.cpp
 
@@ -696,6 +756,7 @@ compiler_moc_header_clean:
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJKeyword.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJIdentifier.h \
 		$(INC_DIR)/CJavaScript/CJObj.h \
@@ -717,15 +778,23 @@ compiler_moc_header_clean:
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJWindow.h
 	@echo moc CQJWindow.h && /usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/colinw/git/CJavaScript/qtest -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQApp' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQUtil' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQPixmapCache' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CJavaScript' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQHistoryLineEdit' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CStrParse' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CRegExp' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/COptVal' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/COS' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CAutoPtr' -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include CQJWindow.h -o .moc/moc_CQJWindow.cpp
 
@@ -736,6 +805,7 @@ compiler_moc_header_clean:
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJKeyword.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJIdentifier.h \
 		$(INC_DIR)/CJavaScript/CJObj.h \
@@ -757,15 +827,23 @@ compiler_moc_header_clean:
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJWindowTimer.h
 	@echo moc CQJWindowTimer.h && /usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/colinw/git/CJavaScript/qtest -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQApp' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQUtil' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQPixmapCache' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CJavaScript' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CQHistoryLineEdit' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CStrParse' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CRegExp' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/COptVal' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/COS' -I'/home/colinw/git/CJavaScript/qtest/$(INC_DIR)/CAutoPtr' -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include CQJWindowTimer.h -o .moc/moc_CQJWindowTimer.cpp
 
@@ -783,12 +861,13 @@ compiler_clean: compiler_moc_header_clean
 
 ####### Compile
 
-$(OBJ_DIR)/CQJavaScript/CQJavaScript.o: CQJavaScript.cpp CQJavaScript.h \
+$(OBJ_DIR)/CQJavaScript/CQJMain.o: CQJMain.cpp CQJavaScript.h \
 		$(INC_DIR)/CJavaScript/CJavaScript.h \
 		$(INC_DIR)/CJavaScript/CJTypes.h \
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJKeyword.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJIdentifier.h \
 		$(INC_DIR)/CJavaScript/CJObj.h \
@@ -810,15 +889,71 @@ $(OBJ_DIR)/CQJavaScript/CQJavaScript.o: CQJavaScript.cpp CQJavaScript.h \
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
+		$(INC_DIR)/CQApp/CQApp.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJ_DIR)/CQJavaScript/CQJMain.o CQJMain.cpp
+
+$(OBJ_DIR)/CQJavaScript/CQJavaScript.o: CQJavaScript.cpp CQJavaScript.h \
+		$(INC_DIR)/CJavaScript/CJavaScript.h \
+		$(INC_DIR)/CJavaScript/CJTypes.h \
+		$(INC_DIR)/CJavaScript/CJToken.h \
+		$(INC_DIR)/CJavaScript/CJKeyword.h \
+		$(INC_DIR)/CJavaScript/CJNameSpace.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
+		$(INC_DIR)/COptVal/COptVal.h \
+		$(INC_DIR)/CJavaScript/CJIdentifier.h \
+		$(INC_DIR)/CJavaScript/CJObj.h \
+		$(INC_DIR)/CJavaScript/CJObjType.h \
+		$(INC_DIR)/CJavaScript/CJDictionary.h \
+		$(INC_DIR)/CJavaScript/CJValue.h \
+		$(INC_DIR)/CJavaScript/CJUndefined.h \
+		$(INC_DIR)/CJavaScript/CJNull.h \
+		$(INC_DIR)/CJavaScript/CJTrue.h \
+		$(INC_DIR)/CJavaScript/CJFalse.h \
+		$(INC_DIR)/CJavaScript/CJBoolean.h \
+		$(INC_DIR)/CJavaScript/CJNumber.h \
+		$(INC_DIR)/CJavaScript/CJUtil.h \
+		$(INC_DIR)/COS/COSNaN.h \
+		$(INC_DIR)/CJavaScript/CJString.h \
+		$(INC_DIR)/CJavaScript/CJArray.h \
+		$(INC_DIR)/CJavaScript/CJOperator.h \
+		$(INC_DIR)/CJavaScript/CJFunctionBase.h \
+		$(INC_DIR)/CJavaScript/CJRegExp.h \
+		$(INC_DIR)/CRegExp/CRegExp.h \
+		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
+		$(INC_DIR)/CJavaScript/CJLValue.h \
+		$(INC_DIR)/CJavaScript/CJObject.h \
+		$(INC_DIR)/CJavaScript/CJTypeValue.h \
+		$(INC_DIR)/CJavaScript/CJUserObject.h \
+		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
+		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
+		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
+		$(INC_DIR)/CJavaScript/CJExecData.h \
+		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJSCanvas.h \
 		CQJWindow.h \
 		CQJObject.h \
@@ -826,7 +961,6 @@ $(OBJ_DIR)/CQJavaScript/CQJavaScript.o: CQJavaScript.cpp CQJavaScript.h \
 		CQJImage.h \
 		CQJCanvas.h \
 		CQJCanvasContext2D.h \
-		$(INC_DIR)/CQApp/CQApp.h \
 		CQHistoryLineEdit.h \
 		$(INC_DIR)/CAutoPtr/CAutoPtr.h \
 		CQJDialog.h \
@@ -841,12 +975,12 @@ $(OBJ_DIR)/CQJavaScript/CQJCanvasContext2D.o: CQJCanvasContext2D.cpp CQJCanvasCo
 		$(INC_DIR)/CJavaScript/CJObjType.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
 		$(INC_DIR)/CJavaScript/CJTypes.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJDictionary.h \
 		$(INC_DIR)/CJavaScript/CJValue.h \
-		CQJCanvasFontMetrics.h \
-		CQJObject.h \
+		CQJavaScript.h \
 		$(INC_DIR)/CJavaScript/CJavaScript.h \
 		$(INC_DIR)/CJavaScript/CJKeyword.h \
 		$(INC_DIR)/CJavaScript/CJIdentifier.h \
@@ -865,22 +999,31 @@ $(OBJ_DIR)/CQJavaScript/CQJCanvasContext2D.o: CQJCanvasContext2D.cpp CQJCanvasCo
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
+		CQJCanvasFontMetrics.h \
+		CQJObject.h \
 		CQJCanvasLinearGradient.h \
 		CQJCanvasRadialGradient.h \
 		CQJCanvasPattern.h \
 		CQJCanvasImageData.h \
 		CQJSCanvas.h \
 		CQJImage.h \
-		CQJavaScript.h \
 		CQJUtil.h \
 		$(INC_DIR)/CStrParse/CStrParse.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJ_DIR)/CQJavaScript/CQJCanvasContext2D.o CQJCanvasContext2D.cpp
@@ -892,6 +1035,7 @@ $(OBJ_DIR)/CQJavaScript/CQJCanvas.o: CQJCanvas.cpp CQJCanvas.h \
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJKeyword.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJIdentifier.h \
 		$(INC_DIR)/CJavaScript/CJObj.h \
@@ -913,18 +1057,26 @@ $(OBJ_DIR)/CQJavaScript/CQJCanvas.o: CQJCanvas.cpp CQJCanvas.h \
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJCanvasContext2D.h \
-		CQJSCanvas.h \
 		CQJavaScript.h \
+		CQJSCanvas.h \
 		CQJImage.h \
 		$(INC_DIR)/CStrParse/CStrParse.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJ_DIR)/CQJavaScript/CQJCanvas.o CQJCanvas.cpp
@@ -934,6 +1086,7 @@ $(OBJ_DIR)/CQJavaScript/CQJCanvasFontMetrics.o: CQJCanvasFontMetrics.cpp CQJCanv
 		$(INC_DIR)/CJavaScript/CJObjType.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
 		$(INC_DIR)/CJavaScript/CJTypes.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJDictionary.h \
@@ -957,15 +1110,23 @@ $(OBJ_DIR)/CQJavaScript/CQJCanvasFontMetrics.o: CQJCanvasFontMetrics.cpp CQJCanv
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJavaScript.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJ_DIR)/CQJavaScript/CQJCanvasFontMetrics.o CQJCanvasFontMetrics.cpp
 
@@ -974,6 +1135,7 @@ $(OBJ_DIR)/CQJavaScript/CQJCanvasImageDataArray.o: CQJCanvasImageDataArray.cpp C
 		$(INC_DIR)/CJavaScript/CJObjType.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
 		$(INC_DIR)/CJavaScript/CJTypes.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJDictionary.h \
@@ -997,15 +1159,23 @@ $(OBJ_DIR)/CQJavaScript/CQJCanvasImageDataArray.o: CQJCanvasImageDataArray.cpp C
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJCanvasImageData.h \
 		CQJavaScript.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJ_DIR)/CQJavaScript/CQJCanvasImageDataArray.o CQJCanvasImageDataArray.cpp
@@ -1015,6 +1185,7 @@ $(OBJ_DIR)/CQJavaScript/CQJCanvasImageData.o: CQJCanvasImageData.cpp CQJCanvasIm
 		$(INC_DIR)/CJavaScript/CJObjType.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
 		$(INC_DIR)/CJavaScript/CJTypes.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJDictionary.h \
@@ -1038,15 +1209,23 @@ $(OBJ_DIR)/CQJavaScript/CQJCanvasImageData.o: CQJCanvasImageData.cpp CQJCanvasIm
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJCanvasImageDataArray.h \
 		CQJavaScript.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJ_DIR)/CQJavaScript/CQJCanvasImageData.o CQJCanvasImageData.cpp
@@ -1056,6 +1235,7 @@ $(OBJ_DIR)/CQJavaScript/CQJCanvasLinearGradient.o: CQJCanvasLinearGradient.cpp C
 		$(INC_DIR)/CJavaScript/CJObjType.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
 		$(INC_DIR)/CJavaScript/CJTypes.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJDictionary.h \
@@ -1079,15 +1259,23 @@ $(OBJ_DIR)/CQJavaScript/CQJCanvasLinearGradient.o: CQJCanvasLinearGradient.cpp C
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJUtil.h \
 		$(INC_DIR)/CStrParse/CStrParse.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJ_DIR)/CQJavaScript/CQJCanvasLinearGradient.o CQJCanvasLinearGradient.cpp
@@ -1097,6 +1285,7 @@ $(OBJ_DIR)/CQJavaScript/CQJCanvasPattern.o: CQJCanvasPattern.cpp CQJCanvasPatter
 		$(INC_DIR)/CJavaScript/CJObjType.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
 		$(INC_DIR)/CJavaScript/CJTypes.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJDictionary.h \
@@ -1120,15 +1309,23 @@ $(OBJ_DIR)/CQJavaScript/CQJCanvasPattern.o: CQJCanvasPattern.cpp CQJCanvasPatter
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
-		$(INC_DIR)/CJavaScript/CJPropertyData.h
+		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJ_DIR)/CQJavaScript/CQJCanvasPattern.o CQJCanvasPattern.cpp
 
 $(OBJ_DIR)/CQJavaScript/CQJCanvasRadialGradient.o: CQJCanvasRadialGradient.cpp CQJCanvasRadialGradient.h \
@@ -1136,6 +1333,7 @@ $(OBJ_DIR)/CQJavaScript/CQJCanvasRadialGradient.o: CQJCanvasRadialGradient.cpp C
 		$(INC_DIR)/CJavaScript/CJObjType.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
 		$(INC_DIR)/CJavaScript/CJTypes.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJDictionary.h \
@@ -1159,15 +1357,23 @@ $(OBJ_DIR)/CQJavaScript/CQJCanvasRadialGradient.o: CQJCanvasRadialGradient.cpp C
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJUtil.h \
 		$(INC_DIR)/CStrParse/CStrParse.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJ_DIR)/CQJavaScript/CQJCanvasRadialGradient.o CQJCanvasRadialGradient.cpp
@@ -1179,6 +1385,7 @@ $(OBJ_DIR)/CQJavaScript/CQJDialog.o: CQJDialog.cpp CQJDialog.h \
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJKeyword.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJIdentifier.h \
 		$(INC_DIR)/CJavaScript/CJObj.h \
@@ -1200,15 +1407,23 @@ $(OBJ_DIR)/CQJavaScript/CQJDialog.o: CQJDialog.cpp CQJDialog.h \
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQHistoryLineEdit.h \
 		$(INC_DIR)/CAutoPtr/CAutoPtr.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJ_DIR)/CQJavaScript/CQJDialog.o CQJDialog.cpp
@@ -1220,6 +1435,7 @@ $(OBJ_DIR)/CQJavaScript/CQJDocument.o: CQJDocument.cpp CQJDocument.h \
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJKeyword.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJIdentifier.h \
 		$(INC_DIR)/CJavaScript/CJObj.h \
@@ -1241,15 +1457,23 @@ $(OBJ_DIR)/CQJavaScript/CQJDocument.o: CQJDocument.cpp CQJDocument.h \
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJavaScript.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJ_DIR)/CQJavaScript/CQJDocument.o CQJDocument.cpp
 
@@ -1260,6 +1484,7 @@ $(OBJ_DIR)/CQJavaScript/CQJEvent.o: CQJEvent.cpp CQJEvent.h \
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJKeyword.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJIdentifier.h \
 		$(INC_DIR)/CJavaScript/CJObj.h \
@@ -1281,15 +1506,23 @@ $(OBJ_DIR)/CQJavaScript/CQJEvent.o: CQJEvent.cpp CQJEvent.h \
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJavaScript.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJ_DIR)/CQJavaScript/CQJEvent.o CQJEvent.cpp
 
@@ -1300,6 +1533,7 @@ $(OBJ_DIR)/CQJavaScript/CQJImage.o: CQJImage.cpp CQJImage.h \
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJKeyword.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJIdentifier.h \
 		$(INC_DIR)/CJavaScript/CJObj.h \
@@ -1321,15 +1555,23 @@ $(OBJ_DIR)/CQJavaScript/CQJImage.o: CQJImage.cpp CQJImage.h \
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJavaScript.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJ_DIR)/CQJavaScript/CQJImage.o CQJImage.cpp
 
@@ -1339,6 +1581,7 @@ $(OBJ_DIR)/CQJavaScript/CQJObject.o: CQJObject.cpp CQJObject.h \
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJKeyword.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJIdentifier.h \
 		$(INC_DIR)/CJavaScript/CJObj.h \
@@ -1360,16 +1603,23 @@ $(OBJ_DIR)/CQJavaScript/CQJObject.o: CQJObject.cpp CQJObject.h \
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
-		$(INC_DIR)/CJavaScript/CJFunction.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJavaScript.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJ_DIR)/CQJavaScript/CQJObject.o CQJObject.cpp
 
@@ -1381,6 +1631,7 @@ $(OBJ_DIR)/CQJavaScript/CQJSCanvas.o: CQJSCanvas.cpp CQJSCanvas.h \
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJKeyword.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJIdentifier.h \
 		$(INC_DIR)/CJavaScript/CJObj.h \
@@ -1402,15 +1653,23 @@ $(OBJ_DIR)/CQJavaScript/CQJSCanvas.o: CQJSCanvas.cpp CQJSCanvas.h \
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJDocument.h \
 		CQJEvent.h \
 		CQJavaScript.h
@@ -1423,6 +1682,7 @@ $(OBJ_DIR)/CQJavaScript/CQJWindow.o: CQJWindow.cpp CQJWindow.h \
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJKeyword.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJIdentifier.h \
 		$(INC_DIR)/CJavaScript/CJObj.h \
@@ -1444,15 +1704,23 @@ $(OBJ_DIR)/CQJavaScript/CQJWindow.o: CQJWindow.cpp CQJWindow.h \
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJWindowTimer.h \
 		CQJSCanvas.h \
 		CQJavaScript.h \
@@ -1467,6 +1735,7 @@ $(OBJ_DIR)/CQJavaScript/CQJWindowTimer.o: CQJWindowTimer.cpp CQJWindowTimer.h \
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJKeyword.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJIdentifier.h \
 		$(INC_DIR)/CJavaScript/CJObj.h \
@@ -1488,15 +1757,23 @@ $(OBJ_DIR)/CQJavaScript/CQJWindowTimer.o: CQJWindowTimer.cpp CQJWindowTimer.h \
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJavaScript.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJ_DIR)/CQJavaScript/CQJWindowTimer.o CQJWindowTimer.cpp
 
@@ -1506,6 +1783,7 @@ $(OBJ_DIR)/CQJavaScript/CQJIntervalFunction.o: CQJIntervalFunction.cpp CQJInterv
 		$(INC_DIR)/CJavaScript/CJObjType.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
 		$(INC_DIR)/CJavaScript/CJTypes.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJDictionary.h \
@@ -1529,15 +1807,23 @@ $(OBJ_DIR)/CQJavaScript/CQJIntervalFunction.o: CQJIntervalFunction.cpp CQJInterv
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJavaScript.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJ_DIR)/CQJavaScript/CQJIntervalFunction.o CQJIntervalFunction.cpp
 
@@ -1547,6 +1833,7 @@ $(OBJ_DIR)/CQJavaScript/CQJRequestAnimationFrame.o: CQJRequestAnimationFrame.cpp
 		$(INC_DIR)/CJavaScript/CJObjType.h \
 		$(INC_DIR)/CJavaScript/CJNameSpace.h \
 		$(INC_DIR)/CJavaScript/CJTypes.h \
+		$(INC_DIR)/CJavaScript/CJPropertyValue.h \
 		$(INC_DIR)/COptVal/COptVal.h \
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJDictionary.h \
@@ -1570,15 +1857,23 @@ $(OBJ_DIR)/CQJavaScript/CQJRequestAnimationFrame.o: CQJRequestAnimationFrame.cpp
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
+		$(INC_DIR)/CJavaScript/CJFunction.h \
 		$(INC_DIR)/CJavaScript/CJLValue.h \
 		$(INC_DIR)/CJavaScript/CJObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeValue.h \
 		$(INC_DIR)/CJavaScript/CJUserObject.h \
 		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
 		$(INC_DIR)/CJavaScript/CJExecBlock.h \
+		$(INC_DIR)/CJavaScript/CJExecStatement.h \
+		$(INC_DIR)/CJavaScript/CJExecExpression.h \
+		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
 		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
 		$(INC_DIR)/CJavaScript/CJExecData.h \
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
+		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
+		$(INC_DIR)/CJavaScript/CJRealFunction.h \
+		$(INC_DIR)/CJavaScript/CJRandFunction.h \
 		CQJSCanvas.h \
 		CQJavaScript.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJ_DIR)/CQJavaScript/CQJRequestAnimationFrame.o CQJRequestAnimationFrame.cpp

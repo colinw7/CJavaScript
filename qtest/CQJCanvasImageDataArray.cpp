@@ -41,11 +41,9 @@ indexValue(long i) const
   int w = data_->qimage().width ();
   int h = data_->qimage().height();
 
-  CJavaScript *js = qjs_->js();
-
   if (i1 < 0 || i1 >= w*h)
     //return CJValueP();
-    return js->createNumberValue(0L);
+    return js_->createNumberValue(0L);
 
   int y = i1 / w;
   int x = i1 % w;
@@ -59,7 +57,7 @@ indexValue(long i) const
   else if (i0 == 2) c = qBlue (rgb);
   else if (i0 == 3) c = qAlpha(rgb);
 
-  return js->createNumberValue(c);
+  return js_->createNumberValue(c);
 }
 
 void

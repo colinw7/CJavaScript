@@ -7,7 +7,9 @@ class CJRequireFunction : public CJFunctionBase {
  public:
   CJRequireFunction(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJRequireFunction(js); }
+  CJRequireFunction(const CJRequireFunction &fn);
+
+  CJValue *dup(CJavaScript *) const override { return new CJRequireFunction(*this); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 };

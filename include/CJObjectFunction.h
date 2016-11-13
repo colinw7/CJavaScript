@@ -8,7 +8,9 @@ class CJObjectFunction : public CJObjTypeFunction {
  public:
   CJObjectFunction(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJObjectFunction(js); }
+  CJObjectFunction(const CJObjectFunction &fn);
+
+  CJValue *dup(CJavaScript *) const override { return new CJObjectFunction(*this); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
 

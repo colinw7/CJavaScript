@@ -13,7 +13,7 @@ class CQJDialog : public QFrame {
   Q_OBJECT
 
  public:
-  CQJDialog(CQJavaScript *window);
+  CQJDialog(CQJavaScript *js);
 
   QSize sizeHint() const;
 

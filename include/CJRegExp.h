@@ -40,7 +40,9 @@ class CJRegExp : public CJObj {
  public:
   CJRegExp(CJavaScript *js, const std::string &text="");
 
-  CJRegExp *dup(CJavaScript *js) const override { return new CJRegExp(js, text_); }
+  CJRegExp(const CJRegExp &regexp);
+
+  CJRegExp *dup(CJavaScript *) const override { return new CJRegExp(*this); }
 
   const std::string &text() const { return text_; }
   void setText(const std::string &str);

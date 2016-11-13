@@ -27,7 +27,9 @@ class CJTokenValue : public CJValue {
  public:
   CJTokenValue(CJavaScript *js, const Tokens &tokens=Tokens(), const CJValueP &value=CJValueP());
 
-  CJValue *dup(CJavaScript *js) const { return new CJTokenValue(js, tokens_, value_); }
+  CJTokenValue(const CJTokenValue &value);
+
+  CJValue *dup(CJavaScript *) const { return new CJTokenValue(*this); }
 
   const Tokens &tokens() const { return tokens_; }
   void setTokens(const Tokens &tokens) { tokens_ = tokens; }

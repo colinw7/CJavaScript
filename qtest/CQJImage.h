@@ -54,8 +54,9 @@ class CQJImage : public CQJObject {
   void print(std::ostream &os) const override { os << "image"; }
 
  private:
-  QImage qimage_;
-  Repeat repeat_;
+  QImage          qimage_;
+  Repeat          repeat_;
+  CJFunctionBaseP onLoad_;
 };
 
 #endif

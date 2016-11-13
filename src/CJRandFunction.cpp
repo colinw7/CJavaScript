@@ -1,6 +1,18 @@
 #include <CJRandFunction.h>
 #include <CJavaScript.h>
 
+CJRandFunction::
+CJRandFunction(CJavaScript *js) :
+ CJFunctionBase(js, "random", CJFunctionBase::Type::Random)
+{
+}
+
+CJRandFunction::
+CJRandFunction(const CJRandFunction &fn) :
+ CJFunctionBase(fn)
+{
+}
+
 CJValueP
 CJRandFunction::
 exec(CJavaScript *js, const Values &)

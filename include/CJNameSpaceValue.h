@@ -7,7 +7,9 @@ class CJNameSpaceValue : public CJLValue {
  public:
   CJNameSpaceValue(CJavaScript *js, CJNameSpaceP scope, const std::string &name);
 
-  CJValue *dup(CJavaScript *js) const override { return new CJNameSpaceValue(js, scope_, name_); }
+  CJNameSpaceValue(const CJNameSpaceValue &value);
+
+  CJValue *dup(CJavaScript *) const override { return new CJNameSpaceValue(*this); }
 
   //---
 

@@ -6,6 +6,12 @@ CJAlertFunction(CJavaScript *js) :
 {
 }
 
+CJAlertFunction::
+CJAlertFunction(const CJAlertFunction &fn) :
+ CJFunctionBase(fn)
+{
+}
+
 CJValueP
 CJAlertFunction::
 exec(CJavaScript *, const Values &values)

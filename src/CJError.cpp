@@ -159,6 +159,12 @@ CJError(CJavaScript *js) :
 {
 }
 
+CJError::
+CJError(const CJError &error) :
+ CJErrorBase(error), value_(error.value_)
+{
+}
+
 CJValueP
 CJError::
 getProperty(CJavaScript *js, const std::string &key) const
@@ -213,6 +219,12 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 CJTypeError::
 CJTypeError(CJavaScript *js) :
  CJErrorBase(js, CJTypeErrorType::instance(js), "TypeError")
+{
+}
+
+CJTypeError::
+CJTypeError(const CJTypeError &error) :
+ CJErrorBase(error)
 {
 }
 
@@ -273,6 +285,12 @@ CJReferenceError(CJavaScript *js) :
 {
 }
 
+CJReferenceError::
+CJReferenceError(const CJReferenceError &error) :
+ CJErrorBase(error)
+{
+}
+
 CJValueP
 CJReferenceError::
 getProperty(CJavaScript *js, const std::string &key) const
@@ -327,6 +345,12 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 CJEvalError::
 CJEvalError(CJavaScript *js) :
  CJErrorBase(js, CJEvalErrorType::instance(js), "EvalError")
+{
+}
+
+CJEvalError::
+CJEvalError(const CJEvalError &error) :
+ CJErrorBase(error)
 {
 }
 
@@ -387,6 +411,12 @@ CJRangeError(CJavaScript *js) :
 {
 }
 
+CJRangeError::
+CJRangeError(const CJRangeError &error) :
+ CJErrorBase(error)
+{
+}
+
 CJValueP
 CJRangeError::
 getProperty(CJavaScript *js, const std::string &key) const
@@ -444,6 +474,12 @@ CJSyntaxError(CJavaScript *js) :
 {
 }
 
+CJSyntaxError::
+CJSyntaxError(const CJSyntaxError &error) :
+ CJErrorBase(error)
+{
+}
+
 CJValueP
 CJSyntaxError::
 getProperty(CJavaScript *js, const std::string &key) const
@@ -498,6 +534,12 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 CJURIError::
 CJURIError(CJavaScript *js) :
  CJErrorBase(js, CJURIErrorType::instance(js), "URIError")
+{
+}
+
+CJURIError::
+CJURIError(const CJURIError &error) :
+ CJErrorBase(error)
 {
 }
 

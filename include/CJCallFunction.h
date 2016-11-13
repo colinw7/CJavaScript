@@ -15,9 +15,9 @@ class CJCallFunction : public CJFunctionBase {
  public:
   CJCallFunction(CJavaScript *js, CJFunctionBaseP function, Type type, CJObjTypeP objType);
 
-  CJValue *dup(CJavaScript *js) const override {
-    return new CJCallFunction(js, function_, type_, objType_);
-  }
+  CJCallFunction(const CJCallFunction &fn);
+
+  CJValue *dup(CJavaScript *) const override { return new CJCallFunction(*this); }
 
   bool hasObjectValue() const override { return false; }
 
