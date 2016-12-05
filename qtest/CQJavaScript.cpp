@@ -1,5 +1,5 @@
 #include <CQJavaScript.h>
-#include <CQJSCanvas.h>
+#include <CQJCanvasWidget.h>
 #include <CQJWindow.h>
 #include <CQJDocument.h>
 #include <CQJImage.h>
@@ -22,9 +22,12 @@
 
 #include <svg/javascript_svg.h>
 
+CQJavaScript *CQJavaScript::instance_;
+
 CQJavaScript::
 CQJavaScript()
 {
+  instance_ = this;
 }
 
 void
@@ -33,7 +36,7 @@ init()
 {
   QVBoxLayout *layout = new QVBoxLayout(this);
 
-  canvas_ = new CQJSCanvas(this, size_);
+  canvas_ = new CQJCanvasWidget(this, size_);
 
   layout->addWidget(canvas_);
 
@@ -41,21 +44,21 @@ init()
 
   //---
 
-  js_->addObjectType("Image" , CQJImageType ::instance(this));
+  js_->defineObjectT<CQJImageFunction, CQJImage>(js_, "Image");
+
   js_->addObjectType("Canvas", CQJCanvasType::instance(js_));
 
-  jsWindow_          = CJValueP(new CQJWindow         (this));
-  jsDocument_        = CJValueP(new CQJDocument       (this));
-  jsCanvas_          = CJValueP(new CQJCanvas         (this));
-  jsCanvasContext2D_ = CJValueP(new CQJCanvasContext2D(this));
+  jsWindow_   = CJValueP(new CQJWindow  (js_));
+  jsDocument_ = CJValueP(new CQJDocument(js_));
+  jsCanvas_   = CJValueP(new CQJCanvas  (js_));
 
   js_->setProperty("window"  , jsWindow_);
   js_->setProperty("document", jsDocument_);
 
-  js_->setProperty("setInterval"  , CJValueP(new CQJSetInterval  (this)));
-  js_->setProperty("clearInterval", CJValueP(new CQJClearInterval(this)));
+  js_->setProperty("setInterval"  , CJValueP(new CQJSetInterval  (js_)));
+  js_->setProperty("clearInterval", CJValueP(new CQJClearInterval(js_)));
 
-  js_->setProperty("requestAnimationFrame", CJValueP(new CQJRequestAnimationFrame(this)));
+  js_->setProperty("requestAnimationFrame", CJValueP(new CQJRequestAnimationFrame(js_)));
 
   //---
 
@@ -152,7 +155,7 @@ CQJavaScript::
 showDialogSlot()
 {
   if (! dialog_)
-    dialog_ = new CQJDialog(this);
+    dialog_ = new CQJDialog(js_);
 
   dialog_->show();
 }

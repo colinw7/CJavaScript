@@ -1,10 +1,8 @@
 #ifndef CQJObject_H
 #define CQJObject_H
 
+#include <CJObj.h>
 #include <QObject>
-#include <CJavaScript.h>
-
-class CQJavaScript;
 
 class CQJObject : public QObject, public CJObj {
   Q_OBJECT
@@ -15,12 +13,10 @@ class CQJObject : public QObject, public CJObj {
   typedef std::vector<NameValue>          NameValues;
 
  public:
-  CQJObject(CQJavaScript *js, const CJObjTypeP &type);
+  CQJObject(CJavaScript *js, const CJObjTypeP &type);
  ~CQJObject();
 
-  CQJavaScript *qjs() const { return qjs_; }
-
-  CJValue *dup(CJavaScript *) const override { return new CQJObject(qjs_, objType()); }
+  CJValue *dup(CJavaScript *js) const override { return new CQJObject(js, objType()); }
 
   std::string toString() const override {
     std::ostringstream ss; ss << *this;
@@ -45,7 +41,6 @@ class CQJObject : public QObject, public CJObj {
  protected:
   typedef std::map<std::string,CJValueP> EventListeners;
 
-  CQJavaScript*  qjs_ { 0 };
   EventListeners eventListeners_;
 };
 

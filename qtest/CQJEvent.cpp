@@ -1,5 +1,5 @@
 #include <CQJEvent.h>
-#include <CQJavaScript.h>
+#include <CJavaScript.h>
 #include <iostream>
 
 namespace {
@@ -25,35 +25,35 @@ CJObjTypeP CQJEventType::type_;
 
 CJObjTypeP
 CQJEventType::
-instance(CQJavaScript *js)
+instance(CJavaScript *js)
 {
   if (! type_) {
     type_ = CJObjTypeP(new CQJEventType(js));
 
-    js->js()->addObjectType("Event", type_);
+    js->addObjectType("Event", type_);
   }
 
   return type_;
 }
 
 CQJEventType::
-CQJEventType(CQJavaScript *qjs) :
- CJObjType(qjs->js(), CJToken::Type::Object, "Event"), qjs_(qjs)
+CQJEventType(CJavaScript *js) :
+ CJObjType(js, CJToken::Type::Object, "Event")
 {
 }
 
 CJValueP
 CQJEventType::
-construct(CJavaScript *, const Values &)
+construct(CJavaScript *js, const Values &)
 {
-  return CJValueP(new CQJEvent(qjs_, 0));
+  return CJValueP(new CQJEvent(js, CJValueP(), 0));
 }
 
 //------
 
 CQJEvent::
-CQJEvent(CQJavaScript *qjs, QEvent *e) :
- CQJObject(qjs, CQJEventType::instance(qjs)), e_(e)
+CQJEvent(CJavaScript *js, CJValueP value, QEvent *e) :
+ CQJObject(js, CQJEventType::instance(js)), value_(value), e_(e)
 {
   addPseudoProperty("key");
   addPseudoProperty("keyCode");
@@ -63,28 +63,42 @@ CJValueP
 CQJEvent::
 getProperty(CJavaScript *js, const std::string &name) const
 {
-  if       (name == "key") {
-    const QKeyEvent *ke = dynamic_cast<const QKeyEvent *>(e_);
+  const QKeyEvent   *ke = dynamic_cast<const QKeyEvent *>(e_);
+  const QMouseEvent *me = dynamic_cast<const QMouseEvent *>(e_);
 
-    QString text;
+  if      (ke) {
+    if       (name == "key") {
+      QString text;
 
-    if (ke)
-      text = ke->text();
+      if (ke)
+        text = ke->text();
 
-    return qjs_->js()->createStringValue(text.toStdString());
+      return js->createStringValue(text.toStdString());
+    }
+    else if  (name == "keyCode") {
+      const QKeyEvent *ke = dynamic_cast<const QKeyEvent *>(e_);
+
+      long keyCode = 0;
+
+      if (ke)
+        keyCode = convertKeyCode(ke->key());
+
+      return js->createNumberValue(keyCode);
+    }
   }
-  else if  (name == "keyCode") {
-    const QKeyEvent *ke = dynamic_cast<const QKeyEvent *>(e_);
-
-    long keyCode = 0;
-
-    if (ke)
-      keyCode = convertKeyCode(ke->key());
-
-    return qjs_->js()->createNumberValue(keyCode);
+  else if (me) {
+    if      (name == "clientX") {
+      return js->createNumberValue(long(me->x()));
+    }
+    else if (name == "clientY") {
+      return js->createNumberValue(long(me->y()));
+    }
   }
-  else
-    return CJObj::getProperty(js, name);
+
+  if (name == "target")
+    return value_;
+
+  return CJObj::getProperty(js, name);
 }
 
 void

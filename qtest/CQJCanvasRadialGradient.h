@@ -4,8 +4,6 @@
 #include <CJObj.h>
 #include <QRadialGradient>
 
-class CQJavaScript;
-
 class CQJCanvasRadialGradientType : public CJObjType {
  public:
   static CJObjTypeP instance(CJavaScript *js);
@@ -24,12 +22,10 @@ class CQJCanvasRadialGradientType : public CJObjType {
 
 class CQJCanvasRadialGradient : public CJObj {
  public:
-  CQJCanvasRadialGradient(CQJavaScript *js, double x1=0, double y1=0, double r1=1,
+  CQJCanvasRadialGradient(CJavaScript *js, double x1=0, double y1=0, double r1=1,
                           double x2=0, double y2=0, double r2=1);
 
-  CQJavaScript *qjs() const { return qjs_; }
-
-  CJValue *dup(CJavaScript *) const override { return new CQJCanvasRadialGradient(qjs_); }
+  CJValue *dup(CJavaScript *js) const override { return new CQJCanvasRadialGradient(js); }
 
   const QRadialGradient &rg() const { return rg_; }
 
@@ -47,7 +43,6 @@ class CQJCanvasRadialGradient : public CJObj {
   void print(std::ostream &os) const override { os << "canvasRadialGradient"; }
 
  private:
-  CQJavaScript*   qjs_ { 0 };
   QRadialGradient rg_;
 };
 

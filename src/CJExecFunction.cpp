@@ -37,9 +37,7 @@ exec(CJavaScript *js)
     if      (identifiers_) {
       assert(! identifiers_->isThis());
 
-      auto identifiers = identifiers_->identifiers();
-
-      if (identifiers.size() != 1) {
+      if (identifiers_->numIdentifiers() != 1) {
         std::stringstream ss; ss << *identifiers_;
         js->throwSyntaxError(this, "Invalid type function identifiers : " + ss.str());
         return CJValueP();
@@ -56,7 +54,7 @@ exec(CJavaScript *js)
 
       CJPropertyData data(js);
 
-      if (evalue1 && js->lookupValuePropertyData(evalue1, identifiers, data, 0)) {
+      if (evalue1 && js->lookupValuePropertyData(evalue1, identifiers_, data, 0)) {
         fnValue = data.value();
       }
 

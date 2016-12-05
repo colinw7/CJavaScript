@@ -95,7 +95,9 @@ exec(CJavaScript *js)
 
   //---
 
-  CJLValueP lvalue = js->lookupLValue(eidentifiers);
+  CJLValueP lvalue;
+
+  //lvalue = js->lookupLValue(eidentifiers);
 
   if (llvalue) {
     CJPropertyData data(js);
@@ -117,14 +119,27 @@ exec(CJavaScript *js)
     }
   }
   else {
-    lvalue = js->lookupLValue(eidentifiers);
+    lvalue = js->lookupAssignLValue(eidentifiers);
 
     if (! lvalue) {
       if (! js->isStrict()) {
         // create variable in global scope if not found
         CJDictionaryP scope = js->rootScope();
 
-        lvalue = js->lookupScopeProperty(scope, eidentifiers, /*create*/true);
+        if (eidentifiers->isThis())
+          scope = js->thisScope();
+        else
+          scope = js->rootScope();
+
+        CJPropertyData data(js);
+
+        data.setModifiable(true);
+        data.setCreate    (true);
+
+        if (js->lookupScopePropertyData(scope, eidentifiers, data))
+          lvalue = data.lvalue();
+
+        //lvalue = js->lookupScopeProperty(scope, eidentifiers, /*create*/true);
 
         //lvalue = js->lookupProperty(eidentifiers, /*create*/true);
       }

@@ -25,9 +25,9 @@ class CQJCanvasImageDataArray : public CQJObject {
   Q_OBJECT
 
  public:
-  CQJCanvasImageDataArray(CQJavaScript *js, CQJCanvasImageDataP data);
+  CQJCanvasImageDataArray(CJavaScript *js, CQJCanvasImageDataP data);
 
-  CJValue *dup(CJavaScript *) const override { return new CQJCanvasImageDataArray(qjs_, data_); }
+  CJValue *dup(CJavaScript *js) const override { return new CQJCanvasImageDataArray(js, data_); }
 
   const CQJCanvasImageDataP &data() const { return data_; }
 

@@ -881,7 +881,15 @@ print(std::ostream &os) const
 
       values.push_back(CJValueP());
 
+      CJObject *th = const_cast<CJObject *>(this);
+
+      CJObjectP dict = CJValue::cast<CJObject>(th->shared_from_this());
+
+      js_->pushThis(dict);
+
       CJValueP value = fn->exec(js_, values);
+
+      js_->popThis();
 
       if (value)
         return value->print(os);

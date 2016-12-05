@@ -4,8 +4,6 @@
 #include <CJObj.h>
 #include <QLinearGradient>
 
-class CQJavaScript;
-
 class CQJCanvasLinearGradientType : public CJObjType {
  public:
   static CJObjTypeP instance(CJavaScript *js);
@@ -24,11 +22,9 @@ class CQJCanvasLinearGradientType : public CJObjType {
 
 class CQJCanvasLinearGradient : public CJObj {
  public:
-  CQJCanvasLinearGradient(CQJavaScript *js, double x1=0, double y1=0, double x2=1, double y2=0);
+  CQJCanvasLinearGradient(CJavaScript *js, double x1=0, double y1=0, double x2=1, double y2=0);
 
-  CQJavaScript *qjs() const { return qjs_; }
-
-  CJValue *dup(CJavaScript *) const override { return new CQJCanvasLinearGradient(qjs_); }
+  CJValue *dup(CJavaScript *js) const override { return new CQJCanvasLinearGradient(js); }
 
   const QLinearGradient &lg() const { return lg_; }
 
@@ -46,7 +42,6 @@ class CQJCanvasLinearGradient : public CJObj {
   void print(std::ostream &os) const override { os << "canvasLinearGradient"; }
 
  private:
-  CQJavaScript*   qjs_ { 0 };
   QLinearGradient lg_;
 };
 

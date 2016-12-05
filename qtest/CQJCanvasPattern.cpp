@@ -1,5 +1,4 @@
 #include <CQJCanvasPattern.h>
-#include <CQJavaScript.h>
 
 CJObjTypeP CQJCanvasPatternType::type_;
 
@@ -22,9 +21,8 @@ CQJCanvasPatternType(CJavaScript *js) :
 //------
 
 CQJCanvasPattern::
-CQJCanvasPattern(CQJavaScript *qjs, const QImage &qimage, const Repeat &repeat) :
- CJObj(qjs->js(), CQJCanvasPatternType::instance(qjs->js())),
- qjs_(qjs), qimage_(qimage), repeat_(repeat)
+CQJCanvasPattern(CJavaScript *js, const QImage &qimage, const Repeat &repeat) :
+ CJObj(js, CQJCanvasPatternType::instance(js)), qimage_(qimage), repeat_(repeat)
 {
 }
 

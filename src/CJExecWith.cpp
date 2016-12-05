@@ -14,8 +14,12 @@ exec(CJavaScript *js)
 {
   CJValueP varValue;
 
-  if (identifiers_)
-    varValue = js->lookupValue(identifiers_);
+  if (identifiers_) {
+    CJPropertyData data(js);
+
+    if (js->lookupPropertyData(identifiers_, data))
+      varValue = data.value();
+  }
 
   CJValueP value;
 

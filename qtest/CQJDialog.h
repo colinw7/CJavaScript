@@ -3,7 +3,7 @@
 
 #include <QFrame>
 
-class CQJavaScript;
+class CJavaScript;
 class QTextEdit;
 class CQHistoryLineEdit;
 class QListWidget;
@@ -13,7 +13,7 @@ class CQJDialog : public QFrame {
   Q_OBJECT
 
  public:
-  CQJDialog(CQJavaScript *js);
+  CQJDialog(CJavaScript *js);
 
   QSize sizeHint() const;
 
@@ -28,7 +28,7 @@ class CQJDialog : public QFrame {
   void loadFunctions();
 
  private:
-  CQJavaScript      *qjs_           { 0 };
+  CJavaScript       *js_            { 0 };
   QTextEdit         *log_           { 0 };
   CQHistoryLineEdit *input_         { 0 };
   QListWidget       *history_       { 0 };

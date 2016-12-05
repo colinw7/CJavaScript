@@ -3,8 +3,8 @@
 #include <CQJavaScript.h>
 
 CQJSetInterval::
-CQJSetInterval(CQJavaScript *qjs) :
- CJFunctionBase(qjs->js(), "setInterval"), qjs_(qjs)
+CQJSetInterval(CJavaScript *js) :
+ CJFunctionBase(js, "setInterval")
 {
 }
 
@@ -24,7 +24,9 @@ exec(CJavaScript *js, const Values &values)
   if (fnValue->type() == CJToken::Type::Function) {
     CJFunctionBaseP timerFn = CJValue::cast<CJFunctionBase>(fnValue);
 
-    CQJWindowP window = CJValue::cast<CQJWindow>(qjs_->jsWindow());
+    CQJavaScript *qjs = CQJavaScript::instance();
+
+    CQJWindowP window = CJValue::cast<CQJWindow>(qjs->jsWindow());
 
     timer = window->addTimer(timerFn, t);
   }
@@ -42,8 +44,8 @@ exec(CJavaScript *js, const Values &values)
 //------
 
 CQJClearInterval::
-CQJClearInterval(CQJavaScript *qjs) :
- CJFunctionBase(qjs->js(), "clearInterval"), qjs_(qjs)
+CQJClearInterval(CJavaScript *js) :
+ CJFunctionBase(js, "clearInterval")
 {
 }
 
@@ -56,7 +58,9 @@ exec(CJavaScript *, const Values &values)
 
   long timer = values[0]->toInteger().getValue(0);
 
-  CQJWindowP window = CJValue::cast<CQJWindow>(qjs_->jsWindow());
+  CQJavaScript *qjs = CQJavaScript::instance();
+
+  CQJWindowP window = CJValue::cast<CQJWindow>(qjs->jsWindow());
 
   window->removeTimer(timer);
 

@@ -2,13 +2,13 @@
 #define CQJCanvasContext2D_H
 
 #include <CJObj.h>
-#include <CQJavaScript.h>
 
-class CQJavaScript;
+class CQJCanvasWidget;
+class CQJCanvas;
 
 class CQJCanvasContext2DType : public CJObjType {
  public:
-  static CJObjTypeP instance(CQJavaScript *js);
+  static CJObjTypeP instance(CJavaScript *js);
 
   CQJCanvasContext2DType(CJavaScript *js);
 
@@ -24,13 +24,11 @@ class CQJCanvasContext2DType : public CJObjType {
 
 class CQJCanvasContext2D : public CJObj {
  public:
-  CQJCanvasContext2D(CQJavaScript *js);
+  CQJCanvasContext2D(CJavaScript *js, CQJCanvas *canvas);
 
-  CQJavaScript *qjs() const { return qjs_; }
+  CJValue *dup(CJavaScript *js) const override { return new CQJCanvasContext2D(js, canvas_); }
 
-  CJValue *dup(CJavaScript *) const override { return new CQJCanvasContext2D(qjs_); }
-
-  CQJSCanvas *canvas() const { return qjs_->canvas(); }
+  CQJCanvasWidget *canvasWidget() const;
 
   std::string toString() const override {
     std::ostringstream ss; ss << *this;
@@ -51,8 +49,8 @@ class CQJCanvasContext2D : public CJObj {
   void initFont();
 
  private:
-  CQJavaScript *qjs_ { 0 };
-  std::string   lastFont_;
+  CQJCanvas*  canvas_ { 0 };
+  std::string lastFont_;
 };
 
 #endif

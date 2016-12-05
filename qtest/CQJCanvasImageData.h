@@ -26,10 +26,10 @@ class CQJCanvasImageData : public CQJObject {
   Q_OBJECT
 
  public:
-  CQJCanvasImageData(CQJavaScript *js, int w, int h);
-  CQJCanvasImageData(CQJavaScript *js, const QImage &image);
+  CQJCanvasImageData(CJavaScript *js, int w, int h);
+  CQJCanvasImageData(CJavaScript *js, const QImage &image);
 
-  CJValue *dup(CJavaScript *) const override { return new CQJCanvasImageData(qjs_, qimage_); }
+  CJValue *dup(CJavaScript *js) const override { return new CQJCanvasImageData(js, qimage_); }
 
   const QImage &qimage() const { return qimage_; }
 

@@ -7,14 +7,11 @@ class CQJavaScript;
 
 class CQJRequestAnimationFrame : public CJFunctionBase {
  public:
-  CQJRequestAnimationFrame(CQJavaScript *js);
+  CQJRequestAnimationFrame(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *) const override { return new CQJRequestAnimationFrame(qjs_); }
+  CJValue *dup(CJavaScript *js) const override { return new CQJRequestAnimationFrame(js); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
-
- private:
-  CQJavaScript *qjs_ { 0 };
 };
 
 #endif

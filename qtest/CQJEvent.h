@@ -4,13 +4,11 @@
 #include <CQJObject.h>
 #include <QKeyEvent>
 
-class CQJavaScript;
-
 class CQJEventType : public CJObjType {
  public:
-  static CJObjTypeP instance(CQJavaScript *js);
+  static CJObjTypeP instance(CJavaScript *js);
 
-  CQJEventType(CQJavaScript *js);
+  CQJEventType(CJavaScript *js);
 
   bool hasConstructor() const { return true; }
 
@@ -22,17 +20,15 @@ class CQJEventType : public CJObjType {
 
  private:
   static CJObjTypeP type_;
-
-  CQJavaScript *qjs_ { 0 };
 };
 
 //------
 
 class CQJEvent : public CQJObject {
  public:
-  CQJEvent(CQJavaScript *js, QEvent *e);
+  CQJEvent(CJavaScript *js, CJValueP value, QEvent *e);
 
-  CJValue *dup(CJavaScript *) const override { return new CQJEvent(qjs_, e_); }
+  CJValue *dup(CJavaScript *js) const override { return new CQJEvent(js, value_, e_); }
 
   CJValueP getProperty(CJavaScript *js, const std::string &name) const override;
   void setProperty(CJavaScript *js, const std::string &name, CJValueP value) override;
@@ -42,7 +38,8 @@ class CQJEvent : public CQJObject {
   void print(std::ostream &os) const override { os << "event"; }
 
  private:
-  QEvent *e_ { 0 };
+  CJValueP value_;
+  QEvent*  e_ { 0 };
 };
 
 #endif

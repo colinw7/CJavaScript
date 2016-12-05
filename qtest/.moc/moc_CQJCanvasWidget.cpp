@@ -1,16 +1,16 @@
 /****************************************************************************
-** Meta object code from reading C++ file 'CQJSCanvas.h'
+** Meta object code from reading C++ file 'CQJCanvasWidget.h'
 **
 ** Created by: The Qt Meta Object Compiler version 67 (Qt 5.5.1)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
 
-#include "../CQJSCanvas.h"
+#include "../CQJCanvasWidget.h"
 #include <QtCore/qbytearray.h>
 #include <QtCore/qmetatype.h>
 #if !defined(Q_MOC_OUTPUT_REVISION)
-#error "The header file 'CQJSCanvas.h' doesn't include <QObject>."
+#error "The header file 'CQJCanvasWidget.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 67
 #error "This file was generated using the moc from 5.5.1. It"
 #error "cannot be used with the include files from this version of Qt."
@@ -18,25 +18,25 @@
 #endif
 
 QT_BEGIN_MOC_NAMESPACE
-struct qt_meta_stringdata_CQJSCanvas_t {
+struct qt_meta_stringdata_CQJCanvasWidget_t {
     QByteArrayData data[1];
-    char stringdata0[11];
+    char stringdata0[16];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
-    qptrdiff(offsetof(qt_meta_stringdata_CQJSCanvas_t, stringdata0) + ofs \
+    qptrdiff(offsetof(qt_meta_stringdata_CQJCanvasWidget_t, stringdata0) + ofs \
         - idx * sizeof(QByteArrayData)) \
     )
-static const qt_meta_stringdata_CQJSCanvas_t qt_meta_stringdata_CQJSCanvas = {
+static const qt_meta_stringdata_CQJCanvasWidget_t qt_meta_stringdata_CQJCanvasWidget = {
     {
-QT_MOC_LITERAL(0, 0, 10) // "CQJSCanvas"
+QT_MOC_LITERAL(0, 0, 15) // "CQJCanvasWidget"
 
     },
-    "CQJSCanvas"
+    "CQJCanvasWidget"
 };
 #undef QT_MOC_LITERAL
 
-static const uint qt_meta_data_CQJSCanvas[] = {
+static const uint qt_meta_data_CQJCanvasWidget[] = {
 
  // content:
        7,       // revision
@@ -52,7 +52,7 @@ static const uint qt_meta_data_CQJSCanvas[] = {
        0        // eod
 };
 
-void CQJSCanvas::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+void CQJCanvasWidget::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
     Q_UNUSED(_o);
     Q_UNUSED(_id);
@@ -60,26 +60,26 @@ void CQJSCanvas::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
     Q_UNUSED(_a);
 }
 
-const QMetaObject CQJSCanvas::staticMetaObject = {
-    { &QFrame::staticMetaObject, qt_meta_stringdata_CQJSCanvas.data,
-      qt_meta_data_CQJSCanvas,  qt_static_metacall, Q_NULLPTR, Q_NULLPTR}
+const QMetaObject CQJCanvasWidget::staticMetaObject = {
+    { &QFrame::staticMetaObject, qt_meta_stringdata_CQJCanvasWidget.data,
+      qt_meta_data_CQJCanvasWidget,  qt_static_metacall, Q_NULLPTR, Q_NULLPTR}
 };
 
 
-const QMetaObject *CQJSCanvas::metaObject() const
+const QMetaObject *CQJCanvasWidget::metaObject() const
 {
     return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
 }
 
-void *CQJSCanvas::qt_metacast(const char *_clname)
+void *CQJCanvasWidget::qt_metacast(const char *_clname)
 {
     if (!_clname) return Q_NULLPTR;
-    if (!strcmp(_clname, qt_meta_stringdata_CQJSCanvas.stringdata0))
-        return static_cast<void*>(const_cast< CQJSCanvas*>(this));
+    if (!strcmp(_clname, qt_meta_stringdata_CQJCanvasWidget.stringdata0))
+        return static_cast<void*>(const_cast< CQJCanvasWidget*>(this));
     return QFrame::qt_metacast(_clname);
 }
 
-int CQJSCanvas::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+int CQJCanvasWidget::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
     _id = QFrame::qt_metacall(_c, _id, _a);
     if (_id < 0)

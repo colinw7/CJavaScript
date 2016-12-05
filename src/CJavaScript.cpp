@@ -524,8 +524,11 @@ endBlock()
   if (block->hasError()) {
     if (block_)
       block_->setErrors(block->errors());
-    else
-      errorMsg(0, block->firstError()->toString());
+    else {
+      //errorMsg(0, block->firstError()->toString());
+      for (const auto &e : block->errors())
+        errorMsg(0, e->toString());
+    }
   }
 
   return block;
@@ -724,6 +727,9 @@ bool
 CJavaScript::
 lookupPropertyData(const CJExecIdentifiersP &eidentifiers, CJPropertyData &data)
 {
+  if (getenv("JS_DEBUG_LOOKUP"))
+    std::cerr << "lookupPropertyData " << eidentifiers->toString() << ",data" << std::endl;
+
   const CJavaScript::Identifiers &identifiers = eidentifiers->identifiers();
 
   if (eidentifiers->isThis()) {
@@ -744,6 +750,9 @@ bool
 CJavaScript::
 lookupPropertyData(const Identifiers &identifiers, CJPropertyData &data)
 {
+  if (getenv("JS_DEBUG_LOOKUP"))
+    std::cerr << "lookupPropertyData identifiers,data" << std::endl;
+
   bool create = data.isCreate();
 
   data.setCreate(false);
@@ -787,31 +796,55 @@ lookupPropertyData(const Identifiers &identifiers, CJPropertyData &data)
 
 bool
 CJavaScript::
+lookupScopePropertyData(CJDictionaryP dict, const CJExecIdentifiersP &eidentifiers,
+                        CJPropertyData &data, int ind)
+{
+  if (getenv("JS_DEBUG_LOOKUP"))
+    std::cerr << "lookupScopePropertyData dict," << eidentifiers->toString() << ",data,ind" << std::endl;
+
+  const CJavaScript::Identifiers &identifiers = eidentifiers->identifiers();
+
+  return lookupScopePropertyData(dict, identifiers, data, ind);
+}
+
+bool
+CJavaScript::
 lookupScopePropertyData(CJDictionaryP dict, const Identifiers &identifiers,
                         CJPropertyData &data, int ind)
 {
+  if (getenv("JS_DEBUG_LOOKUP"))
+    std::cerr << "lookupScopePropertyData dict,identifiers,data,ind" << std::endl;
+
   CJNameSpaceP scope = std::static_pointer_cast<CJNameSpace>(dict);
   CJValueP     value = dict;
 
   return lookupScopeValuePropertyData(scope, value, identifiers, data, ind);
 }
 
+#if 0
 bool
 CJavaScript::
 lookupFunctionPropertyData(CJFunctionBaseP fn, const Identifiers &identifiers,
                            CJPropertyData &data, int ind)
 {
+  if (getenv("JS_DEBUG_LOOKUP"))
+    std::cerr << "lookupFunctionPropertyData fn,identifiers,data,ind" << std::endl;
+
   CJNameSpaceP scope = std::static_pointer_cast<CJNameSpace>(fn);
   CJValueP     value = fn;
 
   return lookupScopeValuePropertyData(scope, value, identifiers, data, ind);
 }
+#endif
 
 bool
 CJavaScript::
 lookupScopeValuePropertyData(CJNameSpaceP scope, CJValueP svalue, const Identifiers &identifiers,
                              CJPropertyData &data, int ind)
 {
+  if (getenv("JS_DEBUG_LOOKUP"))
+    std::cerr << "lookupScopeValuePropertyData scope,svalue,identifiers,data,ind" << std::endl;
+
   int len = identifiers.size();
 
   if (ind >= len)
@@ -848,8 +881,10 @@ lookupScopeValuePropertyData(CJNameSpaceP scope, CJValueP svalue, const Identifi
   CJValueP value = scope->getProperty(this, name);
 
   // fail if no value and no create
-  if (! value && ! data.isCreate())
-    return false;
+  if (! value && ! data.isCreate()) {
+    if (! (ind > 0 && ind == len - 1 && data.isCreateLast()))
+      return false;
+  }
 
   // set parent scope, scope value and property name
   data.setScope   (scope);
@@ -879,6 +914,9 @@ CJavaScript::
 lookupObjPropertyData(CJObjP obj, const Identifiers &identifiers,
                       CJPropertyData &data, int ind)
 {
+  if (getenv("JS_DEBUG_LOOKUP"))
+    std::cerr << "lookupObjPropertyData obj,identifiers,data,ind" << std::endl;
+
   int len = identifiers.size();
 
   if (ind >= len)
@@ -914,8 +952,10 @@ lookupObjPropertyData(CJObjP obj, const Identifiers &identifiers,
   CJValueP value = obj->getProperty(this, name);
 
   // fail if no value and no create
-  if (! value && ! data.isCreate())
-    return false;
+  if (! value && ! data.isCreate()) {
+    if (! (ind > 0 && ind == len - 1 && data.isCreateLast()))
+      return false;
+  }
 
   // get last name value with details of parent
   data.setObj     (obj);
@@ -945,6 +985,9 @@ CJavaScript::
 lookupValuePropertyData(CJValueP value, const CJExecIdentifiersP &eidentifiers,
                         CJPropertyData &data, int ind)
 {
+  if (getenv("JS_DEBUG_LOOKUP"))
+    std::cerr << "lookupValuePropertyData value," << eidentifiers->toString() << ",data,ind" << std::endl;
+
   assert(! eidentifiers->isThis());
 
   const CJavaScript::Identifiers &identifiers = eidentifiers->identifiers();
@@ -957,6 +1000,9 @@ CJavaScript::
 lookupValuePropertyData(CJValueP value, const Identifiers &identifiers,
                         CJPropertyData &data, int ind)
 {
+  if (getenv("JS_DEBUG_LOOKUP"))
+    std::cerr << "lookupValuePropertyData value,identifiers,data,ind" << std::endl;
+
   if (! value)
     return false;
 
@@ -1105,27 +1151,47 @@ lookupValuePropertyData(CJValueP value, const Identifiers &identifiers,
 
 //---
 
-CJValueP
-CJavaScript::
-valueToObj(CJValueP value) const
-{
-  CJValueP value1;
-
-  if (value->type() == CJToken::Type::True || value->type() == CJToken::Type::False) {
-    CJavaScript *th = const_cast<CJavaScript *>(this);
-
-    value1 = th->createBoolObject(value->toBoolean());
-  }
-
-  return value1;
-}
-
-//---
-
+#if 0
 CJValueP
 CJavaScript::
 lookupValue(const CJExecIdentifiersP &eidentifiers)
 {
+  if (getenv("JS_DEBUG_LOOKUP"))
+    std::cerr << "lookupValue " << eidentifiers->toString() << std::endl;
+
+  CJPropertyData data(this);
+
+  if (! lookupPropertyData(eidentifiers, data))
+    return CJValueP();
+
+  return data.value();
+}
+
+CJValueP
+CJavaScript::
+lookupValue(const Identifiers &identifiers)
+{
+  if (getenv("JS_DEBUG_LOOKUP"))
+    std::cerr << "lookupValue identifiers" << std::endl;
+
+  CJPropertyData data(this);
+
+  if (! lookupPropertyData(identifiers, data))
+    return CJValueP();
+
+  return data.value();
+}
+#endif
+
+//---
+
+CJLValueP
+CJavaScript::
+lookupAssignLValue(const CJExecIdentifiersP &eidentifiers)
+{
+  if (getenv("JS_DEBUG_LOOKUP"))
+    std::cerr << "lookupAssignLValue " << eidentifiers->toString() << std::endl;
+
   const CJavaScript::Identifiers &identifiers = eidentifiers->identifiers();
 
   if (eidentifiers->isThis()) {
@@ -1133,25 +1199,35 @@ lookupValue(const CJExecIdentifiersP &eidentifiers)
 
     CJPropertyData data(this);
 
-    if (! lookupScopePropertyData(scope, identifiers, data))
-      return CJValueP();
+    data.setModifiable(true);
+    data.setCreateLast(true);
 
-    return data.value();
+    if (! lookupScopePropertyData(scope, identifiers, data))
+      return CJLValueP();
+
+    return data.lvalue();
   }
-  else
-    return lookupValue(identifiers);
+  else {
+    return lookupAssignLValue(identifiers);
+  }
 }
 
-CJValueP
+CJLValueP
 CJavaScript::
-lookupValue(const Identifiers &identifiers)
+lookupAssignLValue(const Identifiers &identifiers)
 {
+  if (getenv("JS_DEBUG_LOOKUP"))
+    std::cerr << "lookupAssignLValue identifiers" << std::endl;
+
   CJPropertyData data(this);
 
-  if (! lookupPropertyData(identifiers, data))
-    return CJValueP();
+  data.setModifiable(true);
+  data.setCreateLast(true);
 
-  return data.value();
+  if (! lookupPropertyData(identifiers, data))
+    return CJLValueP();
+
+  return data.lvalue();
 }
 
 //---
@@ -1160,6 +1236,9 @@ CJLValueP
 CJavaScript::
 lookupLValue(const CJExecIdentifiersP &eidentifiers)
 {
+  if (getenv("JS_DEBUG_LOOKUP"))
+    std::cerr << "lookupLValue " << eidentifiers->toString() << std::endl;
+
   const CJavaScript::Identifiers &identifiers = eidentifiers->identifiers();
 
   if (eidentifiers->isThis()) {
@@ -1183,6 +1262,9 @@ CJLValueP
 CJavaScript::
 lookupLValue(const Identifiers &identifiers)
 {
+  if (getenv("JS_DEBUG_LOOKUP"))
+    std::cerr << "lookupLValue identifiers" << std::endl;
+
   CJPropertyData data(this);
 
   data.setModifiable(true);
@@ -1199,6 +1281,9 @@ CJavaScript::ValuePair
 CJavaScript::
 lookupObjectProperty(const CJExecIdentifiersP &eidentifiers, bool create)
 {
+  if (getenv("JS_DEBUG_LOOKUP"))
+    std::cerr << "lookupObjectProperty " << eidentifiers->toString() << ",create" << std::endl;
+
   const CJavaScript::Identifiers &identifiers = eidentifiers->identifiers();
 
   if (eidentifiers->isThis()) {
@@ -1231,6 +1316,9 @@ CJavaScript::ValuePair
 CJavaScript::
 lookupObjectProperty(const Identifiers &identifiers, bool create)
 {
+  if (getenv("JS_DEBUG_LOOKUP"))
+    std::cerr << "lookupObjectProperty identifiers,create" << std::endl;
+
   CJPropertyData data(this);
 
   data.setModifiable(true);
@@ -1257,39 +1345,58 @@ CJLValueP
 CJavaScript::
 lookupProperty(const CJExecIdentifiersP &eidentifiers, bool create)
 {
-  CJPropertyData data(this);
-
-  data.setModifiable(true);
-  data.setCreate    (create);
+  if (getenv("JS_DEBUG_LOOKUP"))
+    std::cerr << "lookupProperty " << eidentifiers->toString() << ",create" << std::endl;
 
   const CJavaScript::Identifiers &identifiers = eidentifiers->identifiers();
 
   if (eidentifiers->isThis()) {
-    CJDictionaryP scope = thisScope();
-
     if (identifiers.empty())
       return CJLValueP();
 
-    //---
+    CJDictionaryP scope = thisScope();
+
+    CJPropertyData data(this);
+
+    data.setModifiable(true);
+    data.setCreate    (create);
 
     if (! lookupScopePropertyData(scope, identifiers, data))
       return CJLValueP();
 
     return data.lvalue();
   }
-  else {
-    if (! lookupPropertyData(identifiers, data))
-      return CJLValueP();
-
-    return data.lvalue();
-  }
+  else
+    return lookupProperty(identifiers, create);
 }
 
+CJLValueP
+CJavaScript::
+lookupProperty(const Identifiers &identifiers, bool create)
+{
+  if (getenv("JS_DEBUG_LOOKUP"))
+    std::cerr << "lookupProperty identifiers,create" << std::endl;
+
+  CJPropertyData data(this);
+
+  data.setModifiable(true);
+  data.setCreate    (create);
+
+  if (! lookupPropertyData(identifiers, data))
+    return CJLValueP();
+
+  return data.lvalue();
+}
+
+#if 0
 CJLValueP
 CJavaScript::
 lookupScopeProperty(const CJDictionaryP &scope, const CJExecIdentifiersP &eidentifiers,
                     bool create)
 {
+  if (getenv("JS_DEBUG_LOOKUP"))
+    std::cerr << "lookupScopeProperty scope," << eidentifiers->toString() << ",create" << std::endl;
+
   CJPropertyData data(this);
 
   data.setModifiable(true);
@@ -1302,20 +1409,23 @@ lookupScopeProperty(const CJDictionaryP &scope, const CJExecIdentifiersP &eident
 
   return data.lvalue();
 }
+#endif
 
-CJLValueP
+//---
+
+CJValueP
 CJavaScript::
-lookupProperty(const Identifiers &identifiers, bool create)
+valueToObj(CJValueP value) const
 {
-  CJPropertyData data(this);
+  CJValueP value1;
 
-  data.setModifiable(true);
-  data.setCreate    (create);
+  if (value->type() == CJToken::Type::True || value->type() == CJToken::Type::False) {
+    CJavaScript *th = const_cast<CJavaScript *>(this);
 
-  if (! lookupPropertyData(identifiers, data))
-    return CJLValueP();
+    value1 = th->createBoolObject(value->toBoolean());
+  }
 
-  return data.lvalue();
+  return value1;
 }
 
 //---
@@ -2553,13 +2663,7 @@ interpExecFor()
 
   //---
 
-  // { <statement> }
-  // TODO: allow no braces
-  if (! isExecOperator(CJOperator::Type::OpenBrace)) {
-    throwSyntaxError(efor, "Missing open brace for for");
-    return CJExecForP();
-  }
-
+  // <statement>
   CJExecBlockP block = interpExecBlock(CJExecBlock::Type::Iterative);
 
   if (! block) {
@@ -4872,9 +4976,18 @@ interpExecBlock(CJExecBlock::Type type)
     }
   }
   else {
+    int brackets = 0;
+
     while (! execData_->eof()) {
-      if (isExecOperator(CJOperator::Type::SemiColon))
-        break;
+      if      (isExecOperator(CJOperator::Type::OpenRBracket))
+        ++brackets;
+      else if (isExecOperator(CJOperator::Type::CloseRBracket))
+        --brackets;
+
+      if (brackets == 0) {
+        if (isExecOperator(CJOperator::Type::SemiColon))
+          break;
+      }
 
       CJTokenP token = execData_->token();
 

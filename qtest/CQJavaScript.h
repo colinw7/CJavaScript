@@ -5,7 +5,7 @@
 #include <QFrame>
 
 class CQJObject;
-class CQJSCanvas;
+class CQJCanvasWidget;
 class CJavaScript;
 class CQHistoryLineEdit;
 class CQJDialog;
@@ -17,20 +17,21 @@ class CQJavaScript : public QFrame {
   typedef std::vector<CJValueP> EventArgs;
 
  public:
+  static CQJavaScript *instance() { return instance_; }
+
   CQJavaScript();
 
   void init();
 
   void setSize(int s) { size_ = s; }
 
-  CQJSCanvas *canvas() const { return canvas_; }
+  CQJCanvasWidget *canvas() const { return canvas_; }
 
   CJavaScript *js() const { return js_; }
 
-  CJValueP jsWindow         () const { return jsWindow_         ; }
-  CJValueP jsDocument       () const { return jsDocument_       ; }
-  CJValueP jsCanvas         () const { return jsCanvas_         ; }
-  CJValueP jsCanvasContext2D() const { return jsCanvasContext2D_; }
+  CJValueP jsWindow  () const { return jsWindow_  ; }
+  CJValueP jsDocument() const { return jsDocument_; }
+  CJValueP jsCanvas  () const { return jsCanvas_  ; }
 
   void addObject   (CQJObject *obj);
   void removeObject(CQJObject *obj);
@@ -50,13 +51,14 @@ class CQJavaScript : public QFrame {
  private:
   typedef std::set<CQJObject *> Objects;
 
+  static CQJavaScript *instance_;
+
   int                size_ { 600 };
-  CQJSCanvas*        canvas_ { 0 };
+  CQJCanvasWidget*   canvas_ { 0 };
   CJavaScript*       js_ { 0 };
   CJValueP           jsWindow_;
   CJValueP           jsDocument_;
   CJValueP           jsCanvas_;
-  CJValueP           jsCanvasContext2D_;
   Objects            objects_;
   CQHistoryLineEdit* input_ { 0 };
   CQJDialog*         dialog_ { 0 };

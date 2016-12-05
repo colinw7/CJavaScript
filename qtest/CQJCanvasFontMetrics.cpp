@@ -1,5 +1,4 @@
 #include <CQJCanvasFontMetrics.h>
-#include <CQJavaScript.h>
 
 CJObjTypeP CQJCanvasFontMetricsType::type_;
 
@@ -22,12 +21,10 @@ CQJCanvasFontMetricsType(CJavaScript *js) :
 //------
 
 CQJCanvasFontMetrics::
-CQJCanvasFontMetrics(CQJavaScript *qjs, const QFont &font, const std::string &text) :
- CQJObject(qjs, CQJCanvasFontMetricsType::instance(qjs->js())),
+CQJCanvasFontMetrics(CJavaScript *js, const QFont &font, const std::string &text) :
+ CQJObject(js, CQJCanvasFontMetricsType::instance(js)),
  text_(text), font_(font), fm_(font)
 {
-  CJavaScript *js = qjs_->js();
-
   setRealProperty(js, "width", fm_.width(text.c_str()));
 }
 

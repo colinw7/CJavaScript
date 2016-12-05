@@ -14,7 +14,7 @@ void
 CQJWindowTimer::
 timerSlot()
 {
-  CJavaScript *js = window_->qjs()->js();
+  CJavaScript *js = window_->js();
 
   CJObjType::Values fnValues;
 

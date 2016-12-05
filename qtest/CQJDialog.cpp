@@ -1,5 +1,5 @@
 #include <CQJDialog.h>
-#include <CQJavaScript.h>
+#include <CJavaScript.h>
 #include <CQHistoryLineEdit.h>
 #include <CJavaScript.h>
 #include <QVBoxLayout>
@@ -11,8 +11,8 @@
 #include <QDir>
 
 CQJDialog::
-CQJDialog(CQJavaScript *qjs) :
- qjs_(qjs)
+CQJDialog(CJavaScript *js) :
+ js_(js)
 {
   setWindowTitle("JavaScript");
 
@@ -118,9 +118,9 @@ execCmd(const QString &cmd)
 
   //---
 
-  qjs_->js()->loadString(cmd.toStdString());
+  js_->loadString(cmd.toStdString());
 
-  CJValueP value = qjs_->js()->exec();
+  CJValueP value = js_->exec();
 
   if (value) {
     std::string str = value->toString();
@@ -145,9 +145,9 @@ loadFile()
   if (filename == "")
     return;
 
-  qjs_->js()->loadFile(filename.toStdString());
+  js_->loadFile(filename.toStdString());
 
-  qjs_->js()->exec();
+  js_->exec();
 }
 
 void
@@ -156,7 +156,7 @@ loadVariables()
 {
   variablesList_->clear();
 
-  std::vector<std::string> names = qjs_->js()->getVariableNames();
+  std::vector<std::string> names = js_->getVariableNames();
 
   for (const auto &n : names)
     variablesList_->addItem(n.c_str());
@@ -168,7 +168,7 @@ loadFunctions()
 {
   functionsList_->clear();
 
-  std::vector<std::string> names = qjs_->js()->getFunctionNames();
+  std::vector<std::string> names = js_->getFunctionNames();
 
   for (const auto &n : names)
     functionsList_->addItem(n.c_str());

@@ -2,15 +2,14 @@
 #define CQJImage_H
 
 #include <CQJObject.h>
+#include <CJObjTypeFunction.h>
 #include <QImage>
-
-class CQJavaScript;
 
 class CQJImageType : public CJObjType {
  public:
-  static CJObjTypeP instance(CQJavaScript *js);
+  static CJObjTypeP instance(CJavaScript *js);
 
-  CQJImageType(CQJavaScript *js);
+  CQJImageType(CJavaScript *js);
 
   bool hasConstructor() const { return true; }
 
@@ -22,8 +21,25 @@ class CQJImageType : public CJObjType {
 
  private:
   static CJObjTypeP type_;
+};
 
-  CQJavaScript *qjs_ { 0 };
+//------
+
+class CQJImageFunction : public CJObjTypeFunction {
+ public:
+  CQJImageFunction(CJavaScript *js);
+
+  CQJImageFunction(const CQJImageFunction &fn);
+
+  CJValue *dup(CJavaScript *) const override { return new CQJImageFunction(*this); }
+
+  CJValueP exec(CJavaScript *js, const Values &values) override;
+
+  CJValueP execNew(CJavaScript *js, const Values &values) override;
+
+  std::string toString() const override;
+
+  void print(std::ostream &os) const override;
 };
 
 //------
@@ -37,9 +53,9 @@ class CQJImage : public CQJObject {
   };
 
  public:
-  CQJImage(CQJavaScript *js);
+  CQJImage(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *) const override { return new CQJImage(qjs_); }
+  CJValue *dup(CJavaScript *js) const override { return new CQJImage(js); }
 
   QImage qimage() const { return qimage_; }
 
@@ -58,5 +74,7 @@ class CQJImage : public CQJObject {
   Repeat          repeat_;
   CJFunctionBaseP onLoad_;
 };
+
+typedef std::shared_ptr<CQJImage> CQJImageP;
 
 #endif

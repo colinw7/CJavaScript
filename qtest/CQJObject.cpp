@@ -1,22 +1,24 @@
 #include <CQJObject.h>
-#include <CJFunction.h>
 #include <CQJavaScript.h>
+#include <CJFunction.h>
 
 CQJObject::
-CQJObject(CQJavaScript *qjs, const CJObjTypeP &type) :
- CJObj(qjs->js(), type), qjs_(qjs)
+CQJObject(CJavaScript *js, const CJObjTypeP &type) :
+ CJObj(js, type)
 {
-  CJavaScript *js = qjs_->js();
-
   objType_->addObjFunction(js, "addEventListener", objType_);
 
-  qjs_->addObject(this);
+  CQJavaScript *qjs = CQJavaScript::instance();
+
+  qjs->addObject(this);
 }
 
 CQJObject::
 ~CQJObject()
 {
-  qjs_->removeObject(this);
+  CQJavaScript *qjs = CQJavaScript::instance();
+
+  qjs->removeObject(this);
 }
 
 CJValueP

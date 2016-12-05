@@ -1,43 +1,95 @@
 #include <CQJImage.h>
-#include <CQJavaScript.h>
+#include <CJavaScript.h>
 #include <iostream>
 
 CJObjTypeP CQJImageType::type_;
 
 CJObjTypeP
 CQJImageType::
-instance(CQJavaScript *js)
+instance(CJavaScript *js)
 {
   if (! type_) {
     type_ = CJObjTypeP(new CQJImageType(js));
 
-    js->js()->addObjectType("Image", type_);
+    js->addObjectType("Image", type_);
   }
 
   return type_;
 }
 
 CQJImageType::
-CQJImageType(CQJavaScript *qjs) :
- CJObjType(qjs->js(), CJToken::Type::Object, "Image"), qjs_(qjs)
+CQJImageType(CJavaScript *js) :
+ CJObjType(js, CJToken::Type::Object, "Image")
 {
 }
 
 CJValueP
 CQJImageType::
-construct(CJavaScript *, const Values &)
+construct(CJavaScript *js, const Values &)
 {
-  return CJValueP(new CQJImage(qjs_));
+  return CJValueP(new CQJImage(js));
+}
+
+//------
+
+CQJImageFunction::
+CQJImageFunction(CJavaScript *js) :
+ CJObjTypeFunction(js, "Image", CQJImageType::instance(js))
+{
+}
+
+CQJImageFunction::
+CQJImageFunction(const CQJImageFunction &fn) :
+ CJObjTypeFunction(fn)
+{
+}
+
+CJValueP
+CQJImageFunction::
+exec(CJavaScript *js, const Values &)
+{
+  // create image primitive
+  CQJImageP image;
+
+  image = CQJImageP(new CQJImage(js));
+
+  return image;
+}
+
+CJValueP
+CQJImageFunction::
+execNew(CJavaScript *js, const Values &)
+{
+  // create image primitive
+  CQJImageP image;
+
+  image = CQJImageP(new CQJImage(js));
+
+  return image;
+}
+
+std::string
+CQJImageFunction::
+toString() const
+{
+  std::ostringstream ss; ss << *this;
+
+  return ss.str();
+}
+
+void
+CQJImageFunction::
+print(std::ostream &os) const
+{
+  os << "[Function: Image]";
 }
 
 //------
 
 CQJImage::
-CQJImage(CQJavaScript *qjs) :
- CQJObject(qjs, CQJImageType::instance(qjs))
+CQJImage(CJavaScript *js) :
+ CQJObject(js, CQJImageType::instance(js))
 {
-  CJavaScript *js = qjs_->js();
-
   setStringProperty(js, "src"   , "");
   setStringProperty(js, "onload", "");
 }

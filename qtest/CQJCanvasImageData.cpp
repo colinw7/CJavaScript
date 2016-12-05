@@ -1,6 +1,6 @@
 #include <CQJCanvasImageData.h>
 #include <CQJCanvasImageDataArray.h>
-#include <CQJavaScript.h>
+#include <CJavaScript.h>
 
 CJObjTypeP CQJCanvasImageDataType::type_;
 
@@ -23,23 +23,19 @@ CQJCanvasImageDataType(CJavaScript *js) :
 //------
 
 CQJCanvasImageData::
-CQJCanvasImageData(CQJavaScript *qjs, int w, int h) :
- CQJObject(qjs, CQJCanvasImageDataType::instance(qjs->js()))
+CQJCanvasImageData(CJavaScript *js, int w, int h) :
+ CQJObject(js, CQJCanvasImageDataType::instance(js))
 {
   qimage_ = QImage(w, h, QImage::Format_ARGB32);
-
-  CJavaScript *js = qjs_->js();
 
   setRealProperty(js, "width" , w);
   setRealProperty(js, "height", h);
 }
 
 CQJCanvasImageData::
-CQJCanvasImageData(CQJavaScript *qjs, const QImage &image) :
- CQJObject(qjs, CQJCanvasImageDataType::instance(qjs->js())), qimage_(image)
+CQJCanvasImageData(CJavaScript *js, const QImage &image) :
+ CQJObject(js, CQJCanvasImageDataType::instance(js)), qimage_(image)
 {
-  CJavaScript *js = qjs_->js();
-
   setRealProperty(js, "width" , image.width ());
   setRealProperty(js, "height", image.height());
 }
@@ -53,7 +49,7 @@ getProperty(CJavaScript *js, const std::string &key) const
 
     CQJCanvasImageDataP data = CJValue::cast<CQJCanvasImageData>(th->shared_from_this());
 
-    return CJValueP(new CQJCanvasImageDataArray(qjs(), data));
+    return CJValueP(new CQJCanvasImageDataArray(js, data));
   }
   else
     return CJObj::getProperty(js, key);

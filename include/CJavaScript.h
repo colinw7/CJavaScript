@@ -122,44 +122,61 @@ class CJavaScript {
   bool setIndexValue(CJValueP value, CJValueP ivalue, CJValueP rvalue);
   bool deleteIndexValue(CJValueP value, CJValueP ivalue);
 
+ public:
   bool lookupPropertyData(const CJExecIdentifiersP &eidentifiers, CJPropertyData &data);
+
+  bool lookupScopePropertyData(CJDictionaryP dict, const CJExecIdentifiersP &eidentifiers,
+                               CJPropertyData &data, int ind=0);
+
+  bool lookupValuePropertyData(CJValueP value, const CJExecIdentifiersP &eidentifiers,
+                               CJPropertyData &data, int ind=0);
+
+  CJLValueP lookupAssignLValue(const CJExecIdentifiersP &eidentifiers);
+
+  CJLValueP lookupLValue(const CJExecIdentifiersP &eidentifiers);
+
+  CJLValueP lookupProperty(const CJExecIdentifiersP &eidentifiers, bool create=false);
+
+  ValuePair lookupObjectProperty(const CJExecIdentifiersP &eidentifiers, bool create=false);
+
+  //CJValueP lookupValue(const CJExecIdentifiersP &eidentifiers);
+
+ private:
   bool lookupPropertyData(const Identifiers &identifiers, CJPropertyData &data);
 
   bool lookupScopePropertyData(CJDictionaryP dict, const Identifiers &identifiers,
                                CJPropertyData &data, int ind=0);
-  bool lookupFunctionPropertyData(CJFunctionBaseP fn, const Identifiers &identifiers,
-                                  CJPropertyData &data, int ind=0);
-  bool lookupScopeValuePropertyData(CJNameSpaceP scope, CJValueP value,
-                                    const Identifiers &identifiers,
-                                    CJPropertyData &data, int ind=0);
-  bool lookupObjPropertyData(CJObjP obj, const Identifiers &identifiers,
-                             CJPropertyData &data, int ind=0);
 
-  bool lookupValuePropertyData(CJValueP value, const CJExecIdentifiersP &eidentifiers,
-                               CJPropertyData &data, int ind=0);
   bool lookupValuePropertyData(CJValueP value, const Identifiers &identifiers,
                                CJPropertyData &data, int ind=0);
 
-  CJValueP valueToObj(CJValueP value) const;
+  CJLValueP lookupAssignLValue(const Identifiers &identifiers);
 
-  //---
-
-  CJValueP lookupValue(const CJExecIdentifiersP &eidentifiers);
-  CJValueP lookupValue(const Identifiers &identifiers);
-
-  CJLValueP lookupLValue(const CJExecIdentifiersP &eidentifiers);
   CJLValueP lookupLValue(const Identifiers &identifiers);
 
   CJValueP lookupFunction(const Identifiers &identifiers);
 
-  CJLValueP lookupProperty(const CJExecIdentifiersP &eidentifiers, bool create=false);
   CJLValueP lookupProperty(const Identifiers &identifiers, bool create=false);
 
-  CJLValueP lookupScopeProperty(const CJDictionaryP &scope,
-                                const CJExecIdentifiersP &eidentifiers, bool create=false);
-
-  ValuePair lookupObjectProperty(const CJExecIdentifiersP &eidentifiers, bool create=false);
   ValuePair lookupObjectProperty(const Identifiers &identifiers, bool create=false);
+
+ private:
+  //bool lookupFunctionPropertyData(CJFunctionBaseP fn, const Identifiers &identifiers,
+  //                                CJPropertyData &data, int ind=0);
+
+  bool lookupScopeValuePropertyData(CJNameSpaceP scope, CJValueP value,
+                                    const Identifiers &identifiers,
+                                    CJPropertyData &data, int ind=0);
+
+  bool lookupObjPropertyData(CJObjP obj, const Identifiers &identifiers,
+                             CJPropertyData &data, int ind=0);
+
+  //CJValueP lookupValue(const Identifiers &identifiers);
+
+ public:
+  CJValueP valueToObj(CJValueP value) const;
+
+  //---
 
   bool deleteToken(const Tokens &tokens);
 

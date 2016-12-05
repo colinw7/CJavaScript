@@ -1,6 +1,5 @@
 #include <CQJDocument.h>
 #include <CQJavaScript.h>
-#include <CQJavaScript.h>
 
 CJObjTypeP CQJDocumentType::type_;
 
@@ -26,11 +25,9 @@ CQJDocumentType(CJavaScript *js) :
 //---
 
 CQJDocument::
-CQJDocument(CQJavaScript *qjs) :
- CQJObject(qjs, CQJDocumentType::instance(qjs->js()))
+CQJDocument(CJavaScript *js) :
+ CQJObject(js, CQJDocumentType::instance(js))
 {
-  CJavaScript *js = qjs->js();
-
   objType_->addObjFunction(js, "getElementById", objType_);
   objType_->addObjFunction(js, "querySelector" , objType_);
 }
@@ -43,8 +40,11 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
     if (values.size() == 2) {
       std::string id = values[1]->toString();
 
-      if (id == "canvas")
-        return qjs_->jsCanvas();
+      if (id == "canvas") {
+        CQJavaScript *qjs = CQJavaScript::instance();
+
+        return qjs->jsCanvas();
+      }
     }
 
     return CJValueP();
@@ -53,8 +53,11 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
     if (values.size() == 2) {
       std::string id = values[1]->toString();
 
-      if (id == "canvas")
-        return qjs_->jsCanvas();
+      if (id == "canvas") {
+        CQJavaScript *qjs = CQJavaScript::instance();
+
+        return qjs->jsCanvas();
+      }
     }
 
     return CJValueP();

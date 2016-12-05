@@ -1,11 +1,11 @@
 #include <CQJRequestAnimationFrame.h>
 #include <CQJWindow.h>
-#include <CQJSCanvas.h>
+#include <CQJCanvasWidget.h>
 #include <CQJavaScript.h>
 
 CQJRequestAnimationFrame::
-CQJRequestAnimationFrame(CQJavaScript *qjs) :
- CJFunctionBase(qjs->js(), "requestAnimationFrame"), qjs_(qjs)
+CQJRequestAnimationFrame(CJavaScript *js) :
+ CJFunctionBase(js, "requestAnimationFrame")
 {
 }
 
@@ -21,12 +21,14 @@ exec(CJavaScript *, const Values &values)
   if (fnValue->type() == CJToken::Type::Function) {
     CJFunctionBaseP fn = CJValue::cast<CJFunctionBase>(fnValue);
 
-    CQJWindowP window = CJValue::cast<CQJWindow>(qjs_->jsWindow());
+    CQJavaScript *qjs = CQJavaScript::instance();
+
+    CQJWindowP window = CJValue::cast<CQJWindow>(qjs->jsWindow());
 
     window->addOneShotTimer(fn, 10);
     //fn->exec(js, values);
 
-    //qjs_->canvas()->update();
+    //qjs->canvas()->update();
   }
 
   return CJValueP();

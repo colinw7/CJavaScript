@@ -4,8 +4,6 @@
 #include <CJObj.h>
 #include <QImage>
 
-class CQJavaScript;
-
 class CQJCanvasPatternType : public CJObjType {
  public:
   static CJObjTypeP instance(CJavaScript *js);
@@ -32,12 +30,10 @@ class CQJCanvasPattern : public CJObj {
   };
 
  public:
-  CQJCanvasPattern(CQJavaScript *js, const QImage &qimage, const Repeat &repeat);
+  CQJCanvasPattern(CJavaScript *js, const QImage &qimage, const Repeat &repeat);
 
-  CQJavaScript *qjs() const { return qjs_; }
-
-  CJValue *dup(CJavaScript *) const override {
-    return new CQJCanvasPattern(qjs_, qimage_, repeat_); }
+  CJValue *dup(CJavaScript *js) const override {
+    return new CQJCanvasPattern(js, qimage_, repeat_); }
 
   const QImage &qimage() const { return qimage_; }
 
@@ -58,9 +54,8 @@ class CQJCanvasPattern : public CJObj {
   void print(std::ostream &os) const override { os << "canvasPattern"; }
 
  private:
-  CQJavaScript* qjs_ { 0 };
-  QImage        qimage_;
-  Repeat        repeat_ { Repeat::XY };
+  QImage qimage_;
+  Repeat repeat_ { Repeat::XY };
 };
 
 #endif

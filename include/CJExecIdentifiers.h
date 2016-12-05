@@ -7,7 +7,7 @@
 #include <iostream>
 
 // <identifer> [.<identifier]*
-class CJExecIdentifiers : public CJToken {
+class CJExecIdentifiers : public CJToken, public std::enable_shared_from_this<CJExecIdentifiers> {
  public:
   typedef std::vector<CJIdentifier *> Identifiers;
 
@@ -22,6 +22,8 @@ class CJExecIdentifiers : public CJToken {
   }
 
   const Identifiers &identifiers() const { return identifiers_; }
+
+  int numIdentifiers() const { return identifiers_.size(); }
 
   void setEValue(CJValueP evalue) { evalue_ = evalue; }
 

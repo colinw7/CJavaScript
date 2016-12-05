@@ -1,5 +1,5 @@
 #include <CQJCanvasImageDataArray.h>
-#include <CQJavaScript.h>
+#include <CJavaScript.h>
 
 CJObjTypeP CQJCanvasImageDataArrayType::type_;
 
@@ -20,13 +20,11 @@ CQJCanvasImageDataArrayType(CJavaScript *js) :
 }
 
 CQJCanvasImageDataArray::
-CQJCanvasImageDataArray(CQJavaScript *qjs, CQJCanvasImageDataP data) :
- CQJObject(qjs, CQJCanvasImageDataArrayType::instance(qjs->js())), data_(data)
+CQJCanvasImageDataArray(CJavaScript *js, CQJCanvasImageDataP data) :
+ CQJObject(js, CQJCanvasImageDataArrayType::instance(js)), data_(data)
 {
   int w = data_->qimage().width ();
   int h = data_->qimage().height();
-
-  CJavaScript *js = qjs_->js();
 
   setRealProperty(js, "length", 4*w*h);
 }

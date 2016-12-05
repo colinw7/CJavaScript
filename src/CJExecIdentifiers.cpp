@@ -59,23 +59,14 @@ exec(CJavaScript *js)
     return evalue;
   }
   else {
+    CJExecIdentifiersP eidentifiers = shared_from_this();
+
     CJValueP value;
 
-    if      (isThis()) {
-      CJDictionaryP scope = js->thisScope();
+    CJPropertyData data(js);
 
-      if (! identifiers_.empty()) {
-        CJPropertyData data(js);
-
-        if (js->lookupScopePropertyData(scope, identifiers_, data))
-          value = data.value();
-      }
-      else
-        return scope;
-    }
-    else if (! identifiers_.empty()) {
-      value = js->lookupValue(identifiers_);
-    }
+    if (js->lookupPropertyData(eidentifiers, data))
+      value = data.value();
 
     //if (! value)
     //  value = js->createUndefinedValue();

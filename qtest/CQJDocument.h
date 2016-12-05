@@ -2,9 +2,6 @@
 #define CQJDocument_H
 
 #include <CQJObject.h>
-#include <CJavaScript.h>
-
-class CQJavaScript;
 
 class CQJDocumentType : public CJObjType {
  public:
@@ -26,9 +23,9 @@ class CQJDocument : public CQJObject {
   Q_OBJECT
 
  public:
-  CQJDocument(CQJavaScript *js);
+  CQJDocument(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *) const override { return new CQJDocument(qjs_); }
+  CJValue *dup(CJavaScript *js) const override { return new CQJDocument(js); }
 
   CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values);
 

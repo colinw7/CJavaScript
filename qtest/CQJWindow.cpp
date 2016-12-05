@@ -1,8 +1,8 @@
 #include <CQJWindow.h>
 #include <CQJWindowTimer.h>
-#include <CQJSCanvas.h>
-#include <CQJavaScript.h>
+#include <CQJCanvasWidget.h>
 #include <CQJRequestAnimationFrame.h>
+#include <CQJavaScript.h>
 #include <iostream>
 
 CJObjTypeP CQJWindowType::type_;
@@ -29,17 +29,15 @@ CQJWindowType(CJavaScript *js) :
 //------
 
 CQJWindow::
-CQJWindow(CQJavaScript *qjs) :
- CQJObject(qjs, CQJWindowType::instance(qjs->js()))
+CQJWindow(CJavaScript *js) :
+ CQJObject(js, CQJWindowType::instance(js))
 {
-  CJavaScript *js = qjs->js();
-
   objType_->addObjFunction(js, "setTimeout", objType_);
 
   addPseudoProperty("innerWidth");
   addPseudoProperty("innerHeight");
 
-  setProperty(js, "requestAnimationFrame", CJValueP(new CQJRequestAnimationFrame(qjs)));
+  setProperty(js, "requestAnimationFrame", CJValueP(new CQJRequestAnimationFrame(js)));
 }
 
 long
@@ -91,10 +89,14 @@ CQJWindow::
 getProperty(CJavaScript *js, const std::string &name) const
 {
   if       (name == "innerWidth") {
-    return qjs_->js()->createNumberValue(long(qjs_->canvas()->width()));
+    CQJavaScript *qjs = CQJavaScript::instance();
+
+    return js->createNumberValue(long(qjs->canvas()->width()));
   }
   else if  (name == "innerHeight") {
-    return qjs_->js()->createNumberValue(long(qjs_->canvas()->height()));
+    CQJavaScript *qjs = CQJavaScript::instance();
+
+    return js->createNumberValue(long(qjs->canvas()->height()));
   }
   else
     return CJObj::getProperty(js, name);

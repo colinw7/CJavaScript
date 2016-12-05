@@ -3,30 +3,22 @@
 
 #include <CJFunctionBase.h>
 
-class CQJavaScript;
-
 class CQJSetInterval : public CJFunctionBase {
  public:
-  CQJSetInterval(CQJavaScript *js);
+  CQJSetInterval(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *) const override { return new CQJSetInterval(qjs_); }
+  CJValue *dup(CJavaScript *js) const override { return new CQJSetInterval(js); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
-
- private:
-  CQJavaScript *qjs_ { 0 };
 };
 
 class CQJClearInterval : public CJFunctionBase {
  public:
-  CQJClearInterval(CQJavaScript *js);
+  CQJClearInterval(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *) const override { return new CQJClearInterval(qjs_); }
+  CJValue *dup(CJavaScript *js) const override { return new CQJClearInterval(js); }
 
   CJValueP exec(CJavaScript *js, const Values &values) override;
-
- private:
-  CQJavaScript *qjs_ { 0 };
 };
 
 #endif

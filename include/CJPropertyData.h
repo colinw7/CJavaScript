@@ -16,6 +16,9 @@ class CJPropertyData {
   bool isCreate() const { return create_; }
   void setCreate(bool b) { create_ = b; }
 
+  bool isCreateLast() const { return createLast_; }
+  void setCreateLast(bool b) { createLast_ = b; }
+
   CJNameSpaceP scope() const { return scope_; }
   void setScope(const CJNameSpaceP &scope) { scope_ = scope; }
 
@@ -37,6 +40,7 @@ class CJPropertyData {
   CJavaScript*      js_ { 0 };
   bool              modifiable_ { false };
   bool              create_ { false };
+  bool              createLast_ { false };
   CJNameSpaceP      scope_;
   CJObjP            obj_;
   CJValueP          objValue_;

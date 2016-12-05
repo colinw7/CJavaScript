@@ -30,11 +30,12 @@ class CQJWindow : public CQJObject {
   Q_OBJECT
 
  public:
-  CQJWindow(CQJavaScript *js);
+  CQJWindow(CJavaScript *js);
 
-  CJValue *dup(CJavaScript *) const override { return new CQJWindow(qjs_); }
+  CJValue *dup(CJavaScript *js) const override { return new CQJWindow(js); }
 
   long addTimer(CJFunctionBaseP timerFn, double t);
+
   void removeTimer(long id);
 
   void addOneShotTimer(CJFunctionBaseP timerFn, double t);
