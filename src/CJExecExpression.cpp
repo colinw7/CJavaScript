@@ -417,7 +417,7 @@ isShortCircuit(const Operators &operators, const Values &values)
 {
   CJOperator *lastOp = operators.lastOp();
 
-  if (values.size() == 1 && operators.size() == 1 &&
+  if (values.size() == 1 && values[0] && operators.size() == 1 &&
       (lastOp->type() == CJOperator::Type::LogicalAnd ||
        lastOp->type() == CJOperator::Type::LogicalOr)) {
     bool shortCircuit = false;

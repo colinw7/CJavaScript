@@ -18,6 +18,9 @@ exec(CJavaScript *js)
 
   CJValueP value = exprList_->exec(js);
 
+  if (! value)
+    return CJValueP();
+
   //---
 
   // find index of first block which matches switch expression
