@@ -8,7 +8,7 @@ class CJFunctionType : public CJObjType {
  public:
   static CJFunctionTypeP instance(CJavaScript *js);
 
-  CJFunctionType(CJavaScript *js);
+  explicit CJFunctionType(CJavaScript *js);
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
 

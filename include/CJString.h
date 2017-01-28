@@ -9,7 +9,7 @@ class CJStringType : public CJObjType {
  public:
   static CJObjTypeP instance(CJavaScript *js);
 
-  CJStringType(CJavaScript *js);
+  explicit CJStringType(CJavaScript *js);
 
   CJValueP execType(CJavaScript *js, const std::string &name, const Values &values) override;
 

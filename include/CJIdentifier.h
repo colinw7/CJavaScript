@@ -5,7 +5,7 @@
 
 class CJIdentifier : public CJToken {
  public:
-  CJIdentifier(const std::string &id);
+  explicit CJIdentifier(const std::string &id);
 
   const std::string &name() const { return id_; }
 

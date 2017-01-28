@@ -20,7 +20,7 @@ class CJExecBlock : public CJToken {
   typedef std::vector<CJErrorBaseP> Errors;
 
  public:
-  CJExecBlock(Type type);
+  explicit CJExecBlock(Type type);
 
   Type type() const { return type_; }
 

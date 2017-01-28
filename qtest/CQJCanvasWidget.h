@@ -11,7 +11,7 @@ class CQJCanvasWidget : public QFrame {
   Q_OBJECT
 
  public:
-  CQJCanvasWidget(CQJavaScript *js, int size=600);
+  explicit CQJCanvasWidget(CQJavaScript *js, int size=600);
 
   void setFillColor   (const QColor &c);
   void setFillGradient(const QGradient &g);

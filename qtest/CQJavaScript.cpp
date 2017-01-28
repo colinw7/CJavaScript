@@ -48,17 +48,27 @@ init()
 
   js_->addObjectType("Canvas", CQJCanvasType::instance(js_));
 
-  jsWindow_   = CJValueP(new CQJWindow  (js_));
+  jsWindow_ = CJValueP(new CQJWindow(js_));
+
+  CQJWindowP window = CJValue::cast<CQJWindow>(jsWindow_);
+
+  window->init();
+
   jsDocument_ = CJValueP(new CQJDocument(js_));
-  jsCanvas_   = CJValueP(new CQJCanvas  (js_));
+  jsCanvas_   = CJValueP(new CQJCanvas  (js_, canvas_));
 
   js_->setProperty("window"  , jsWindow_);
   js_->setProperty("document", jsDocument_);
 
-  js_->setProperty("setInterval"  , CJValueP(new CQJSetInterval  (js_)));
-  js_->setProperty("clearInterval", CJValueP(new CQJClearInterval(js_)));
+  CJValueP setInterval   = CJValueP(new CQJSetInterval  (js_, window));
+  CJValueP clearInterval = CJValueP(new CQJClearInterval(js_, window));
 
-  js_->setProperty("requestAnimationFrame", CJValueP(new CQJRequestAnimationFrame(js_)));
+  js_->setProperty("setInterval"  , setInterval);
+  js_->setProperty("clearInterval", clearInterval);
+
+  CJValueP requestAnimationFrame = CJValueP(new CQJRequestAnimationFrame(js_, window));
+
+  js_->setProperty("requestAnimationFrame", requestAnimationFrame);
 
   //---
 

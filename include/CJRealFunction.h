@@ -46,7 +46,7 @@ class CJReal2Function : public CJFunctionBase {
 // min of values
 class CJMinFunction : public CJFunctionBase {
  public:
-  CJMinFunction(CJavaScript *js);
+  explicit CJMinFunction(CJavaScript *js);
 
   CJMinFunction(const CJMinFunction &fn);
 
@@ -64,7 +64,7 @@ class CJMinFunction : public CJFunctionBase {
 // min of values
 class CJMaxFunction : public CJFunctionBase {
  public:
-  CJMaxFunction(CJavaScript *js);
+  explicit CJMaxFunction(CJavaScript *js);
 
   CJMaxFunction(const CJMaxFunction &fn);
 

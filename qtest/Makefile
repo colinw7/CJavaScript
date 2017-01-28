@@ -137,11 +137,17 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_platformsupport_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_printsupport.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_printsupport_private.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_qml.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_qmltest.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_quick.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_quickwidgets.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_sql.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_sql_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_svg.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_testlib.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_testlib_private.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_webkit.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_webkitwidgets.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_widgets.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_widgets_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_xcb_qpa_lib_private.pri \
@@ -265,11 +271,17 @@ Makefile: CQJavaScript.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64/qm
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_platformsupport_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_printsupport.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_printsupport_private.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_qml.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_qmltest.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_quick.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_quickwidgets.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_sql.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_sql_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_svg.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_testlib.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_testlib_private.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_webkit.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_webkitwidgets.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_widgets.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_widgets_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_xcb_qpa_lib_private.pri \
@@ -329,11 +341,17 @@ Makefile: CQJavaScript.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64/qm
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_platformsupport_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_printsupport.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_printsupport_private.pri:
+/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_qml.pri:
+/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_qmltest.pri:
+/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_quick.pri:
+/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_quickwidgets.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_sql.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_sql_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_svg.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_testlib.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_testlib_private.pri:
+/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_webkit.pri:
+/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_webkitwidgets.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_widgets.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_widgets_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_xcb_qpa_lib_private.pri:
@@ -703,8 +721,10 @@ $(OBJ_DIR)/CQJavaScript/CQJCanvas.o: CQJCanvas.cpp CQJCanvas.h \
 		$(INC_DIR)/CJavaScript/CJDictionary.h \
 		$(INC_DIR)/CJavaScript/CJValue.h \
 		CQJCanvasContext2D.h \
+		CQJImage.h \
+		$(INC_DIR)/CJavaScript/CJObjTypeFunction.h \
+		$(INC_DIR)/CJavaScript/CJFunctionBase.h \
 		CQJCanvasWidget.h \
-		CQJavaScript.h \
 		$(INC_DIR)/CJavaScript/CJavaScript.h \
 		$(INC_DIR)/CJavaScript/CJKeyword.h \
 		$(INC_DIR)/CJavaScript/CJIdentifier.h \
@@ -719,7 +739,6 @@ $(OBJ_DIR)/CQJavaScript/CQJCanvas.o: CQJCanvas.cpp CQJCanvas.h \
 		$(INC_DIR)/CJavaScript/CJString.h \
 		$(INC_DIR)/CJavaScript/CJArray.h \
 		$(INC_DIR)/CJavaScript/CJOperator.h \
-		$(INC_DIR)/CJavaScript/CJFunctionBase.h \
 		$(INC_DIR)/CJavaScript/CJRegExp.h \
 		$(INC_DIR)/CRegExp/CRegExp.h \
 		$(INC_DIR)/CJavaScript/CJDate.h \
@@ -740,8 +759,6 @@ $(OBJ_DIR)/CQJavaScript/CQJCanvas.o: CQJCanvas.cpp CQJCanvas.h \
 		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
 		$(INC_DIR)/CJavaScript/CJRealFunction.h \
 		$(INC_DIR)/CJavaScript/CJRandFunction.h \
-		CQJImage.h \
-		$(INC_DIR)/CJavaScript/CJObjTypeFunction.h \
 		$(INC_DIR)/CStrParse/CStrParse.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJ_DIR)/CQJavaScript/CQJCanvas.o CQJCanvas.cpp
 
@@ -761,11 +778,13 @@ $(OBJ_DIR)/CQJavaScript/CQJCanvasContext2D.o: CQJCanvasContext2D.cpp CQJCanvasCo
 		CQJCanvasRadialGradient.h \
 		CQJCanvasPattern.h \
 		CQJCanvasImageData.h \
+		CQJCanvas.h \
 		CQJCanvasWidget.h \
 		CQJImage.h \
 		$(INC_DIR)/CJavaScript/CJObjTypeFunction.h \
 		$(INC_DIR)/CJavaScript/CJFunctionBase.h \
-		CQJavaScript.h \
+		CQJUtil.h \
+		$(INC_DIR)/CStrParse/CStrParse.h \
 		$(INC_DIR)/CJavaScript/CJavaScript.h \
 		$(INC_DIR)/CJavaScript/CJKeyword.h \
 		$(INC_DIR)/CJavaScript/CJIdentifier.h \
@@ -799,9 +818,7 @@ $(OBJ_DIR)/CQJavaScript/CQJCanvasContext2D.o: CQJCanvasContext2D.cpp CQJCanvasCo
 		$(INC_DIR)/CJavaScript/CJPropertyData.h \
 		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
 		$(INC_DIR)/CJavaScript/CJRealFunction.h \
-		$(INC_DIR)/CJavaScript/CJRandFunction.h \
-		CQJUtil.h \
-		$(INC_DIR)/CStrParse/CStrParse.h
+		$(INC_DIR)/CJavaScript/CJRandFunction.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJ_DIR)/CQJavaScript/CQJCanvasContext2D.o CQJCanvasContext2D.cpp
 
 $(OBJ_DIR)/CQJavaScript/CQJCanvasFontMetrics.o: CQJCanvasFontMetrics.cpp CQJCanvasFontMetrics.h \
@@ -1331,7 +1348,6 @@ $(OBJ_DIR)/CQJavaScript/CQJWindowTimer.o: CQJWindowTimer.cpp CQJWindowTimer.h \
 		$(INC_DIR)/CJavaScript/CJToken.h \
 		$(INC_DIR)/CJavaScript/CJDictionary.h \
 		$(INC_DIR)/CJavaScript/CJValue.h \
-		CQJavaScript.h \
 		$(INC_DIR)/CJavaScript/CJavaScript.h \
 		$(INC_DIR)/CJavaScript/CJKeyword.h \
 		$(INC_DIR)/CJavaScript/CJIdentifier.h \
@@ -1382,7 +1398,6 @@ $(OBJ_DIR)/CQJavaScript/CQJIntervalFunction.o: CQJIntervalFunction.cpp CQJInterv
 		$(INC_DIR)/CJavaScript/CJValue.h \
 		CQJWindow.h \
 		CQJObject.h \
-		CQJavaScript.h \
 		$(INC_DIR)/CJavaScript/CJavaScript.h \
 		$(INC_DIR)/CJavaScript/CJKeyword.h \
 		$(INC_DIR)/CJavaScript/CJIdentifier.h \
@@ -1432,42 +1447,7 @@ $(OBJ_DIR)/CQJavaScript/CQJRequestAnimationFrame.o: CQJRequestAnimationFrame.cpp
 		$(INC_DIR)/CJavaScript/CJValue.h \
 		CQJWindow.h \
 		CQJObject.h \
-		CQJCanvasWidget.h \
-		CQJavaScript.h \
-		$(INC_DIR)/CJavaScript/CJavaScript.h \
-		$(INC_DIR)/CJavaScript/CJKeyword.h \
-		$(INC_DIR)/CJavaScript/CJIdentifier.h \
-		$(INC_DIR)/CJavaScript/CJUndefined.h \
-		$(INC_DIR)/CJavaScript/CJNull.h \
-		$(INC_DIR)/CJavaScript/CJTrue.h \
-		$(INC_DIR)/CJavaScript/CJFalse.h \
-		$(INC_DIR)/CJavaScript/CJBoolean.h \
-		$(INC_DIR)/CJavaScript/CJNumber.h \
-		$(INC_DIR)/CJavaScript/CJUtil.h \
-		$(INC_DIR)/COS/COSNaN.h \
-		$(INC_DIR)/CJavaScript/CJString.h \
-		$(INC_DIR)/CJavaScript/CJArray.h \
-		$(INC_DIR)/CJavaScript/CJOperator.h \
-		$(INC_DIR)/CJavaScript/CJRegExp.h \
-		$(INC_DIR)/CRegExp/CRegExp.h \
-		$(INC_DIR)/CJavaScript/CJDate.h \
-		$(INC_DIR)/CJavaScript/CJFunction.h \
-		$(INC_DIR)/CJavaScript/CJLValue.h \
-		$(INC_DIR)/CJavaScript/CJObject.h \
-		$(INC_DIR)/CJavaScript/CJTypeValue.h \
-		$(INC_DIR)/CJavaScript/CJUserObject.h \
-		$(INC_DIR)/CJavaScript/CJTypeFunction.h \
-		$(INC_DIR)/CJavaScript/CJGetterSetter.h \
-		$(INC_DIR)/CJavaScript/CJExecBlock.h \
-		$(INC_DIR)/CJavaScript/CJExecStatement.h \
-		$(INC_DIR)/CJavaScript/CJExecExpression.h \
-		$(INC_DIR)/CJavaScript/CJExecExpressionList.h \
-		$(INC_DIR)/CJavaScript/CJTypeObjectFunction.h \
-		$(INC_DIR)/CJavaScript/CJExecData.h \
-		$(INC_DIR)/CJavaScript/CJPropertyData.h \
-		$(INC_DIR)/CJavaScript/CJGlobalFunction.h \
-		$(INC_DIR)/CJavaScript/CJRealFunction.h \
-		$(INC_DIR)/CJavaScript/CJRandFunction.h
+		CQJCanvasWidget.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJ_DIR)/CQJavaScript/CQJRequestAnimationFrame.o CQJRequestAnimationFrame.cpp
 
 $(OBJ_DIR)/CQJavaScript/moc_CQJavaScript.o: .moc/moc_CQJavaScript.cpp 

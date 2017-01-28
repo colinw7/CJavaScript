@@ -9,7 +9,7 @@ class CJRegExpType : public CJObjType {
  public:
   static CJRegExpTypeP instance(CJavaScript *js);
 
-  CJRegExpType(CJavaScript *js);
+  explicit CJRegExpType(CJavaScript *js);
 
   CJValueP execType(CJavaScript *js, const std::string &name, const Values &values) override;
 

@@ -11,7 +11,7 @@ class CJDictionaryType : public CJObjType {
  public:
   static CJObjTypeP instance(CJavaScript *js);
 
-  CJDictionaryType(CJavaScript *js);
+  explicit CJDictionaryType(CJavaScript *js);
 
   CJValueP execType(CJavaScript *js, const std::string &name, const Values &values) override;
 

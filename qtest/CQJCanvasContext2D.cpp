@@ -4,10 +4,11 @@
 #include <CQJCanvasRadialGradient.h>
 #include <CQJCanvasPattern.h>
 #include <CQJCanvasImageData.h>
+#include <CQJCanvas.h>
 #include <CQJCanvasWidget.h>
 #include <CQJImage.h>
-#include <CQJavaScript.h>
 #include <CQJUtil.h>
+#include <CJavaScript.h>
 
 CJObjTypeP CQJCanvasContext2DType::type_;
 
@@ -72,7 +73,7 @@ CQJCanvasContext2D(CJavaScript *js, CQJCanvas *canvas) :
   setStringProperty(js, "lineJoin" , "miter");
   setStringProperty(js, "lineCap"  , "square");
 
-  setStringProperty(js, "font", "10px sans-serif");
+  setStringProperty(js, "font", "12px sans-serif");
   setStringProperty(js, "textBaseline", "alphabetic");
   setStringProperty(js, "textAlign", "left");
 
@@ -90,9 +91,7 @@ CQJCanvasWidget *
 CQJCanvasContext2D::
 canvasWidget() const
 {
-  CQJavaScript *qjs = CQJavaScript::instance();
-
-  return qjs->canvas();
+  return canvas_->canvas();
 }
 
 CJValueP
@@ -622,7 +621,7 @@ initFont()
 
   //---
 
-  std::string fontStr = getStringProperty(js_, "font", "10px sans-serif");
+  std::string fontStr = getStringProperty(js_, "font", "12px sans-serif");
 
   if (fontStr == lastFont_)
     return;
@@ -708,7 +707,7 @@ initFont()
   parse.skipSpace();
 
   if (parse.isDigit()) {
-    int fontSize = 10;
+    int fontSize = 12;
 
     parse.readInteger(&fontSize);
 
@@ -730,7 +729,7 @@ initFont()
     if (parse.isChar('/')) {
       parse.skipChar();
 
-      int lineHeight = 10;
+      int lineHeight = 12;
 
       parse.readInteger(&lineHeight);
 

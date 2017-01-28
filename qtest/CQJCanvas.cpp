@@ -1,8 +1,7 @@
 #include <CQJCanvas.h>
 #include <CQJCanvasContext2D.h>
-#include <CQJCanvasWidget.h>
-#include <CQJavaScript.h>
 #include <CQJImage.h>
+#include <CQJCanvasWidget.h>
 #include <CJavaScript.h>
 #include <CStrParse.h>
 #include <iostream>
@@ -46,8 +45,8 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 //------
 
 CQJCanvas::
-CQJCanvas(CJavaScript *js) :
- CQJObject(js, CQJCanvasType::instance(js))
+CQJCanvas(CJavaScript *js, CQJCanvasWidget *canvas) :
+ CQJObject(js, CQJCanvasType::instance(js)), canvas_(canvas)
 {
   objType_->addObjFunction(js, "getContext", objType_);
 
@@ -60,10 +59,8 @@ void
 CQJCanvas::
 updateSize()
 {
-  CQJavaScript *qjs = CQJavaScript::instance();
-
-  setRealProperty(js_, "width" , qjs->canvas()->width ());
-  setRealProperty(js_, "height", qjs->canvas()->height());
+  setRealProperty(js_, "width" , canvas_->width ());
+  setRealProperty(js_, "height", canvas_->height());
 }
 
 CJValueP

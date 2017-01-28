@@ -14,7 +14,10 @@ class CQJObject : public QObject, public CJObj {
 
  public:
   CQJObject(CJavaScript *js, const CJObjTypeP &type);
- ~CQJObject();
+
+  virtual ~CQJObject();
+
+  virtual void init() { }
 
   CJValue *dup(CJavaScript *js) const override { return new CQJObject(js, objType()); }
 

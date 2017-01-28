@@ -9,7 +9,7 @@ class CJUndefinedType : public CJObjType {
  public:
   static CJUndefinedTypeP instance(CJavaScript *js);
 
-  CJUndefinedType(CJavaScript *js);
+  explicit CJUndefinedType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
@@ -23,7 +23,7 @@ class CJUndefined : public CJValue {
   static CJUndefinedP value(CJavaScript *js);
 
  public:
-  CJUndefined(CJavaScript *js);
+  explicit CJUndefined(CJavaScript *js);
 
   CJUndefined(const CJUndefined &undef);
 

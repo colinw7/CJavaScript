@@ -37,7 +37,7 @@ class CJKeyword : public CJToken {
  public:
   static Type nameToType(const std::string &name);
 
-  CJKeyword(const Type &type);
+  explicit CJKeyword(const Type &type);
 
   Type type() const { return type_; }
 

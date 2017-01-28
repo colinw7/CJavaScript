@@ -5,7 +5,7 @@
 #include <COptVal.h>
 
 struct CJPropertyValue {
-  CJPropertyValue(CJValueP v=CJValueP()) : value(v) { }
+  explicit CJPropertyValue(CJValueP v=CJValueP()) : value(v) { }
 
   CJPropertyValue(CJValueP v, const std::string &attr) :
    value(v) {

@@ -9,7 +9,7 @@ class CJFalseType : public CJObjType {
  public:
   static CJFalseTypeP instance(CJavaScript *js);
 
-  CJFalseType(CJavaScript *js);
+  explicit CJFalseType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
@@ -25,7 +25,7 @@ class CJFalse : public CJValue {
   static CJFalseP value(CJavaScript *js);
 
  public:
-  CJFalse(CJavaScript *js);
+  explicit CJFalse(CJavaScript *js);
 
   CJFalse(const CJFalse &f);
 

@@ -7,7 +7,7 @@ class CQJDocumentType : public CJObjType {
  public:
   static CJObjTypeP instance(CJavaScript *js);
 
-  CQJDocumentType(CJavaScript *js);
+  explicit CQJDocumentType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *, const std::string &, const Values &) override {
     return CJValueP();
@@ -23,7 +23,7 @@ class CQJDocument : public CQJObject {
   Q_OBJECT
 
  public:
-  CQJDocument(CJavaScript *js);
+  explicit CQJDocument(CJavaScript *js);
 
   CJValue *dup(CJavaScript *js) const override { return new CQJDocument(js); }
 

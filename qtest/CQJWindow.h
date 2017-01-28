@@ -32,6 +32,8 @@ class CQJWindow : public CQJObject {
  public:
   CQJWindow(CJavaScript *js);
 
+  void init() override;
+
   CJValue *dup(CJavaScript *js) const override { return new CQJWindow(js); }
 
   long addTimer(CJFunctionBaseP timerFn, double t);

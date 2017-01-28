@@ -3,13 +3,11 @@
 
 #include <CQJObject.h>
 
-class CQJavaScript;
-
 class CQJCanvasType : public CJObjType {
  public:
   static CJObjTypeP instance(CJavaScript *js);
 
-  CQJCanvasType(CJavaScript *js);
+  explicit CQJCanvasType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *, const std::string &, const Values &) override;
 
@@ -19,13 +17,17 @@ class CQJCanvasType : public CJObjType {
 
 //------
 
+class CQJCanvasWidget;
+
 class CQJCanvas : public CQJObject {
   Q_OBJECT
 
  public:
-  CQJCanvas(CJavaScript *js);
+  CQJCanvas(CJavaScript *js, CQJCanvasWidget *canvas);
 
-  CJValue *dup(CJavaScript *js) const override { return new CQJCanvas(js); }
+  CJValue *dup(CJavaScript *js) const override { return new CQJCanvas(js, canvas_); }
+
+  CQJCanvasWidget *canvas() const { return canvas_; }
 
   void updateSize();
 
@@ -34,7 +36,8 @@ class CQJCanvas : public CQJObject {
   void print(std::ostream &os) const override { os << "canvas"; }
 
  private:
-  CJValueP context2D_;
+  CQJCanvasWidget* canvas_ { nullptr };
+  CJValueP         context2D_;
 };
 
 #endif

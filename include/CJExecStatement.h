@@ -5,7 +5,7 @@
 
 class CJExecStatement : public CJToken {
  public:
-  CJExecStatement(CJTokenP token=CJTokenP());
+  explicit CJExecStatement(CJTokenP token=CJTokenP());
 
   const CJTokenP &token() const { return token_; }
   void setToken(const CJTokenP &token) { token_ = token; }

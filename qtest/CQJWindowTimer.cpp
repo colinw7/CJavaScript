@@ -1,5 +1,5 @@
 #include <CQJWindowTimer.h>
-#include <CQJavaScript.h>
+#include <CJavaScript.h>
 
 int CQJWindowTimer::lastId_ = 0;
 

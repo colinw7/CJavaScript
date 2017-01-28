@@ -84,7 +84,7 @@ class CJToken {
   }
 
  public:
-  CJToken(Type type);
+  explicit CJToken(Type type);
 
   CJToken(const CJToken &t);
 

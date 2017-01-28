@@ -8,7 +8,7 @@ class CJavaScript;
 // TODO: turn into class with accessor and lvalue auto creation
 class CJPropertyData {
  public:
-  CJPropertyData(CJavaScript *js) : js_(js) { }
+  explicit CJPropertyData(CJavaScript *js) : js_(js) { }
 
   bool isModifiable() const { return modifiable_; }
   void setModifiable(bool b) { modifiable_ = b; }

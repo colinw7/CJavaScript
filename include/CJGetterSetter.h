@@ -11,7 +11,7 @@ class CJGetterSetterType : public CJObjType {
  public:
   static CJObjTypeP instance(CJavaScript *js);
 
-  CJGetterSetterType(CJavaScript *js);
+  explicit CJGetterSetterType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 

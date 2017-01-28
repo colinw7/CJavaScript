@@ -20,7 +20,7 @@ class CJObjectType : public CJObjType {
  public:
   static CJObjectTypeP instance(CJavaScript *js);
 
-  CJObjectType(CJavaScript *js);
+  explicit CJObjectType(CJavaScript *js);
 
   CJValueP execType(CJavaScript *js, const std::string &name, const Values &values) override;
 
@@ -49,7 +49,7 @@ class CJObjectType : public CJObjType {
 // Object Value
 class CJObject : public CJObj {
  public:
-  CJObject(CJavaScript *js);
+  explicit CJObject(CJavaScript *js);
 
   CJObject(const CJObject &obj);
 

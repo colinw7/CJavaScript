@@ -9,7 +9,7 @@ class CJNullType : public CJObjType {
  public:
   static CJObjTypeP instance(CJavaScript *js);
 
-  CJNullType(CJavaScript *js);
+  explicit CJNullType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
@@ -25,7 +25,7 @@ class CJNull : public CJValue {
   static CJValueP value(CJavaScript *js);
 
  private:
-  CJNull(CJavaScript *js);
+  explicit CJNull(CJavaScript *js);
 
   CJNull(const CJNull &n);
 

@@ -6,7 +6,7 @@
 // function calling API with signature: double result = fn(double r1, double r2);
 class CJRandFunction : public CJFunctionBase {
  public:
-  CJRandFunction(CJavaScript *js);
+  explicit CJRandFunction(CJavaScript *js);
 
   CJRandFunction(const CJRandFunction &fn);
 

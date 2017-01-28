@@ -11,7 +11,7 @@ class CJNumberType : public CJObjType {
  public:
   static CJNumberTypeP instance(CJavaScript *js);
 
-  CJNumberType(CJavaScript *js);
+  explicit CJNumberType(CJavaScript *js);
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
 

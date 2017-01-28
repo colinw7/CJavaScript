@@ -8,7 +8,7 @@ class CJDateType : public CJObjType {
  public:
   static CJDateTypeP instance(CJavaScript *js);
 
-  CJDateType(CJavaScript *js);
+  explicit CJDateType(CJavaScript *js);
 
   CJValueP execType(CJavaScript *js, const std::string &name, const Values &values) override;
 

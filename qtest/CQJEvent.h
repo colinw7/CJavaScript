@@ -8,7 +8,7 @@ class CQJEventType : public CJObjType {
  public:
   static CJObjTypeP instance(CJavaScript *js);
 
-  CQJEventType(CJavaScript *js);
+  explicit CQJEventType(CJavaScript *js);
 
   bool hasConstructor() const { return true; }
 

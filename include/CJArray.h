@@ -10,7 +10,7 @@ class CJArrayType : public CJObjType {
  public:
   static CJArrayTypeP instance(CJavaScript *js);
 
-  CJArrayType(CJavaScript *js);
+  explicit CJArrayType(CJavaScript *js);
 
   CJValueP execType(CJavaScript *js, const std::string &name, const Values &values) override;
 
@@ -35,7 +35,7 @@ class CJArray : public CJObj {
   typedef std::map<long,CJPropertyValue> IndValues;
 
  public:
-  CJArray(CJavaScript *js, long n=0);
+  explicit CJArray(CJavaScript *js, long n=0);
   CJArray(CJavaScript *js, const std::vector<CJValueP> &values);
   CJArray(CJavaScript *js, const IndValues &values, long len);
 

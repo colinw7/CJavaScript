@@ -10,7 +10,7 @@ class CJBooleanType : public CJObjType {
  public:
   static CJBooleanTypeP instance(CJavaScript *js);
 
-  CJBooleanType(CJavaScript *js);
+  explicit CJBooleanType(CJavaScript *js);
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
 
@@ -30,7 +30,7 @@ class CJBooleanType : public CJObjType {
 // Boolean Value
 class CJBoolean : public CJObj {
  public:
-  CJBoolean(CJavaScript *js, bool b=false);
+  explicit CJBoolean(CJavaScript *js, bool b=false);
 
   CJBoolean(const CJBoolean &b);
 

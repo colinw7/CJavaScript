@@ -5,7 +5,7 @@
 
 class CJLValue : public CJValue {
  public:
-  CJLValue(CJObjTypeP valueType);
+  explicit CJLValue(CJObjTypeP valueType);
 
   virtual ~CJLValue() { }
 

@@ -12,7 +12,7 @@ class CJExecExpressionList : public CJToken {
   typedef std::vector<CJValueP>          Values;
 
  public:
-  CJExecExpressionList(CJToken::Type type=CJToken::Type::ExpressionList);
+  explicit CJExecExpressionList(CJToken::Type type=CJToken::Type::ExpressionList);
 
   const Expressions &expressions() const { return expressions_; }
 

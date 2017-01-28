@@ -40,7 +40,7 @@ class CJExecExpression : public CJToken {
   };
 
  public:
-  CJExecExpression(Type type=CJToken::Type::Expression) :
+  explicit CJExecExpression(Type type=CJToken::Type::Expression) :
    CJToken(type) {
   }
 

@@ -9,7 +9,7 @@ class CQJImageType : public CJObjType {
  public:
   static CJObjTypeP instance(CJavaScript *js);
 
-  CQJImageType(CJavaScript *js);
+  explicit CQJImageType(CJavaScript *js);
 
   bool hasConstructor() const { return true; }
 
@@ -27,7 +27,7 @@ class CQJImageType : public CJObjType {
 
 class CQJImageFunction : public CJObjTypeFunction {
  public:
-  CQJImageFunction(CJavaScript *js);
+  explicit CQJImageFunction(CJavaScript *js);
 
   CQJImageFunction(const CQJImageFunction &fn);
 
@@ -53,7 +53,7 @@ class CQJImage : public CQJObject {
   };
 
  public:
-  CQJImage(CJavaScript *js);
+  explicit CQJImage(CJavaScript *js);
 
   CJValue *dup(CJavaScript *js) const override { return new CQJImage(js); }
 

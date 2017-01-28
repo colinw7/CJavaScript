@@ -10,7 +10,7 @@ class CQJCanvasContext2DType : public CJObjType {
  public:
   static CJObjTypeP instance(CJavaScript *js);
 
-  CQJCanvasContext2DType(CJavaScript *js);
+  explicit CQJCanvasContext2DType(CJavaScript *js);
 
   CJValueP exec(CJavaScript *, const std::string &, const Values &) override {
     return CJValueP();
