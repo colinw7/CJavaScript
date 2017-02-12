@@ -37,6 +37,13 @@ CQJDocument(CJavaScript *js) :
 
 CJValueP
 CQJDocument::
+getProperty(CJavaScript *js, const std::string &name) const
+{
+  return CQJObject::getProperty(js, name);
+}
+
+CJValueP
+CQJDocument::
 execNameFn(CJavaScript *js, const std::string &name, const Values &values)
 {
   if      (name == "createElement") {

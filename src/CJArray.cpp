@@ -660,7 +660,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
           break;
       }
 
-      newValues[v.first] = res;
+      newValues[v.first] = CJPropertyValue(res);
     }
 
     //---

@@ -55,7 +55,6 @@ init()
   window->init();
 
   jsDocument_ = CJValueP(new CQJDocument(js_));
-  jsCanvas_   = CJValueP(new CQJCanvas  (js_, canvas_));
 
   js_->setProperty("window"  , jsWindow_);
   js_->setProperty("document", jsDocument_);
@@ -69,6 +68,10 @@ init()
   CJValueP requestAnimationFrame = CJValueP(new CQJRequestAnimationFrame(js_, window));
 
   js_->setProperty("requestAnimationFrame", requestAnimationFrame);
+
+  //---
+
+  jsCanvas_ = CJValueP(new CQJCanvas(js_, canvas_));
 
   //---
 

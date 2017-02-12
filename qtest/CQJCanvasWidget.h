@@ -13,6 +13,8 @@ class CQJCanvasWidget : public QFrame {
  public:
   explicit CQJCanvasWidget(CQJavaScript *js, int size=600);
 
+  void updateSize(int w, int h);
+
   void setFillColor   (const QColor &c);
   void setFillGradient(const QGradient &g);
   void setFillPattern (const QImage &i);
@@ -70,9 +72,9 @@ class CQJCanvasWidget : public QFrame {
   const Qt::Alignment &fontAlign() const { return fontAlign_; }
   void setFontAlign(const Qt::Alignment &v) { fontAlign_ = v; }
 
-  void resizeEvent(QResizeEvent *);
-
   void paintEvent(QPaintEvent *);
+
+  void resizeEvent(QResizeEvent *);
 
   void enterEvent(QEvent *);
   void leaveEvent(QEvent *);
@@ -97,9 +99,9 @@ class CQJCanvasWidget : public QFrame {
   void callEventListener(const std::string &name, const std::string &prop, CJValueP event);
 
  private:
-  CQJavaScript*    qjs_ { 0 };
+  CQJavaScript*    qjs_ { nullptr };
   int              size_ { 600 };
-  QPainter*        ip_ { 0 };
+  QPainter*        ip_ { nullptr };
   QImage           qimage_;
   QColor           fillColor_   { QColor(Qt::black) };
   QGradient        fillGradient_;

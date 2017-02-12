@@ -27,6 +27,8 @@ class CQJDocument : public CQJObject {
 
   CJValue *dup(CJavaScript *js) const override { return new CQJDocument(js); }
 
+  CJValueP getProperty(CJavaScript *js, const std::string &name) const;
+
   CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values);
 
   void print(std::ostream &os) const override { os << "document"; }

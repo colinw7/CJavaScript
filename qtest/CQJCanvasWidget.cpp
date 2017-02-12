@@ -12,6 +12,30 @@ CQJCanvasWidget(CQJavaScript *qjs, int size) :
  qjs_(qjs), size_(size)
 {
   setFocusPolicy(Qt::StrongFocus);
+
+  setMouseTracking(true);
+}
+
+void
+CQJCanvasWidget::
+updateSize(int w, int h)
+{
+  if (qimage_.width() == w && qimage_.height() == h)
+    return;
+
+  delete ip_;
+
+  qimage_ = QImage(QSize(w, h), QImage::Format_ARGB32);
+
+  qimage_.fill(0);
+
+  ip_ = new QPainter(&qimage_);
+
+  //ip_->setCompositionMode(QPainter::CompositionMode_Plus);
+
+  ip_->setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+
+  //CJValue::cast<CQJCanvas>(qjs_->jsCanvas())->updateSize();
 }
 
 void
@@ -462,30 +486,20 @@ setBrush()
 
 void
 CQJCanvasWidget::
-resizeEvent(QResizeEvent *)
-{
-  delete ip_;
-
-  qimage_ = QImage(QSize(width(), height()), QImage::Format_ARGB32);
-
-  qimage_.fill(0);
-
-  ip_ = new QPainter(&qimage_);
-
-  ip_->setCompositionMode(QPainter::CompositionMode_Plus);
-
-  ip_->setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-
-  CJValue::cast<CQJCanvas>(qjs_->jsCanvas())->updateSize();
-}
-
-void
-CQJCanvasWidget::
 paintEvent(QPaintEvent *)
 {
   QPainter p(this);
 
+  p.fillRect(QWidget::rect(), Qt::black);
+
   p.drawImage(0, 0, qimage_);
+}
+
+void
+CQJCanvasWidget::
+resizeEvent(QResizeEvent *)
+{
+  updateSize(width(), height());
 }
 
 void
