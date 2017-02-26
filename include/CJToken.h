@@ -19,6 +19,7 @@ class CJToken {
     True,
     False,
     Operator,
+    Newline,
 
     // basic objects
     String,
@@ -104,10 +105,15 @@ class CJToken {
   virtual CJValueP exec(CJavaScript *) { return CJValueP(); }
 
   // string representation
-  virtual std::string toString() const = 0;
+  virtual std::string toString() const { return ""; }
 
   // print details
-  virtual void print(std::ostream &os) const = 0;
+  virtual void print(std::ostream &os) const {
+    if (type_ == Type::Newline)
+      os << "<nl>";
+    else
+      os << "<unknown>";
+  }
 
   friend std::ostream &operator<<(std::ostream &os, const CJToken &rhs) {
     rhs.print(os);

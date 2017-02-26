@@ -102,3 +102,8 @@
 # 11/13/2016
  . Update dup method
  . Fix parse error on -.5
+
+# 2/26/2017
+ . Add auto semi colon insertion
+ . Fix getOwnPropertyNames for array
+ . Move Qt javascript interface to separate library

@@ -1,3 +1,4 @@
+#include <CQJFrameWidget.h>
 #include <CQJavaScript.h>
 #include <CQApp.h>
 
@@ -6,7 +7,7 @@ main(int argc, char **argv)
 {
   CQApp app(argc, argv);
 
-  CQJavaScript *qjs = new CQJavaScript;
+  CQJFrameWidget *frame = new CQJFrameWidget;
 
   std::string filename;
 
@@ -46,14 +47,22 @@ main(int argc, char **argv)
   }
 
   if (size > 0)
-    qjs->setSize(size);
+    frame->setSize(size);
+
+  frame->init();
+
+  if (size > 0)
+    frame->setFixedSize(QSize(size, size));
+
+  frame->show();
+
+  //---
+
+  CQJavaScript *qjs = CQJavaScriptInst;
 
   qjs->init();
 
-  if (size > 0)
-    qjs->setFixedSize(QSize(size, size));
-
-  qjs->show();
+  //---
 
   CJavaScript *js = qjs->js();
 
@@ -69,6 +78,8 @@ main(int argc, char **argv)
   }
 
   qjs->callEventListeners("load", "onload");
+
+  //---
 
   app.exec();
 

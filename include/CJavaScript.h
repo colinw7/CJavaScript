@@ -388,6 +388,10 @@ class CJavaScript {
     return std::make_shared<CJRegExp>(th, s);
   }
 
+  CJTokenP createNewline() const {
+    return std::make_shared<CJToken>(CJToken::Type::Newline);
+  }
+
   CJDateP createDateValue(const Values &values) const {
     CJavaScript *th = const_cast<CJavaScript *>(this);
 
@@ -541,8 +545,6 @@ class CJavaScript {
 
   void parseString(const std::string &str);
 
-  void skipSpace(CStrParse &parse);
-
   std::string getIdentifier(CStrParse &parse, bool allowUnary) const;
 
   void readIdentifier(CStrParse &parse, bool allowKeyword=true);
@@ -557,6 +559,8 @@ class CJavaScript {
   void readDoubleString(CStrParse &parse);
   void readSingleString(CStrParse &parse);
   bool readRegExp(CStrParse &parse);
+
+  void skipSpace(CStrParse &parse, bool &newline);
 
   CJTokenP      lastToken() const;
   CJToken::Type lastTokenType() const;
@@ -603,11 +607,21 @@ class CJavaScript {
 
   bool interpExecKeyword(CJKeyword::Type type);
   bool isExecKeyword    (CJKeyword::Type type) const;
+  void skipExecKeyword  ();
   bool isKeyword        (CJTokenP token, CJKeyword::Type type) const;
 
   bool interpExecOperator(CJOperator::Type type);
   bool isExecOperator    (CJOperator::Type type) const;
+  void skipExecOperator  ();
   bool isOperator        (CJTokenP token, CJOperator::Type type) const;
+
+  bool isNewline(bool skip);
+
+  CJTokenP lookToken(bool &newline) const;
+  CJTokenP lookToken()  const { bool newline; return lookToken(newline); }
+
+  CJTokenP nextToken(bool &newline);
+  CJTokenP nextToken() { bool newline; return nextToken(newline); }
 
   int execLineNum() const;
 

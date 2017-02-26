@@ -1757,10 +1757,11 @@ parseString(const std::string &str)
 {
   CJOperator::Type   opType;
   CJNumber::RealType realType;
+  bool               newline;
 
   CStrParse parse(str);
 
-  parse.skipSpace();
+  skipSpace(parse, newline);
 
   while (! parse.eof()) {
     CJToken::Type lastType = lastTokenType();
@@ -1897,7 +1898,15 @@ parseString(const std::string &str)
       break;
     }
 
-    parse.skipSpace();
+    skipSpace(parse, newline);
+
+    if (newline) {
+      if (! getenv("JS_NO_NEWLINE_TOKEN")) {
+        CJTokenP token = createNewline();
+
+        tokens_.push_back(token);
+      }
+    }
   }
 }
 
@@ -1954,11 +1963,10 @@ interpFunctionBlock(const std::string &str)
   block->setLineNum(execLineNum());
 
   while (! execData_->eof()) {
-    CJTokenP token = execData_->token();
+    CJTokenP token = nextToken();
+    if (! token) break;
 
     block->addToken(token);
-
-    execData_->next();
   }
 
   //---
@@ -2015,7 +2023,8 @@ interp(CJExecData &execData)
   pushExecData(execData);
 
   while (! execData_->eof()) {
-    CJTokenP token = execData_->token();
+    CJTokenP token = lookToken();
+    if (! token) break;
 
     CJToken::Type type = token->type();
 
@@ -2045,7 +2054,7 @@ interp(CJExecData &execData)
         }
 
         if (isExecOperator(CJOperator::Type::SemiColon)) {
-          execData_->next();
+          skipExecOperator();
 
           CJExecStatementP estatement(createExecStatement(exprList));
 
@@ -2065,7 +2074,7 @@ interp(CJExecData &execData)
 
       // empty statement: ;
       if (opType == CJOperator::Type::SemiColon) {
-        execData_->next();
+        nextToken();
 
         CJExecStatementP estatement(createExecStatement());
 
@@ -2084,7 +2093,7 @@ interp(CJExecData &execData)
           break;
         }
 
-        execData_->next();
+        nextToken();
 
         //---
 
@@ -2113,7 +2122,7 @@ interp(CJExecData &execData)
         //---
 
         while (isExecOperator(CJOperator::Type::Comma)) {
-          execData_->next();
+          skipExecOperator();
 
           CJExecExpressionP keyExpr = interpExpression();
 
@@ -2170,7 +2179,7 @@ interp(CJExecData &execData)
       }
 
       if (isExecOperator(CJOperator::Type::SemiColon)) {
-        execData_->next();
+        skipExecOperator();
 
         CJExecStatementP estatement(createExecStatement(exprList));
 
@@ -2193,7 +2202,7 @@ interp(CJExecData &execData)
       }
 
       if (isExecOperator(CJOperator::Type::SemiColon)) {
-        execData_->next();
+        skipExecOperator();
 
         CJExecStatementP estatement(createExecStatement(exprList));
 
@@ -2217,7 +2226,7 @@ interp(CJExecData &execData)
         }
 
         if (isExecOperator(CJOperator::Type::SemiColon)) {
-          execData_->next();
+          skipExecOperator();
 
           CJExecStatementP estatement(createExecStatement(exprList));
 
@@ -2298,7 +2307,7 @@ interp(CJExecData &execData)
       }
       // var <name> [=value>, ...
       else if (keyword->type() == CJKeyword::Type::Var) {
-        execData_->next();
+        nextToken();
 
         CJExecVarP evar = interpExecVar();
 
@@ -2308,7 +2317,7 @@ interp(CJExecData &execData)
         }
 
         if (isExecOperator(CJOperator::Type::SemiColon)) {
-          execData_->next();
+          skipExecOperator();
         }
 
         CJExecStatementP estatement(createExecStatement(evar));
@@ -2428,7 +2437,7 @@ interp(CJExecData &execData)
         }
 
         if (isExecOperator(CJOperator::Type::SemiColon)) {
-          execData_->next();
+          skipExecOperator();
         }
       }
       // try <block> [catch (<parameter>) <block>] [finally <block>]
@@ -2476,7 +2485,7 @@ interp(CJExecData &execData)
     for (const auto &t : execData_->etokens()) {
       std::cout << *t;
     }
-    std::cout << "---" << std::endl;
+    std::cout << std::endl << "---" << std::endl;
   }
 
   //---
@@ -2512,7 +2521,7 @@ interpFunction()
     }
   }
   else {
-    execData_->next();
+    nextToken();
   }
 
   return func;
@@ -2544,7 +2553,7 @@ interpExecFor()
 
   // var <Expression>
   if (isExecKeyword(CJKeyword::Type::Var)) {
-    execData_->next();
+    skipExecKeyword();
 
     // var <identifiers> in
     if (isInterpForIn()) {
@@ -2575,7 +2584,7 @@ interpExecFor()
         return CJExecForP();
       }
 
-      execData_->next();
+      skipExecOperator();
     }
   }
   else {
@@ -2605,7 +2614,7 @@ interpExecFor()
         return CJExecForP();
       }
 
-      execData_->next();
+      skipExecOperator();
 
       efor->setExprList1(exprList1);
     }
@@ -2643,7 +2652,7 @@ interpExecFor()
       return CJExecForP();
     }
 
-    execData_->next();
+    skipExecOperator();
 
     //---
 
@@ -2710,12 +2719,14 @@ isInterpForIn() const
 {
   int pos = execData_->pos();
 
-  CJTokenP token = execData_->token();
+  CJTokenP token = lookToken();
 
   if (token->type() != CJToken::Type::Identifier)
     return false;
 
-  execData_->next();
+  CJavaScript *th = const_cast<CJavaScript *>(this);
+
+  th->nextToken();
 
   if (! isExecOperator(CJOperator::Type::In)) {
     execData_->setPos(pos);
@@ -2815,11 +2826,11 @@ interpExecIf()
   // else <statement>
   // else if ( <expression> ) <statement>
   while (isExecKeyword(CJKeyword::Type::Else)) {
-    execData_->next();
+    skipExecKeyword();
 
     // else if ( <expression> ) <statement>
     if (isExecKeyword(CJKeyword::Type::If)) {
-      execData_->next();
+      skipExecKeyword();
 
       // ( <expression> )
       if (! interpExecOperator(CJOperator::Type::OpenRBracket)) {
@@ -2974,7 +2985,7 @@ interpExecDo()
     return CJExecDoP();
   }
 
-  execData_->next();
+  skipExecOperator();
 
   //---
 
@@ -3035,6 +3046,11 @@ interpExecSwitch()
   int depth = 1;
 
   while (! execData_->eof()) {
+    CJTokenP token = lookToken();
+    if (! token) break;
+
+    //---
+
     if      (isExecOperator(CJOperator::Type::OpenBrace))
       ++depth;
     else if (isExecOperator(CJOperator::Type::CloseBrace)) {
@@ -3044,7 +3060,7 @@ interpExecSwitch()
         break;
     }
 
-    CJTokenP token = execData_->token();
+    //---
 
     if (depth == 1) {
       if (token->type() == CJToken::Type::Keyword) {
@@ -3054,7 +3070,7 @@ interpExecSwitch()
         // default : <statementList>
         if      (keyword->type() == CJKeyword::Type::Case ||
                  keyword->type() == CJKeyword::Type::Default) {
-          execData_->next();
+          nextToken();
 
           // add to previous case ?
           if      (caseExpr && caseBlock) {
@@ -3113,7 +3129,7 @@ interpExecSwitch()
           else if (defBlock)
             defBlock->addToken(token);
 
-          execData_->next();
+          nextToken();
 
           //---
 
@@ -3137,7 +3153,7 @@ interpExecSwitch()
           }
 
           if (isExecOperator(CJOperator::Type::SemiColon)) {
-            execData_->next();
+            skipExecOperator();
           }
 
           continue;
@@ -3154,7 +3170,7 @@ interpExecSwitch()
       return CJExecSwitchP();
     }
 
-    execData_->next();
+    nextToken();
   }
 
   // }
@@ -3214,7 +3230,7 @@ interpExecVar()
 
     // variable init value
     if (isExecOperator(CJOperator::Type::Assign)) {
-      execData_->next();
+      skipExecOperator();
 
       if      (isExecOperator(CJOperator::Type::OpenSBracket)) {
         CJExecArrayP array = interpExecArray();
@@ -3265,7 +3281,7 @@ interpExecVar()
       break;
     }
 
-    execData_->next();
+    skipExecOperator();
   }
 
   if (isInterpDebug()) {
@@ -3301,7 +3317,7 @@ interpExecConst()
 
     // variable init value
     if (isExecOperator(CJOperator::Type::Assign)) {
-      execData_->next();
+      skipExecOperator();
 
       if      (isExecOperator(CJOperator::Type::OpenSBracket)) {
         CJExecArrayP array = interpExecArray();
@@ -3352,11 +3368,11 @@ interpExecConst()
       break;
     }
 
-    execData_->next();
+    skipExecOperator();
   }
 
   if (isExecOperator(CJOperator::Type::SemiColon)) {
-    execData_->next();
+    skipExecOperator();
   }
 
   if (isInterpDebug()) {
@@ -3442,7 +3458,7 @@ interpExecArray()
   if (! isExecOperator(CJOperator::Type::OpenSBracket))
     return CJExecArrayP();
 
-  execData_->next();
+  skipExecOperator();
 
   while (! isExecOperator(CJOperator::Type::CloseSBracket)) {
     CJExecExpressionP expr = interpExpression();
@@ -3455,13 +3471,13 @@ interpExecArray()
     if (! isExecOperator(CJOperator::Type::Comma))
       break;
 
-    execData_->next();
+    skipExecOperator();
   }
 
   if (! isExecOperator(CJOperator::Type::CloseSBracket))
     return CJExecArrayP();
 
-  execData_->next();
+  skipExecOperator();
 
   if (isInterpDebug()) {
     std::cerr << "interpExecArray: " << *array << std::endl;
@@ -3474,12 +3490,14 @@ bool
 CJavaScript::
 isInterpDictionary() const
 {
+  CJavaScript *th = const_cast<CJavaScript *>(this);
+
   int pos = execData_->pos();
 
   if (! isExecOperator(CJOperator::Type::OpenBrace))
     return false;
 
-  execData_->next();
+  th->skipExecOperator();
 
   if (isExecOperator(CJOperator::Type::CloseBrace)) {
     execData_->setPos(pos);
@@ -3488,7 +3506,7 @@ isInterpDictionary() const
 
   bool isGet = false, isSet = false;
 
-  CJTokenP token = execData_->token();
+  CJTokenP token = lookToken();
 
   // <name>:<value> or get <name>(<arg>) { <body> }
   if      (token->type() == CJToken::Type::Identifier) {
@@ -3508,21 +3526,21 @@ isInterpDictionary() const
     return false;
   }
 
-  execData_->next();
+  th->nextToken();
 
   //---
 
   if      (isExecOperator(CJOperator::Type::Colon)) {
   }
   else if (isGet || isSet) {
-    CJTokenP token = execData_->token();
+    CJTokenP token = lookToken();
 
     if (token->type() != CJToken::Type::Identifier) {
       execData_->setPos(pos);
       return false;
     }
 
-    execData_->next();
+    th->nextToken();
 
     //---
 
@@ -3531,7 +3549,7 @@ isInterpDictionary() const
       return false;
     }
 
-    execData_->next();
+    th->skipExecOperator();
 
     if (isGet) {
       if (! isExecOperator(CJOperator::Type::CloseRBracket)) {
@@ -3539,24 +3557,24 @@ isInterpDictionary() const
         return false;
       }
 
-      execData_->next();
+      th->skipExecOperator();
     }
     else {
-      CJTokenP token = execData_->token();
+      CJTokenP token = lookToken();
 
       if (token->type() != CJToken::Type::Identifier) {
         execData_->setPos(pos);
         return false;
       }
 
-      execData_->next();
+      th->nextToken();
 
       if (! isExecOperator(CJOperator::Type::CloseRBracket)) {
         execData_->setPos(pos);
         return false;
       }
 
-      execData_->next();
+      th->skipExecOperator();
     }
 
     //---
@@ -3566,8 +3584,6 @@ isInterpDictionary() const
       execData_->setPos(pos);
       return false;
     }
-
-    execData_->next();
 
     int depth = 1;
 
@@ -3581,7 +3597,7 @@ isInterpDictionary() const
           break;
       }
 
-      execData_->next();
+      th->nextToken();
     }
 
     if (! isExecOperator(CJOperator::Type::CloseBrace)) {
@@ -3612,11 +3628,12 @@ interpExecDictionary()
   if (! isExecOperator(CJOperator::Type::OpenBrace))
     return CJExecDictionaryP();
 
-  execData_->next();
+  skipExecOperator();
 
   // handle empty dictionary {}
   if (isExecOperator(CJOperator::Type::CloseBrace)) {
-    execData_->next();
+    skipExecOperator();
+
     return dict;
   }
 
@@ -3633,7 +3650,7 @@ interpExecDictionary()
 
     bool isGet = false, isSet = false;
 
-    CJTokenP token = execData_->token();
+    CJTokenP token = lookToken();
 
     if      (token->type() == CJToken::Type::Identifier) {
       std::string name = token->castP<CJIdentifier>()->name();
@@ -3643,16 +3660,18 @@ interpExecDictionary()
 
       key = createStringValue(name);
     }
-    else if (token->type() == CJToken::Type::String)
+    else if (token->type() == CJToken::Type::String) {
       key = createStringValue(token->castP<CJString>()->text());
-    else if (token->type() == CJToken::Type::Number)
+    }
+    else if (token->type() == CJToken::Type::Number) {
       key = std::static_pointer_cast<CJValue>(token);
+    }
     else {
       throwSyntaxError(dict, "Invalid key value type");
       return CJExecDictionaryP();
     }
 
-    execData_->next();
+    nextToken();
 
     //---
 
@@ -3671,7 +3690,7 @@ interpExecDictionary()
     // set <key> (<arg>) { <block> }
     else if (isGet || isSet) {
       // get key name
-      CJTokenP token = execData_->token();
+      CJTokenP token = lookToken();
 
       if (token->type() != CJToken::Type::Identifier) {
         throwSyntaxError(dict, "Missing name for get/set");
@@ -3680,7 +3699,7 @@ interpExecDictionary()
 
       std::string propName = token->castP<CJIdentifier>()->name();
 
-      execData_->next();
+      nextToken();
 
       //---
 
@@ -3690,7 +3709,7 @@ interpExecDictionary()
         return CJExecDictionaryP();
       }
 
-      execData_->next();
+      skipExecOperator();
 
       std::string arg;
 
@@ -3700,10 +3719,10 @@ interpExecDictionary()
           return CJExecDictionaryP();
         }
 
-        execData_->next();
+        skipExecOperator();
       }
       else {
-        CJTokenP token = execData_->token();
+        CJTokenP token = lookToken();
 
         if (token->type() != CJToken::Type::Identifier) {
           throwSyntaxError(dict, "Missing arg name for set");
@@ -3712,14 +3731,14 @@ interpExecDictionary()
 
         arg = token->castP<CJIdentifier>()->name();
 
-        execData_->next();
+        nextToken();
 
         if (! isExecOperator(CJOperator::Type::CloseRBracket)) {
           throwSyntaxError(dict, "Missing close bracket for set arg");
           return CJExecDictionaryP();
         }
 
-        execData_->next();
+        skipExecOperator();
       }
 
       //---
@@ -3767,7 +3786,7 @@ interpExecDictionary()
     if (! isExecOperator(CJOperator::Type::Comma))
       break;
 
-    execData_->next();
+    skipExecOperator();
 
     // allow ,}
     if (isExecOperator(CJOperator::Type::CloseBrace)) {
@@ -3801,7 +3820,7 @@ interpExecNew()
     return CJExecNewP();
 
   // get object name
-  CJTokenP token = execData_->token();
+  CJTokenP token = lookToken();
 
   if (token->type() != CJToken::Type::Identifier) {
     throwSyntaxError(enew, "Missing identifier");
@@ -3814,13 +3833,13 @@ interpExecNew()
 
   enew->setTypeName(typeName);
 
-  execData_->next();
+  nextToken();
 
   //---
 
   // get args (optional)
   if (isExecOperator(CJOperator::Type::OpenRBracket)) {
-    execData_->next();
+    skipExecOperator();
 
     if (! isExecOperator(CJOperator::Type::CloseRBracket)) {
       CJExecExpressionListP exprList = interpExpressionList();
@@ -3888,7 +3907,7 @@ interpExecAssert()
   //---
 
   if (isExecOperator(CJOperator::Type::SemiColon)) {
-    execData_->next();
+    skipExecOperator();
   }
 
   //---
@@ -3914,6 +3933,14 @@ interpExecBreak()
   if (! interpExecKeyword(CJKeyword::Type::Break))
     return CJExecBreakP();
 
+  //---
+
+  // auto semi-colon on newline
+  if (isNewline(/*skip*/true))
+    return ebreak;
+
+  //---
+
   // [ <label> ]
   if (canInterpIdentifiers()) {
     CJExecIdentifiersP identifiers = interpIdentifiers();
@@ -3927,7 +3954,7 @@ interpExecBreak()
   //---
 
   if (isExecOperator(CJOperator::Type::SemiColon)) {
-    execData_->next();
+    skipExecOperator();
   }
 
   //---
@@ -3953,6 +3980,14 @@ interpExecContinue()
   if (! interpExecKeyword(CJKeyword::Type::Continue))
     return CJExecContinueP();
 
+  //---
+
+  // auto semi-colon on newline
+  if (isNewline(/*skip*/true))
+    return econt;
+
+  //---
+
   // [<label>]
   if (canInterpIdentifiers()) {
     CJExecIdentifiersP identifiers = interpIdentifiers();
@@ -3966,7 +4001,7 @@ interpExecContinue()
   //---
 
   if (isExecOperator(CJOperator::Type::SemiColon)) {
-    execData_->next();
+    skipExecOperator();
   }
 
   //---
@@ -3992,6 +4027,14 @@ interpExecReturn()
   if (! interpExecKeyword(CJKeyword::Type::Return))
     return CJExecReturnP();
 
+  //---
+
+  // auto semi-colon on newline
+  if (isNewline(/*skip*/true))
+    return eret;
+
+  //---
+
   // [<expression>]
   CJExecExpressionP expr = interpExpression();
 
@@ -4001,7 +4044,7 @@ interpExecReturn()
   //---
 
   if (isExecOperator(CJOperator::Type::SemiColon)) {
-    execData_->next();
+    skipExecOperator();
   }
 
   //---
@@ -4108,6 +4151,14 @@ interpExecThrow()
   if (! interpExecKeyword(CJKeyword::Type::Throw))
     return CJExecThrowP();
 
+  //---
+
+  // auto semi-colon on newline
+  if (isNewline(/*skip*/true))
+    return ethrow;
+
+  //---
+
   // <expression>
   CJExecExpressionP expr = interpExpression();
 
@@ -4118,7 +4169,7 @@ interpExecThrow()
 
   // optional semi-colon
   if (isExecOperator(CJOperator::Type::SemiColon)) {
-    execData_->next();
+    skipExecOperator();
   }
 
   //---
@@ -4141,12 +4192,12 @@ interpUserFunction(bool named)
   // [<identifier>]
   std::string name;
 
-  CJTokenP token = execData_->token();
+  CJTokenP token = lookToken();
 
   if (token->type() == CJToken::Type::Identifier) {
     name = token->castP<CJIdentifier>()->name();
 
-    execData_->next();
+    nextToken();
   }
   else {
     if (named) {
@@ -4169,14 +4220,14 @@ interpUserFunction(bool named)
 
   std::vector<std::string> args;
 
-  token = execData_->token();
+  token = lookToken();
 
   while (token->type() == CJToken::Type::Identifier) {
     std::string arg = token->castP<CJIdentifier>()->name();
 
     args.push_back(arg);
 
-    execData_->next();
+    nextToken();
 
     if (isExecOperator(CJOperator::Type::CloseRBracket))
       break;
@@ -4186,7 +4237,7 @@ interpUserFunction(bool named)
       return CJFunctionP();
     }
 
-    token = execData_->token();
+    token = lookToken();
 
     if (token->type() != CJToken::Type::Identifier) {
       throwSyntaxError(token, "Missing arg after comma for function args");
@@ -4238,16 +4289,16 @@ bool
 CJavaScript::
 isExecLabel() const
 {
+  CJavaScript *th = const_cast<CJavaScript *>(this);
+
   int pos = execData_->pos();
 
-  CJTokenP token = execData_->token();
+  CJTokenP token = lookToken();
 
-  CJToken::Type type = token->type();
-
-  if (type != CJToken::Type::Identifier)
+  if (token->type() != CJToken::Type::Identifier)
     return false;
 
-  execData_->next();
+  th->nextToken();
 
   if (! isExecOperator(CJOperator::Type::Colon)) {
     execData_->setPos(pos);
@@ -4270,19 +4321,19 @@ interpExecLabel()
 
   //---
 
-  CJTokenP token = execData_->token();
+  CJTokenP token = lookToken();
 
   if (token->type() != CJToken::Type::Identifier)
     return label;
 
   label->setName(token->castP<CJIdentifier>()->name());
 
-  execData_->next();
+  nextToken();
 
   if (! isExecOperator(CJOperator::Type::Colon))
     return label;
 
-  execData_->next();
+  skipExecOperator();
 
   if (isInterpDebug()) {
     std::cerr << "interpExecLabel: " << *label << std::endl;
@@ -4314,7 +4365,7 @@ interpExpressionList()
     if (! isExecOperator(CJOperator::Type::Comma))
       break;
 
-    execData_->next();
+    skipExecOperator();
   }
 
   //---
@@ -4326,7 +4377,7 @@ interpExpressionList()
 
 #if 0
   if (isExecOperator(CJOperator::Type::SemiColon)) {
-    execData_->next();
+    skipExecOperator();
   }
 #endif
 
@@ -4348,7 +4399,10 @@ interpExpression()
   //---
 
   while (! execData_->eof()) {
-    CJTokenP token = execData_->token();
+    bool newline;
+
+    CJTokenP token = lookToken(newline);
+    if (! token) break;
 
     if      (canInterpIdentifiers()) {
       CJToken::Type lastType = expr->lastTokenType();
@@ -4356,7 +4410,7 @@ interpExpression()
       if (lastType == CJToken::Type::Identifiers ||
           lastType == CJToken::Type::Function) {
         std::stringstream ss; ss << *token;
-        throwSyntaxError(execData_->token(), "Syntax error at identifier '" + ss.str() + "'");
+        throwSyntaxError(token, "Syntax error at identifier '" + ss.str() + "'");
         return CJExecExpressionP();
       }
 
@@ -4367,7 +4421,7 @@ interpExpression()
       CJExecIdentifiersP identifiers = interpIdentifiers();
 
       while (isExecOperator(CJOperator::Type::OpenSBracket)) {
-        execData_->next();
+        skipExecOperator();
 
         CJExecIndexExpressionP iexpr1(new CJExecIndexExpression);
 
@@ -4394,7 +4448,7 @@ interpExpression()
           iexpr->setIndexExpression(expr1);
 
         if (! interpExecOperator(CJOperator::Type::CloseSBracket)) {
-          throwSyntaxError(execData_->token(), "Missing close square bracket");
+          throwSyntaxError(lookToken(), "Missing close square bracket");
           return CJExecExpressionP();
         }
       }
@@ -4428,7 +4482,7 @@ interpExpression()
 
 #if 0
         while (isExecOperator(CJOperator::Type::Scope)) {
-          execData_->next();
+          skipExecOperator();
 
           CJExecIdentifiersP identifiers = interpIdentifiers();
 
@@ -4459,9 +4513,9 @@ interpExpression()
       if (allowIncrDecr) {
         if (isExecOperator(CJOperator::Type::Increment) ||
             isExecOperator(CJOperator::Type::Decrement)) {
-          CJTokenP token1 = execData_->token();
+          CJTokenP token1 = nextToken();
 
-          execData_->next();
+          //---
 
           CJExecIncrDecrExpressionP incrDecr(new CJExecIncrDecrExpression);
 
@@ -4504,17 +4558,22 @@ interpExpression()
       CJToken::Type lastType = expr->lastTokenType();
 
       if (lastType == CJToken::Type::Number) {
+        // auto insert semi-colon
+        if (newline) {
+          return expr;
+        }
+
         std::stringstream ss; ss << *token;
-        throwSyntaxError(execData_->token(), "Syntax error at value '" + ss.str() + "'");
+        throwSyntaxError(lookToken(), "Syntax error at value '" + ss.str() + "'");
         return CJExecExpressionP();
       }
 
-      execData_->next();
+      nextToken();
 
 #if 0
       // TODO: needed
       if (token->isProtoValue() && isExecOperator(CJOperator::Type::Scope)) {
-        execData_->next();
+        skipExecOperator();
 
         CJExecIdentifiersP identifiers = interpIdentifiers();
 
@@ -4553,7 +4612,7 @@ interpExpression()
       CJOperator::Type opType = op->type();
 
       if      (op->isAssign()) {
-        execData_->next();
+        nextToken();
 
         CJExecAssignExpressionP assign(new CJExecAssignExpression);
 
@@ -4575,7 +4634,12 @@ interpExpression()
       }
       else if (opType == CJOperator::Type::Increment ||
                opType == CJOperator::Type::Decrement) {
-        execData_->next();
+        if (newline && expr->hasTokens())
+          return expr;
+
+        //---
+
+        nextToken();
 
         if      (canInterpIdentifiers()) {
           CJExecIdentifiersP identifiers = interpIdentifiers();
@@ -4596,7 +4660,7 @@ interpExpression()
         }
       }
       else if (opType == CJOperator::Type::Question) {
-        execData_->next();
+        nextToken();
 
         CJExecQuestionP equestion = interpExecQuestion(expr);
 
@@ -4626,7 +4690,7 @@ interpExpression()
           return CJExecExpressionP();
         }
 
-        execData_->next();
+        nextToken();
 
         CJExecExpressionListP expr1 = interpExpressionList();
 
@@ -4689,13 +4753,13 @@ interpExpression()
 
             expr->addToken(CJTokenP(iexpr1));
 
-            //execData_->next();
+            //nextToken();
           }
         }
 
 #if 0
         if (isExecOperator(CJOperator::Type::Scope)) {
-          execData_->next();
+          skipExecOperator();
 
           CJExecIdentifiersP identifiers = interpIdentifiers();
 
@@ -4739,7 +4803,7 @@ interpExpression()
 
 #if 0
           if (isExecOperator(CJOperator::Type::Scope)) {
-            execData_->next();
+            skipExecOperator();
 
             CJExecIdentifiersP identifiers = interpIdentifiers();
 
@@ -4788,12 +4852,12 @@ interpExpression()
         return expr;
       }
       else if (opType == CJOperator::Type::Scope) {
-        execData_->next();
+        nextToken();
 
         expr->addToken(token);
       }
       else {
-        execData_->next();
+        nextToken();
 
         expr->addToken(token);
       }
@@ -4850,7 +4914,7 @@ CJavaScript::
 interpIndexExpression()
 {
   if (! interpExecOperator(CJOperator::Type::OpenSBracket)) {
-    throwSyntaxError(execData_->token(), "Missing open square bracket");
+    throwSyntaxError(lookToken(), "Missing open square bracket");
     return CJExecIndexExpressionP();
   }
 
@@ -4866,7 +4930,7 @@ interpIndexExpression()
     iexpr->setIndexExpression(expr);
 
   if (! interpExecOperator(CJOperator::Type::CloseSBracket)) {
-    throwSyntaxError(execData_->token(), "Missing close square bracket");
+    throwSyntaxError(lookToken(), "Missing close square bracket");
     return CJExecIndexExpressionP();
   }
 
@@ -4884,7 +4948,7 @@ canInterpIdentifiers() const
   if (execData_->eof())
     return false;
 
-  CJTokenP token = execData_->token();
+  CJTokenP token = lookToken();
 
   if (token->type() == CJToken::Type::Identifier)
     return true;
@@ -4908,25 +4972,25 @@ interpIdentifiers()
   if (! canInterpIdentifiers())
     return CJExecIdentifiersP();
 
-  CJTokenP token = execData_->token();
+  CJTokenP token = lookToken();
 
   if      (token->type() == CJToken::Type::Identifier)
     identifiers->addIdentifier(token->castP<CJIdentifier>());
   else if (isExecKeyword(CJKeyword::Type::This))
     identifiers->setIsThis(true);
 
-  execData_->next();
+  nextToken();
 
   while (isExecOperator(CJOperator::Type::Scope)) {
-    execData_->next();
+    skipExecOperator();
 
-    CJTokenP token = execData_->token();
+    CJTokenP token = lookToken();
 
     if (token->type() != CJToken::Type::Identifier) {
       return CJExecIdentifiersP();
     }
 
-    execData_->next();
+    nextToken();
 
     identifiers->addIdentifier(token->castP<CJIdentifier>());
   }
@@ -4949,7 +5013,7 @@ interpExecBlock(CJExecBlock::Type type)
   //---
 
   if (isExecOperator(CJOperator::Type::OpenBrace)) {
-    execData_->next();
+    skipExecOperator();
 
     int depth = 1;
 
@@ -4963,11 +5027,10 @@ interpExecBlock(CJExecBlock::Type type)
           break;
       }
 
-      CJTokenP token = execData_->token();
+      CJTokenP token = nextToken();
+      if (! token) break;
 
       block->addToken(token);
-
-      execData_->next();
     }
 
     if (! interpExecOperator(CJOperator::Type::CloseBrace)) {
@@ -4989,15 +5052,14 @@ interpExecBlock(CJExecBlock::Type type)
           break;
       }
 
-      CJTokenP token = execData_->token();
+      CJTokenP token = nextToken();
+      if (! token) break;
 
       block->addToken(token);
-
-      execData_->next();
     }
 
     if (isExecOperator(CJOperator::Type::SemiColon)) {
-      execData_->next();
+      skipExecOperator();
     }
   }
 
@@ -5035,7 +5097,7 @@ interpExecKeyword(CJKeyword::Type type)
   if (! isExecKeyword(type))
     return false;
 
-  execData_->next();
+  skipExecKeyword();
 
   return true;
 }
@@ -5047,9 +5109,16 @@ isExecKeyword(CJKeyword::Type type) const
   if (execData_->eof())
     return false;
 
-  CJTokenP token = execData_->token();
+  CJTokenP token = lookToken();
 
   return isKeyword(token, type);
+}
+
+void
+CJavaScript::
+skipExecKeyword()
+{
+  nextToken();
 }
 
 bool
@@ -5071,7 +5140,7 @@ interpExecOperator(CJOperator::Type opType)
   if (! isExecOperator(opType))
     return false;
 
-  execData_->next();
+  skipExecOperator();
 
   return true;
 }
@@ -5083,9 +5152,16 @@ isExecOperator(CJOperator::Type opType) const
   if (execData_->eof())
     return false;
 
-  CJTokenP token = execData_->token();
+  CJTokenP token = lookToken();
 
   return isOperator(token, opType);
+}
+
+void
+CJavaScript::
+skipExecOperator()
+{
+  nextToken();
 }
 
 bool
@@ -5098,6 +5174,65 @@ isOperator(CJTokenP token, CJOperator::Type opType) const
   CJOperator *op = token->castP<CJOperator>();
 
   return (op->type() == opType);
+}
+
+bool
+CJavaScript::
+isNewline(bool skip)
+{
+  CJTokenP token = execData_->token();
+
+  if (! token || token->type() != CJToken::Type::Newline)
+    return false;
+
+  if (skip)
+    execData_->next();
+
+  return true;
+}
+
+CJTokenP
+CJavaScript::
+lookToken(bool &newline) const
+{
+  int pos = execData_->pos();
+
+  newline = false;
+
+  CJTokenP token = execData_->token();
+
+  while (token && token->type() == CJToken::Type::Newline) {
+    newline = true;
+
+    execData_->next();
+
+    token = execData_->token();
+  }
+
+  execData_->setPos(pos);
+
+  return token;
+}
+
+CJTokenP
+CJavaScript::
+nextToken(bool &newline)
+{
+  newline = false;
+
+  CJTokenP token = execData_->token();
+
+  while (token && token->type() == CJToken::Type::Newline) {
+    newline = true;
+
+    execData_->next();
+
+    token = execData_->token();
+  }
+
+  execData_->next();
+
+  return token;
 }
 
 int
@@ -6793,6 +6928,27 @@ readRegExp(CStrParse &parse)
   tokens_.push_back(re);
 
   return true;
+}
+
+void
+CJavaScript::
+skipSpace(CStrParse &parse, bool &newline)
+{
+  newline = false;
+  //bool space   = false;
+
+  while (! parse.eof()) {
+    if      (parse.isNewline()) {
+      newline = true;
+    }
+    else if (parse.isSpace()) {
+      //space = true;
+    }
+    else
+      break;
+
+    parse.skipChar();
+  }
 }
 
 CJToken::Type

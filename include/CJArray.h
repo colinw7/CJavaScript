@@ -62,6 +62,7 @@ class CJArray : public CJObj {
   //---
 
   void addValue(CJValueP value);
+  void addValue(const CJPropertyValue &propVal);
 
   CJValueP removeValue();
 
@@ -95,6 +96,8 @@ class CJArray : public CJObj {
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
   void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
+
+  CJNameSpace::Names getPropertyNames(bool pseudo=true) const override;
 
   std::string toString() const override;
 

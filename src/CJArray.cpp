@@ -1497,12 +1497,21 @@ void
 CJArray::
 addValue(CJValueP value)
 {
+  CJPropertyValue propVal(value);
+
+  addValue(propVal);
+}
+
+void
+CJArray::
+addValue(const CJPropertyValue &propVal)
+{
   if (len_ + 1 > CJUtil::maxInteger()) {
     js_->throwRangeError(this, "Invalid array length");
     return;
   }
 
-  values_[len_++] = CJPropertyValue(value);
+  values_[len_++] = propVal;
 }
 
 CJValueP
@@ -1517,7 +1526,7 @@ removeValue()
 
   values_.erase(len_);
 
-  return data.value;
+  return data.value();
 }
 
 void
@@ -1562,7 +1571,7 @@ removeFrontValue()
 
   --len_;
 
-  return remData.value;
+  return remData.value();
 }
 
 bool
@@ -1621,7 +1630,7 @@ setIndexValue(long ind, CJValueP value)
   if (ind < len_ && ! isWritableIndex(ind))
     return;
 
-  values_[ind].value = value;
+  values_[ind].setValue(value);
 
   len_ = std::max(ind + 1, len_);
 }
@@ -1647,7 +1656,7 @@ isWritableIndex(long ind) const
   if (p == values_.end())
     return true;
 
-  return (*p).second.writable.getValue(true);
+  return (*p).second.isWriteable();
 }
 
 void
@@ -1656,7 +1665,7 @@ setWritableIndex(long ind, bool b)
 {
   assert(ind >= 0 && ind < len_);
 
-  values_[ind].writable = b;
+  values_[ind].setWriteable(b);
 }
 
 bool
@@ -1671,7 +1680,7 @@ isEnumerableIndex(long ind) const
   if (p == values_.end())
     return false;
 
-  return (*p).second.enumerable.getValue(true);
+  return (*p).second.isEnumerable();
 }
 
 void
@@ -1680,7 +1689,7 @@ setEnumerableIndex(long ind, bool b)
 {
   assert(ind >= 0 && ind < len_);
 
-  values_[ind].enumerable = b;
+  values_[ind].setEnumerable(b);
 }
 
 bool
@@ -1695,7 +1704,7 @@ isConfigurableIndex(long ind) const
   if (p == values_.end())
     return true;
 
-  return (*p).second.configurable.getValue(true);
+  return (*p).second.isConfigurable();
 }
 
 void
@@ -1704,7 +1713,7 @@ setConfigurableIndex(long ind, bool b)
 {
   assert(ind >= 0 && ind < len_);
 
-  values_[ind].configurable = b;
+  values_[ind].setConfigurable(b);
 }
 
 COptLong
@@ -1753,21 +1762,21 @@ sort(CJFunctionP fn)
     }
 
     bool operator()(const CJPropertyValue &v1, const CJPropertyValue &v2) {
-      if (! v2.value) return true;
-      if (! v1.value) return false;
+      if (! v2.value()) return true;
+      if (! v1.value()) return false;
 
-      if (js_->isUndefinedValue(v2.value)) return true;
-      if (js_->isUndefinedValue(v1.value)) return false;
+      if (js_->isUndefinedValue(v2.value())) return true;
+      if (js_->isUndefinedValue(v1.value())) return false;
 
       if (! fn_) {
-        return (v1.value->cmp(v2.value.get()) < 0);
+        return (v1.value()->cmp(v2.value().get()) < 0);
       }
       else {
         CJObjType::Values fnValues;
 
         fnValues.push_back(CJValueP());
-        fnValues.push_back(v1.value);
-        fnValues.push_back(v2.value);
+        fnValues.push_back(v1.value());
+        fnValues.push_back(v2.value());
 
         CJValueP res = fn_->exec(js_, fnValues);
 
@@ -1822,6 +1831,17 @@ setProperty(CJavaScript *js, const std::string &key, CJValueP value)
   }
   else
     CJObj::setProperty(js, key, value);
+}
+
+CJNameSpace::Names
+CJArray::
+getPropertyNames(bool /*pseudo*/) const
+{
+  CJNameSpace::Names names;
+
+  names.push_back("length");
+
+  return names;
 }
 
 bool

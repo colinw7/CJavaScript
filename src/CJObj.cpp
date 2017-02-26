@@ -313,6 +313,11 @@ void
 CJObj::
 setProperty(CJavaScript *js, const std::string &key, CJValueP value)
 {
+  if (isFrozen()) {
+    js_->throwTypeError(this, "Object is frozen");
+    return;
+  }
+
   // get direct property
   if (CJNameSpace::hasProperty(js, key)) {
     CJValueP propVal = CJNameSpace::getProperty(js, key);

@@ -170,7 +170,7 @@ getFunctionNames() const
   std::vector<std::string> names;
 
   for (const auto &f : keyValues_) {
-    if (f.second.value->isFunction())
+    if (f.second.value()->isFunction())
       names.push_back(f.first);
   }
 
@@ -184,7 +184,7 @@ getVariableNames() const
   std::vector<std::string> names;
 
   for (const auto &v : keyValues_) {
-    if (v.second.value->type() == CJToken::Type::Var)
+    if (v.second.value()->type() == CJToken::Type::Var)
       names.push_back(v.first);
   }
 
@@ -220,8 +220,8 @@ print(std::ostream &os) const
 
     os << " " << kv.first << ": ";
 
-    if (kv.second.value)
-      os << *kv.second.value;
+    if (kv.second.value())
+      os << *kv.second.value();
     else
       os << "<null>";
 

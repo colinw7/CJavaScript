@@ -1,5 +1,6 @@
 #include <CJObjectValue.h>
 #include <CJObj.h>
+#include <CJavaScript.h>
 
 CJObjectValue::
 CJObjectValue(CJavaScript *js, CJObjP obj, const std::string &name) :
@@ -29,7 +30,12 @@ void
 CJObjectValue::
 setValue(CJValueP value)
 {
-  obj_->setPropertyValue(name_, value);
+  if (! obj_->isFrozen())
+    obj_->setPropertyValue(name_, value);
+  else {
+    if (js_->isStrict())
+      js_->throwTypeError(this, "Object is frozen");
+  }
 }
 
 void

@@ -11,7 +11,7 @@ instance(CJavaScript *js)
   if (! type_) {
     type_ = CJObjTypeP(new CJArgumentsType(js));
 
-    js->addObjectType("arguments", type_);
+    js->addObjectType("Arguments", type_);
 
     js->addTypeObject(CJToken::Type::Arguments, type_);
   }
@@ -21,7 +21,7 @@ instance(CJavaScript *js)
 
 CJArgumentsType::
 CJArgumentsType(CJavaScript *js) :
- CJObjType(js, CJToken::Type::Arguments, "arguments")
+ CJObjType(js, CJToken::Type::Arguments, "Arguments")
 {
 }
 

@@ -47,7 +47,7 @@ class CJNameSpace {
   virtual CJValueP getProperty(CJavaScript *js, const std::string &key) const;
   virtual void setProperty(CJavaScript *js, const std::string &key, CJValueP value);
 
-  Names getPropertyNames(bool pseudo=true) const;
+  virtual Names getPropertyNames(bool pseudo=true) const;
 
   bool deletePropertyIndices(CJavaScript *js, const std::string &key, const Values &values);
 

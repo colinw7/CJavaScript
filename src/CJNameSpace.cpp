@@ -95,7 +95,7 @@ setPropertyData(CJavaScript *js, const std::string &key, const CJPropertyValue &
 
   (*p).second = data;
 
-  setProperty(js, key, data.value);
+  setProperty(js, key, data.value());
 }
 
 void
@@ -107,7 +107,7 @@ setProperty(CJavaScript *, const std::string &key, CJValueP value)
   if (p == keyValues_.end())
     p = keyValues_.insert(p, KeyValues::value_type(key, CJPropertyValue()));
 
-  (*p).second.value = value;
+  (*p).second.setValue(value);
 }
 
 bool
@@ -132,7 +132,7 @@ getProperty(CJavaScript *, const std::string &key) const
   if (p == keyValues_.end())
     return CJValueP();
 
-  CJValueP value = (*p).second.value;
+  CJValueP value = (*p).second.value();
 
   return value;
 }
@@ -190,7 +190,7 @@ deletePropertyIndices(CJavaScript *js, const std::string &key, const Values &iva
     if (p == keyValues_.end())
       return false;
 
-    CJValueP value = (*p).second.value;
+    CJValueP value = (*p).second.value();
 
     if (! value)
       return false;
@@ -238,7 +238,7 @@ isWritableProperty(const std::string &key) const
   if (p == keyValues_.end())
     return true;
 
-  return (*p).second.writable.getValue(true);
+  return (*p).second.isWriteable();
 }
 
 void
@@ -250,7 +250,7 @@ setWritableProperty(const std::string &key, bool b)
   if (p == keyValues_.end())
     p = keyValues_.insert(p, KeyValues::value_type(key, CJPropertyValue()));
 
-  (*p).second.writable = b;
+  (*p).second.setWriteable(b);
 }
 
 bool
@@ -262,7 +262,7 @@ isEnumerableProperty(const std::string &key) const
   if (p == keyValues_.end())
     return true;
 
-  return (*p).second.enumerable.getValue(true);
+  return (*p).second.isEnumerable();
 }
 
 void
@@ -274,7 +274,7 @@ setEnumerableProperty(const std::string &key, bool b)
   if (p == keyValues_.end())
     p = keyValues_.insert(p, KeyValues::value_type(key, CJPropertyValue()));
 
-  (*p).second.enumerable = b;
+  (*p).second.setEnumerable(b);
 }
 
 bool
@@ -286,7 +286,7 @@ isConfigurableProperty(const std::string &key) const
   if (p == keyValues_.end())
     return true;
 
-  return (*p).second.configurable.getValue(true);
+  return (*p).second.isConfigurable();
 }
 
 void
@@ -298,7 +298,7 @@ setConfigurableProperty(const std::string &key, bool b)
   if (p == keyValues_.end())
     p = keyValues_.insert(p, KeyValues::value_type(key, CJPropertyValue()));
 
-  (*p).second.configurable = b;
+  (*p).second.setConfigurable(b);
 }
 
 std::string
@@ -318,7 +318,7 @@ print(std::ostream &os) const
   for (const auto &kv : keyValues_) {
     if (i > 0) os << " ";
 
-    os << kv.first << ": " << *kv.second.value;
+    os << kv.first << ": " << *kv.second.value();
 
     ++i;
   }

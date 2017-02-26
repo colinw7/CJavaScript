@@ -7,7 +7,7 @@ CJValueP
 CJPropertyValue::
 calcValue(CJavaScript *js) const
 {
-  CJValueP propVal = value;
+  CJValueP propVal = value();
 
   if (propVal && propVal->type() == CJToken::Type::GetterSetter) {
     CJGetterSetterP gs = CJValue::cast<CJGetterSetter>(propVal);

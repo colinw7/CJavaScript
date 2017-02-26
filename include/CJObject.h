@@ -70,6 +70,8 @@ class CJObject : public CJObj {
 
   void configureProperty(CJavaScript *js, const std::string &key, CJValueP value);
 
+  CJNameSpace::Names getPropertyNames(bool pseudo=true) const override;
+
   std::string toString() const override;
 
   void print(std::ostream &os) const override;

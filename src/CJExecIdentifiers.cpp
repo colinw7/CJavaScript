@@ -51,7 +51,7 @@ exec(CJavaScript *js)
         continue;
       }
 
-      js->errorMsg(this, "Invalid value for idenitifer");
+      js->errorMsg(this, "Invalid value for identifier");
 
       return CJValueP();
     }

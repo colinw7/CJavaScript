@@ -264,20 +264,48 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
       return CJValueP();
     }
 
+    //---
+
     CJValueP ovalue = values[1];
 
     if (! ovalue)
       return CJValueP();
 
+    if (! ovalue->isObject()) {
+      js->throwTypeError(ovalue, "Not an object");
+      return CJValueP();
+    }
+
+    CJObjP obj = CJValue::cast<CJObj>(ovalue);
+
+    //---
+
     CJArrayP array = js->createArrayValue();
 
+    //int n = 0;
+
+    auto names = obj->getPropertyNames();
+
+    for (const auto &name : names) {
+      CJValueP value = js->createStringValue(name);
+
+      CJPropertyValue propVal(value, "+wec");
+
+      array->addValue(propVal);
+    }
+
+    //---
+
     if      (ovalue->type() == CJToken::Type::Object) {
-      CJObjTypeP valueType = CJValue::cast<CJObj>(ovalue)->valueType();
+      CJObjectP obj1 = CJValue::cast<CJObject>(ovalue);
 
-      auto names = valueType->getPropertyNames();
 
-      for (const auto &n : names) {
-        array->addValue(js->createStringValue(n));
+      CJDictionaryP dict = CJValue::cast<CJDictionary>(ovalue);
+
+      for (auto &kv : dict->keyValues()) {
+        std::string key = kv.first;
+
+        array->addValue(js->createStringValue(key));
       }
     }
     else if (ovalue->type() == CJToken::Type::Dictionary) {
@@ -296,6 +324,19 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
         std::string key = kv.first;
 
         array->addValue(js->createStringValue(key));
+      }
+    }
+    else if (ovalue->isArray()) {
+      CJArrayP array1 = CJValue::cast<CJArray>(ovalue);
+
+      //---
+
+      long len = array1->length().getValue(0);
+
+      for (int ind = 0; ind < len; ++ind) {
+        CJValueP ivalue1 = js->createStringValue(std::to_string(ind));
+
+        array->addValue(ivalue1);
       }
     }
     else if (ovalue->isFunction()) {
@@ -317,11 +358,11 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
         }
       }
       else {
-        js->errorMsg("Invalid object function type for" + name);
+        js->errorMsg("Invalid object function type for " + name);
       }
     }
     else {
-      js->errorMsg("Invalid object function type for" + name);
+      js->errorMsg("Invalid object function type for " + name);
     }
 
     return array;
@@ -352,20 +393,20 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
 
     CJObjectP descObj = js->createObject();
 
-    if (data.value && data.value->type() == CJToken::Type::GetterSetter) {
-      CJGetterSetterP gs = CJValue::cast<CJGetterSetter>(data.value);
+    if (data.value() && data.value()->type() == CJToken::Type::GetterSetter) {
+      CJGetterSetterP gs = CJValue::cast<CJGetterSetter>(data.value());
 
       descObj->setProperty(js, "get", gs->getter());
       descObj->setProperty(js, "set", gs->setter());
     }
     else {
-      descObj->setProperty(js, "value", data.value);
+      descObj->setProperty(js, "value", data.value());
 
-      descObj->setBoolProperty(js, "writable", data.writable.getValue(true));
+      descObj->setBoolProperty(js, "writable", data.isWriteable());
     }
 
-    descObj->setBoolProperty(js, "enumerable"  , data.enumerable  .getValue(true));
-    descObj->setBoolProperty(js, "configurable", data.configurable.getValue(true));
+    descObj->setBoolProperty(js, "enumerable"  , data.isEnumerable  ());
+    descObj->setBoolProperty(js, "configurable", data.isConfigurable());
 
     return descObj;
   }
@@ -452,6 +493,27 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
           continue;
 
         array->addValue(js->createStringValue(name));
+      }
+    }
+
+    if (ovalue->hasIndex()) {
+      CJArrayP valueArray;
+
+      if (ovalue->isArray())
+        valueArray = CJValue::cast<CJArray>(ovalue);
+
+      long len = ovalue->length().getValue(0);
+
+      for (int ind = 0; ind < len; ++ind) {
+        if (valueArray && ! valueArray->isEnumerableIndex(ind))
+          continue;
+
+        CJValueP ivalue1 = ovalue->indexValue(ind);
+
+        if (js->isUndefinedValue(ivalue1))
+          continue;
+
+        array->addValue(ivalue1);
       }
     }
 
@@ -841,6 +903,13 @@ setProperty(CJavaScript *js, const std::string &key, CJValueP value)
   CJObj::setProperty(js, key, value);
 }
 
+CJNameSpace::Names
+CJObject::
+getPropertyNames(bool /*pseudo*/) const
+{
+  return CJNameSpace::Names();
+}
+
 std::string
 CJObject::
 toString() const
@@ -914,8 +983,8 @@ print(std::ostream &os) const
 
     os << " " << kv.first << ": ";
 
-    if (kv.second.value)
-      os << *kv.second.value;
+    if (kv.second.value())
+      os << *kv.second.value();
     else
       os << "null";
 
