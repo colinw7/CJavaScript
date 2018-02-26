@@ -57,7 +57,7 @@ exec(CJavaScript *js, const Values &values)
 
     CJson json;
 
-    CJson::Value *value;
+    CJson::ValueP value;
 
     json.setStrict(true);
 
@@ -169,7 +169,7 @@ exec(CJavaScript *js, const Values &values)
 
 CJValueP
 CJJSONFunction::
-parseToValue(CJavaScript *js, CJValueP key, CJson::Value *value, CJFunctionBaseP reviver)
+parseToValue(CJavaScript *js, CJValueP key, CJson::ValueP value, CJFunctionBaseP reviver)
 {
   CJValueP value1;
 
@@ -208,7 +208,7 @@ parseToValue(CJavaScript *js, CJValueP key, CJson::Value *value, CJFunctionBaseP
     obj->getNames(names);
 
     for (const auto &name : names) {
-      CJson::Value *value1;
+      CJson::ValueP value1;
 
       obj->getNamedValue(name, value1);
 
@@ -239,7 +239,7 @@ parseToValue(CJavaScript *js, CJValueP key, CJson::Value *value, CJFunctionBaseP
 
     CJArrayP array1 = js->createArrayValue();
 
-    std::vector<CJson::Value *> values;
+    std::vector<CJson::ValueP> values;
 
     long i = 0;
 

@@ -69,7 +69,7 @@ class CJJSONFunction : public CJFunctionBase {
   };
 
  private:
-  CJValueP parseToValue(CJavaScript *js, CJValueP key, CJson::Value *value,
+  CJValueP parseToValue(CJavaScript *js, CJValueP key, CJson::ValueP value,
                         CJFunctionBaseP func=CJFunctionBaseP());
 
   CJValueP parseCallFunc(CJavaScript *js, CJValueP key, CJValueP value, CJFunctionBaseP func,
