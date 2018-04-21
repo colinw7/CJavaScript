@@ -8,7 +8,7 @@ DEPENDPATH += .
 
 CONFIG += staticlib
 
-QMAKE_CXXFLAGS += -std=c++11
+QMAKE_CXXFLAGS += -std=c++14
 
 MOC_DIR = .moc
 
@@ -87,9 +87,8 @@ HEADERS += \
 \
 CQHistoryLineEdit.h \
 
+DESTDIR     = ../lib
 OBJECTS_DIR = ../obj
-
-DESTDIR = ../lib
 
 INCLUDEPATH = \
 ../qinclude \
