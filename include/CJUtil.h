@@ -274,6 +274,24 @@ namespace CJUtil {
   }
 
   inline double round(double x) {
+    /* static const double kIntegerThreshold = 1LLU << 52;
+    double jsround(double x) {
+      double absx = fabs(x);
+      if (absx > kIntegerThreshold) {
+        // x is already integral
+        return x;
+      } else if (absx < 0.5) {
+        // x may suffer precision loss when adding 0.5
+        // round to +/- 0
+        return copysign(0, x);
+      } else {
+        // normal rounding.
+        // ensure negative values stay negative.
+        return copysign(floor(x + 0.5), x);
+      }
+    }
+    */
+
     if (isNaN   (x)) return getNaN();
     if (isPosInf(x)) return getPosInf();
     if (isNegInf(x)) return getNegInf();
