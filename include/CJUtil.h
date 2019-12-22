@@ -2,6 +2,7 @@
 #define CJUtil_H
 
 #include <COSNaN.h>
+#include <cmath>
 
 namespace CJUtil {
   template<typename T>
