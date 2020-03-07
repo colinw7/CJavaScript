@@ -308,9 +308,9 @@ endFunctionScope()
   termFunctionScope(fn);
 
   if (! functions_.empty()) {
-    CJFunctionP fn = functions_.back();
+    CJFunctionP fn1 = functions_.back();
 
-    initFunctionScope(fn);
+    initFunctionScope(fn1);
   }
 
   if (getenv("JS_PRINT_FUNCTION_SCOPE"))
@@ -778,15 +778,15 @@ lookupPropertyData(const Identifiers &identifiers, CJPropertyData &data)
   if (create) {
     data.setCreate(true);
 
-    CJDictionaryP scope = currentScope();
+    CJDictionaryP scope1 = currentScope();
 
-    if (lookupScopePropertyData(scope, identifiers, data))
+    if (lookupScopePropertyData(scope1, identifiers, data))
       return true;
 
-    while (scope->getParent()) {
-      scope = scope->getParent();
+    while (scope1->getParent()) {
+      scope1 = scope1->getParent();
 
-      if (lookupScopePropertyData(scope, identifiers, data))
+      if (lookupScopePropertyData(scope1, identifiers, data))
         return true;
     }
   }
@@ -2131,7 +2131,7 @@ interp(CJExecData &execData)
             break;
           }
 
-          CJValueP key = keyExpr->exec(this);
+          CJValueP key1 = keyExpr->exec(this);
 
           //---
 
@@ -2140,16 +2140,16 @@ interp(CJExecData &execData)
             break;
           }
 
-          CJExecExpressionP valueExpr = interpExpression();
+          CJExecExpressionP valueExpr1 = interpExpression();
 
-          if (! valueExpr) {
+          if (! valueExpr1) {
             throwSyntaxError(token, "Missing key expression for dictionary");
             break;
           }
 
           //---
 
-          dict->addDictionaryValue(key, valueExpr);
+          dict->addDictionaryValue(key1, valueExpr1);
         }
 
         execData_->addEToken(dict);
@@ -2838,9 +2838,9 @@ interpExecIf()
         return CJExecIfP();
       }
 
-      CJExecExpressionListP exprList = interpExpressionList();
+      CJExecExpressionListP exprList1 = interpExpressionList();
 
-      if (! exprList) {
+      if (! exprList1) {
         return CJExecIfP();
       }
 
@@ -2858,7 +2858,7 @@ interpExecIf()
         return CJExecIfP();
       }
 
-      eif->addElseIfBlock(exprList, elseIfBlock);
+      eif->addElseIfBlock(exprList1, elseIfBlock);
     }
     else {
       // <statement>
@@ -3533,9 +3533,9 @@ isInterpDictionary() const
   if      (isExecOperator(CJOperator::Type::Colon)) {
   }
   else if (isGet || isSet) {
-    CJTokenP token = lookToken();
+    CJTokenP ltoken = lookToken();
 
-    if (token->type() != CJToken::Type::Identifier) {
+    if (ltoken->type() != CJToken::Type::Identifier) {
       execData_->setPos(pos);
       return false;
     }
@@ -3560,9 +3560,9 @@ isInterpDictionary() const
       th->skipExecOperator();
     }
     else {
-      CJTokenP token = lookToken();
+      CJTokenP ltoken1 = lookToken();
 
-      if (token->type() != CJToken::Type::Identifier) {
+      if (ltoken1->type() != CJToken::Type::Identifier) {
         execData_->setPos(pos);
         return false;
       }
@@ -3650,21 +3650,21 @@ interpExecDictionary()
 
     bool isGet = false, isSet = false;
 
-    CJTokenP token = lookToken();
+    CJTokenP ltoken = lookToken();
 
-    if      (token->type() == CJToken::Type::Identifier) {
-      std::string name = token->castP<CJIdentifier>()->name();
+    if      (ltoken->type() == CJToken::Type::Identifier) {
+      std::string name = ltoken->castP<CJIdentifier>()->name();
 
       isGet = (name == "get");
       isSet = (name == "set");
 
       key = createStringValue(name);
     }
-    else if (token->type() == CJToken::Type::String) {
-      key = createStringValue(token->castP<CJString>()->text());
+    else if (ltoken->type() == CJToken::Type::String) {
+      key = createStringValue(ltoken->castP<CJString>()->text());
     }
-    else if (token->type() == CJToken::Type::Number) {
-      key = std::static_pointer_cast<CJValue>(token);
+    else if (ltoken->type() == CJToken::Type::Number) {
+      key = std::static_pointer_cast<CJValue>(ltoken);
     }
     else {
       throwSyntaxError(dict, "Invalid key value type");
@@ -3690,14 +3690,14 @@ interpExecDictionary()
     // set <key> (<arg>) { <block> }
     else if (isGet || isSet) {
       // get key name
-      CJTokenP token = lookToken();
+      CJTokenP ltoken1 = lookToken();
 
-      if (token->type() != CJToken::Type::Identifier) {
+      if (ltoken1->type() != CJToken::Type::Identifier) {
         throwSyntaxError(dict, "Missing name for get/set");
         return CJExecDictionaryP();
       }
 
-      std::string propName = token->castP<CJIdentifier>()->name();
+      std::string propName = ltoken1->castP<CJIdentifier>()->name();
 
       nextToken();
 
@@ -3722,14 +3722,14 @@ interpExecDictionary()
         skipExecOperator();
       }
       else {
-        CJTokenP token = lookToken();
+        CJTokenP ltoken2 = lookToken();
 
-        if (token->type() != CJToken::Type::Identifier) {
+        if (ltoken2->type() != CJToken::Type::Identifier) {
           throwSyntaxError(dict, "Missing arg name for set");
           return CJExecDictionaryP();
         }
 
-        arg = token->castP<CJIdentifier>()->name();
+        arg = ltoken2->castP<CJIdentifier>()->name();
 
         nextToken();
 
@@ -4712,15 +4712,15 @@ interpExpression()
           if (isInterpDebug())
             std::cerr << "interpFunction: " << *function << std::endl;
 
-          CJExecExpressionP expr1 = expr;
+          CJExecExpressionP expr2 = expr;
 
           expr = createExecExpression();
 
           expr->setLineNum(execLineNum());
 
-          function->setLineNum(expr1->lineNum());
+          function->setLineNum(expr2->lineNum());
 
-          function->setExpression(expr1);
+          function->setExpression(expr2);
 
           expr->addToken(CJTokenP(function));
 
@@ -4984,15 +4984,15 @@ interpIdentifiers()
   while (isExecOperator(CJOperator::Type::Scope)) {
     skipExecOperator();
 
-    CJTokenP token = lookToken();
+    CJTokenP ltoken = lookToken();
 
-    if (token->type() != CJToken::Type::Identifier) {
+    if (ltoken->type() != CJToken::Type::Identifier) {
       return CJExecIdentifiersP();
     }
 
     nextToken();
 
-    identifiers->addIdentifier(token->castP<CJIdentifier>());
+    identifiers->addIdentifier(ltoken->castP<CJIdentifier>());
   }
 
   if (isInterpDebug()) {
@@ -6673,12 +6673,12 @@ readDoubleString(CStrParse &parse)
             if (! parse.eof() && parse.isXDigit())
               c4 = CJUtil::hexCharValue(parse.readChar());
 
-            long c = ((c1 & 0xF) << 12) |
-                     ((c2 & 0xF) <<  8) |
-                     ((c3 & 0xF) <<  4) |
-                     ((c4 & 0xF) <<  0);
+            long lc = ((c1 & 0xF) << 12) |
+                      ((c2 & 0xF) <<  8) |
+                      ((c3 & 0xF) <<  4) |
+                      ((c4 & 0xF) <<  0);
 
-            CUtf8::append(str, c);
+            CUtf8::append(str, lc);
 
             break;
           }
@@ -6692,9 +6692,9 @@ readDoubleString(CStrParse &parse)
             if (! parse.eof() && parse.isXDigit())
               c2 = CJUtil::hexCharValue(parse.readChar());
 
-            long c = ((c1 & 0xF) << 4) | (c2 & 0xF);
+            long lcl = ((c1 & 0xF) << 4) | (c2 & 0xF);
 
-            CUtf8::append(str, c);
+            CUtf8::append(str, lcl);
 
             break;
           }
@@ -6786,12 +6786,12 @@ readSingleString(CStrParse &parse)
             if (! parse.eof() && parse.isXDigit())
               c4 = CJUtil::hexCharValue(parse.readChar());
 
-            long c = ((c1 & 0xF) << 12) |
-                     ((c2 & 0xF) <<  8) |
-                     ((c3 & 0xF) <<  4) |
-                     ((c4 & 0xF) <<  0);
+            long lc = ((c1 & 0xF) << 12) |
+                      ((c2 & 0xF) <<  8) |
+                      ((c3 & 0xF) <<  4) |
+                      ((c4 & 0xF) <<  0);
 
-            CUtf8::append(str, c);
+            CUtf8::append(str, lc);
 
             break;
           }
@@ -6805,9 +6805,9 @@ readSingleString(CStrParse &parse)
             if (! parse.eof() && parse.isXDigit())
               c2 = CJUtil::hexCharValue(parse.readChar());
 
-            long c = ((c1 & 0xF) << 4) | (c2 & 0xF);
+            long lc = ((c1 & 0xF) << 4) | (c2 & 0xF);
 
-            CUtf8::append(str, c);
+            CUtf8::append(str, lc);
 
             break;
           }

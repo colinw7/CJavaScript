@@ -83,6 +83,8 @@ class CJFunctionBase : public CJObj {
 
   virtual CJValueP exec(CJavaScript *js, const Values &values) = 0;
 
+  using CJToken::exec;
+
   std::string toString() const override;
 
   void print(std::ostream &os) const override;

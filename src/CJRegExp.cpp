@@ -222,12 +222,12 @@ find(const std::string &str, MatchData &data) const
   int n = regexp_.getNumSubMatches();
 
   for (int i = 0; i < n; ++i) {
-    int start, end;
+    int start1, end1;
 
-    if (! regexp_.getSubMatchRange(i, &start, &end))
+    if (! regexp_.getSubMatchRange(i, &start1, &end1))
       continue;
 
-    data.subRanges.push_back(MatchData::Range(start, end));
+    data.subRanges.push_back(MatchData::Range(start1, end1));
 
     data.subMatches.push_back(regexp_.getSubMatchString(i));
   }

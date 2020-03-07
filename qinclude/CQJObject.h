@@ -30,7 +30,7 @@ class CQJObject : public QObject, public CJObj {
 
   bool toBoolean() const override { return 0; }
 
-  CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values);
+  CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values) override;
 
   virtual bool callEventListener(const std::string &name, const std::string &prop,
                                  const EventArgs &args=EventArgs(),

@@ -45,7 +45,7 @@ exec(CJavaScript *js)
     CJValueP value1 = exprList_->indexExpression(0)->exec(js);
     CJValueP value2 = exprList_->indexExpression(1)->exec(js);
 
-    COptInt rc = rc = js->rcmp(value1, value2);
+    COptInt rc = js->rcmp(value1, value2);
 
     if (rc.isValid() && rc.getValue() == 0)
       return js->createTrueValue();

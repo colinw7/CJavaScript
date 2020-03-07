@@ -61,6 +61,8 @@ class CJBoolean : public CJObj {
     return 0;
   }
 
+  using CJObj::cmp;
+
  private:
   bool b_;
 };

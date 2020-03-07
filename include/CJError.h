@@ -13,11 +13,11 @@ class CJErrorTypeBase : public CJObjType {
 
   void init(CJObjTypeP type);
 
-  CJValueP getProperty(CJavaScript *js, const std::string &key) const;
+  CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
 
   CJValueP exec(CJavaScript *js, const std::string &name, const Values &values) override;
 
-  CJObjTypeP parentType() const { return parentType_; }
+  CJObjTypeP parentType() const override { return parentType_; }
 
  protected:
   static CJObjectTypeFunctionP toStringFn_;

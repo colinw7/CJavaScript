@@ -269,14 +269,14 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       }
     }
     else {
-      int n   = 0;
-      int pos = 0;
-      int len = str.size();
+      int n    = 0;
+      int pos  = 0;
+      int len1 = str.size();
 
-      while (pos < len) {
+      while (pos < len1) {
         int pos1 = pos;
 
-        (void) CUtf8::readNextChar(str, pos, len);
+        (void) CUtf8::readNextChar(str, pos, len1);
 
         if (! start.isValid() || n >= start.getValue(0)) {
           if (strncmp(&key[0], &str[pos1], key.size()) == 0) {
@@ -337,14 +337,14 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       }
     }
     else {
-      int n   = 0;
-      int pos = 0;
-      int len = str.size();
+      int n    = 0;
+      int pos  = 0;
+      int len1 = str.size();
 
-      while (pos < len) {
+      while (pos < len1) {
         int pos1 = pos;
 
-        (void) CUtf8::readNextChar(str, pos, len);
+        (void) CUtf8::readNextChar(str, pos, len1);
 
         if (! start.isValid() || n <= start.getValue(0)) {
           if (strncmp(&key[0], &str[pos1], key.size()) == 0)
@@ -622,11 +622,11 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
         strs.push_back(str);
     }
     else {
-      int pos = 0;
-      int len = str.size();
+      int pos  = 0;
+      int len1 = str.size();
 
-      while (pos < len) {
-        ulong c = CUtf8::readNextChar(str, pos, len);
+      while (pos < len1) {
+        ulong c = CUtf8::readNextChar(str, pos, len1);
 
         std::string str1;
 
@@ -732,13 +732,13 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return js->createStringValue(res);
   }
   else if (name == "toLocalLowerCase") {
-    int pos = 0;
-    int len = str.size();
+    int pos  = 0;
+    int len1 = str.size();
 
     std::string str1;
 
-    while (pos < len) {
-      ulong c = CUtf8::readNextChar(str, pos, len);
+    while (pos < len1) {
+      ulong c = CUtf8::readNextChar(str, pos, len1);
 
       if (c < 0x7f)
         c = tolower(c);
@@ -749,13 +749,13 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return js->createStringValue(str1);
   }
   else if (name == "toLocalUpperCase") {
-    int pos = 0;
-    int len = str.size();
+    int pos  = 0;
+    int len1 = str.size();
 
     std::string str1;
 
-    while (pos < len) {
-      ulong c = CUtf8::readNextChar(str, pos, len);
+    while (pos < len1) {
+      ulong c = CUtf8::readNextChar(str, pos, len1);
 
       if (c < 0x7f)
         c = toupper(c);
@@ -766,13 +766,13 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return js->createStringValue(str1);
   }
   else if (name == "toLowerCase") {
-    int pos = 0;
-    int len = str.size();
+    int pos  = 0;
+    int len1 = str.size();
 
     std::string str1;
 
-    while (pos < len) {
-      ulong c = CUtf8::readNextChar(str, pos, len);
+    while (pos < len1) {
+      ulong c = CUtf8::readNextChar(str, pos, len1);
 
       if (c < 0x7f)
         c = tolower(c);
@@ -786,13 +786,13 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return js->createStringValue(str);
   }
   else if (name == "toUpperCase") {
-    int pos = 0;
-    int len = str.size();
+    int pos  = 0;
+    int len1 = str.size();
 
     std::string str1;
 
-    while (pos < len) {
-      ulong c = CUtf8::readNextChar(str, pos, len);
+    while (pos < len1) {
+      ulong c = CUtf8::readNextChar(str, pos, len1);
 
       if (c < 0x7f)
         c = toupper(c);
@@ -1301,9 +1301,9 @@ encodeText() const
         else if (c == '\v')
           str += "\\v";
         else {
-          int i = (c & 0xff);
+          int ic = (c & 0xff);
 
-          ::sprintf(buffer, "%02x", i);
+          ::sprintf(buffer, "%02x", ic);
 
           str += "\\x" + std::string(&buffer[0]);
         }

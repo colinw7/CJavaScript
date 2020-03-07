@@ -40,6 +40,8 @@ class CJObj : public CJDictionary {
     return 0;
   }
 
+  using CJDictionary::cmp;
+
   void addVariable(CJavaScript *js, const std::string &name);
 
   bool hasPropertyValue(const std::string &key, bool inherit=true) const override;
@@ -48,6 +50,8 @@ class CJObj : public CJDictionary {
   void configPropertyValue(const std::string &key, CJValueP value) override;
 
   bool hasProperty(CJavaScript *js, const std::string &key, bool inherit=true) const override;
+  using CJDictionary::hasProperty;
+
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
   void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
 

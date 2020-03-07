@@ -63,6 +63,8 @@ class CJDictionary : public CJValue, public CJNameSpace {
 
   bool hasProperty() const override { return true; }
 
+  using CJNameSpace::hasProperty;
+
   bool hasPropertyValue(const std::string &key, bool inherit=true) const override;
   CJValueP propertyValue(const std::string &key) const override;
   void setPropertyValue(const std::string &key, CJValueP value) override;

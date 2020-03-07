@@ -162,10 +162,10 @@ exec(CJavaScript *js)
 
   //--
 
-  for (auto &fn : functions_) {
-    fn->setEValue(res);
+  for (auto &fn1 : functions_) {
+    fn1->setEValue(res);
 
-    res = fn->exec(js);
+    res = fn1->exec(js);
   }
 
   //--

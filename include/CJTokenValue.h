@@ -29,7 +29,7 @@ class CJTokenValue : public CJValue {
 
   CJTokenValue(const CJTokenValue &value);
 
-  CJValue *dup(CJavaScript *) const { return new CJTokenValue(*this); }
+  CJValue *dup(CJavaScript *) const override { return new CJTokenValue(*this); }
 
   const Tokens &tokens() const { return tokens_; }
   void setTokens(const Tokens &tokens) { tokens_ = tokens; }

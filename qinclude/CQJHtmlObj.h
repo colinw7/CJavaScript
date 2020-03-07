@@ -58,11 +58,11 @@ class CQJHtmlObj : public CQJObject {
 
   //--
 
-  CJValueP getProperty(CJavaScript *js, const std::string &name) const;
+  CJValueP getProperty(CJavaScript *js, const std::string &name) const override;
 
-  void setProperty(CJavaScript *js, const std::string &name, CJValueP value);
+  void setProperty(CJavaScript *js, const std::string &name, CJValueP value) override;
 
-  CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values);
+  CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values) override;
 
   bool callEventListener(const std::string &name, const std::string &prop,
                          const EventArgs &args=EventArgs(),

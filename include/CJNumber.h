@@ -68,6 +68,8 @@ class CJNumber : public CJObj {
 
   bool hasProperty() const override { return ! isPrimitive(); }
 
+  using CJObj::hasProperty;
+
   std::string realString() const;
 
   int cmp(const CJValue *v) const override {
@@ -79,6 +81,8 @@ class CJNumber : public CJObj {
 
     return 0;
   }
+
+  using CJObj::cmp;
 
  private:
   double real_ { 0.0 };

@@ -97,11 +97,11 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
       if (sourceValue->isObject()) {
         CJObjectP sourceObj = CJValue::cast<CJObject>(sourceValue);
 
-        for (const auto &name : sourceObj->propertyNames()) {
-          if (! sourceObj->isEnumerableProperty(name))
+        for (const auto &sname : sourceObj->propertyNames()) {
+          if (! sourceObj->isEnumerableProperty(sname))
             continue;
 
-          targetObj->setProperty(js, name, sourceObj->getProperty(js, name));
+          targetObj->setProperty(js, sname, sourceObj->getProperty(js, sname));
         }
       }
     }
@@ -136,9 +136,9 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
     CJObjP newObj;
 
     if (protoFn) {
-      CJFunction::Values values;
+      CJFunction::Values values1;
 
-      CJValueP newValue = protoFn->exec(js, values);
+      CJValueP newValue = protoFn->exec(js, values1);
 
       if (newValue->isObject())
         newObj = CJValue::cast<CJObj>(newValue);
@@ -189,9 +189,9 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
         if (ind.isValid())
           setIndexPropertyValues(js, obj, ind.getValue(0), propValues);
         else {
-          std::string ind = prop->toString();
+          std::string ind1 = prop->toString();
 
-          setNamePropertyValues(js, obj, ind, propValues);
+          setNamePropertyValues(js, obj, ind1, propValues);
         }
       }
       else if (obj->hasProperty()) {
@@ -200,9 +200,9 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
         //if (obj->isDictionary())
         //  objDict = CJValue::cast<CJDictionary>(obj);
 
-        std::string ind = prop->toString();
+        std::string ind1 = prop->toString();
 
-        setNamePropertyValues(js, obj, ind, propValues);
+        setNamePropertyValues(js, obj, ind1, propValues);
       }
       else {
         js->errorMsg("Invalid object for " + name);
@@ -286,8 +286,8 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
 
     auto names = obj->getPropertyNames();
 
-    for (const auto &name : names) {
-      CJValueP value = js->createStringValue(name);
+    for (const auto &name1 : names) {
+      CJValueP value = js->createStringValue(name1);
 
       CJPropertyValue propVal(value, "+wec");
 
@@ -351,9 +351,9 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
       }
 
       if (valueType) {
-        auto names = valueType->getTypePropertyNames();
+        auto pnames = valueType->getTypePropertyNames();
 
-        for (const auto &n : names) {
+        for (const auto &n : pnames) {
           array->addValue(js->createStringValue(n));
         }
       }
@@ -382,13 +382,13 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
     if (! objVal->isObject())
       return CJValueP();
 
-    std::string name = nameVal->toString();
+    std::string name1 = nameVal->toString();
 
     CJObjP obj = CJValue::cast<CJObj>(objVal);
 
     CJPropertyValue data;
 
-    if (! obj->getPropertyData(js, name, data))
+    if (! obj->getPropertyData(js, name1, data))
       return CJValueP();
 
     CJObjectP descObj = js->createObject();
@@ -488,11 +488,11 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
     if (ovalue->isObject()) {
       CJObjectP obj = CJValue::cast<CJObject>(ovalue);
 
-      for (const auto &name : obj->propertyNames()) {
-        if (! obj->isEnumerableProperty(name))
+      for (const auto &pname : obj->propertyNames()) {
+        if (! obj->isEnumerableProperty(pname))
           continue;
 
-        array->addValue(js->createStringValue(name));
+        array->addValue(js->createStringValue(pname));
       }
     }
 
@@ -608,9 +608,9 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     if (! ovalue || ! ovalue->isObject())
       return js->createBoolValue(false);
 
-    CJObjectP obj = CJValue::cast<CJObject>(ovalue);
+    CJObjectP obj1 = CJValue::cast<CJObject>(ovalue);
 
-    return js->createBoolValue(obj->isProtoValue(pvalue));
+    return js->createBoolValue(obj1->isProtoValue(pvalue));
   }
   else if (name == "toLocaleString") {
     std::string str = obj->toString();

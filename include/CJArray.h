@@ -79,11 +79,11 @@ class CJArray : public CJObj {
   bool isWritableIndex(long ind) const override;
   void setWritableIndex(long ind, bool b) override;
 
-  bool isEnumerableIndex(long ind) const;
-  void setEnumerableIndex(long ind, bool b=true);
+  bool isEnumerableIndex(long ind) const override;
+  void setEnumerableIndex(long ind, bool b=true) override;
 
-  bool isConfigurableIndex(long ind) const;
-  void setConfigurableIndex(long ind, bool b);
+  bool isConfigurableIndex(long ind) const override;
+  void setConfigurableIndex(long ind, bool b) override;
 
   bool hasValue(CJValueP value) const;
 

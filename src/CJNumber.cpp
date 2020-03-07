@@ -357,9 +357,9 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
         int k = m.size();
 
         if (k <= f) {
-          std::string z = CJUtil::nchars(f + 1 - k, '0');
+          std::string z1 = CJUtil::nchars(f + 1 - k, '0');
 
-          m = z + m;
+          m = z1 + m;
 
           k = f + 1;
         }

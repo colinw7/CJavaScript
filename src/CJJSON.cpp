@@ -208,11 +208,11 @@ parseToValue(CJavaScript *js, CJValueP key, CJson::ValueP value, CJFunctionBaseP
     obj->getNames(names);
 
     for (const auto &name : names) {
-      CJson::ValueP value1;
+      CJson::ValueP nvalue1;
 
-      obj->getNamedValue(name, value1);
+      obj->getNamedValue(name, nvalue1);
 
-      CJValueP value2 = parseToValue(js, key, value1);
+      CJValueP value2 = parseToValue(js, key, nvalue1);
 
       newObj->setProperty(js, name, value2);
     }
@@ -243,12 +243,12 @@ parseToValue(CJavaScript *js, CJValueP key, CJson::ValueP value, CJFunctionBaseP
 
     long i = 0;
 
-    for (const auto &value : array->values()) {
+    for (const auto &avalue : array->values()) {
       CJValueP key1 = js->createNumberValue(i);
 
-      CJValueP value1 = parseToValue(js, key1, value, reviver);
+      CJValueP nvalue1 = parseToValue(js, key1, avalue, reviver);
 
-      array1->addValue(value1);
+      array1->addValue(nvalue1);
 
       ++i;
     }
@@ -338,23 +338,23 @@ stringify(CJavaScript *js, CJValueP key, CJValueP value, const Indent &indent,
       if (! obj->isEnumerableProperty(name))
         continue;
 
-      CJValueP value = obj->propertyValue(name);
+      CJValueP pvalue = obj->propertyValue(name);
 
-      if (js->isUndefinedValue(value))
+      if (js->isUndefinedValue(pvalue))
         continue;
 
       //---
 
-      CJValueP key = js->createStringValue(name);
+      CJValueP key1 = js->createStringValue(name);
 
       std::string str2;
-      bool        skip = false;
+      bool        skip2 = false;
 
-      if (value != ivalue_) {
-        if (! stringify(js, key, value, indent, depth + 1, str2, skip))
+      if (pvalue != ivalue_) {
+        if (! stringify(js, key1, pvalue, indent, depth + 1, str2, skip2))
           continue;
 
-        if (skip)
+        if (skip2)
           continue;
       }
       else
@@ -389,23 +389,23 @@ stringify(CJavaScript *js, CJValueP key, CJValueP value, const Indent &indent,
       if (! dict->isEnumerableProperty(name))
         continue;
 
-      CJValueP value = dict->propertyValue(name);
+      CJValueP pvalue = dict->propertyValue(name);
 
-      if (js->isUndefinedValue(value))
+      if (js->isUndefinedValue(pvalue))
         continue;
 
       //---
 
-      CJValueP key = js->createStringValue(name);
+      CJValueP key1 = js->createStringValue(name);
 
       std::string str2;
-      bool        skip = false;
+      bool        skip2 = false;
 
-      if (value != ivalue_) {
-        if (! stringify(js, key, value, indent, depth + 1, str2, skip))
+      if (pvalue != ivalue_) {
+        if (! stringify(js, key1, pvalue, indent, depth + 1, str2, skip2))
           return false;
 
-        if (skip)
+        if (skip2)
           continue;
       }
       else
@@ -437,23 +437,23 @@ stringify(CJavaScript *js, CJValueP key, CJValueP value, const Indent &indent,
     std::string str1;
 
     for (int i = 0; i < array->length(); ++i) {
-      CJValueP value = array->indexValue(i);
+      CJValueP avalue = array->indexValue(i);
 
-      if (! value)
+      if (! avalue)
         continue;
 
       //---
 
-      CJValueP key;
+      CJValueP key1;
 
       std::string str2;
-      bool        skip = false;
+      bool        skip2 = false;
 
-      if (value != ivalue_) {
-        if (! stringify(js, key, value, indent, depth + 1, str2, skip))
+      if (avalue != ivalue_) {
+        if (! stringify(js, key1, avalue, indent, depth + 1, str2, skip2))
           return false;
 
-        if (skip)
+        if (skip2)
           continue;
       }
       else

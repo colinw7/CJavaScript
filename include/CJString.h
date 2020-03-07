@@ -76,6 +76,8 @@ class CJString : public CJObj {
 
   bool hasProperty() const override { return ! isPrimitive(); }
 
+  using CJObj::hasProperty;
+
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
   void setProperty(CJavaScript *js, const std::string &key, CJValueP value) override;
 

@@ -30,9 +30,9 @@ exec(CJavaScript *js)
 
   // run else if block if expression is true
   for (const auto &b : elseIfBlocks_) {
-    CJValueP value = b.exprList->exec(js);
+    CJValueP bvalue = b.exprList->exec(js);
 
-    if (value && value->toBoolean()) {
+    if (bvalue && bvalue->toBoolean()) {
       js->startBlock(b.block);
 
       CJValueP value1 = b.block->exec(js);

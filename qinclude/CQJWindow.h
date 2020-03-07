@@ -54,11 +54,11 @@ class CQJWindow : public CQJObject {
 
   CQJLocationP location() const { return location_; }
 
-  CJValueP getProperty(CJavaScript *js, const std::string &name) const;
+  CJValueP getProperty(CJavaScript *js, const std::string &name) const override;
 
-  void setProperty(CJavaScript *js, const std::string &name, CJValueP value);
+  void setProperty(CJavaScript *js, const std::string &name, CJValueP value) override;
 
-  CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values);
+  CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values) override;
 
   void print(std::ostream &os) const override { os << "window"; }
 
