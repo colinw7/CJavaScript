@@ -38,7 +38,7 @@ class CQJCanvasImageData : public CQJObject {
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;
 
-  CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values);
+  CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values) override;
 
   void print(std::ostream &os) const override { os << "canvasImageData"; }
 

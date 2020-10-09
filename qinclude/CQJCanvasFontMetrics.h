@@ -32,7 +32,7 @@ class CQJCanvasFontMetrics : public CQJObject {
     return new CQJCanvasFontMetrics(js, font_, text_);
   }
 
-  CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values);
+  CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values) override;
 
   void print(std::ostream &os) const override { os << "canvasFontMetrics"; }
 

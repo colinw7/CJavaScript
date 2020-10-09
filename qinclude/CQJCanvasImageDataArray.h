@@ -36,7 +36,7 @@ class CQJCanvasImageDataArray : public CQJObject {
   CJValueP indexValue(long i) const override;
   void setIndexValue(long i, CJValueP value) override;
 
-  CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values);
+  CJValueP execNameFn(CJavaScript *js, const std::string &name, const Values &values) override;
 
   void print(std::ostream &os) const override { os << "canvasImageDataArray"; }
 

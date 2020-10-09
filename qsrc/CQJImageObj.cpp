@@ -1,7 +1,9 @@
 #include <CQJImageObj.h>
-#include <CQUtil.h>
 #include <CQJImageIFace.h>
+#include <CQImageUtil.h>
+#include <CQUtil.h>
 #include <CJavaScript.h>
+#include <CImageLib.h>
 
 CJObjTypeP CQJImageObjType::type_;
 
@@ -36,7 +38,7 @@ QImage
 CQJImageObj::
 qimage() const
 {
-  return CQUtil::toQImage(iface_->image());
+  return CQImageUtil::toQImage(iface_->image());
 }
 
 CJValueP

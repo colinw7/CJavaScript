@@ -1,6 +1,7 @@
 #ifndef CQJImageIFace_H
 #define CQJImageIFace_H
 
+#include <CImagePtr.h>
 #include <string>
 #include <vector>
 
