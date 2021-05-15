@@ -26,8 +26,8 @@ class CQJColorEdit : public QLineEdit {
 
   void emitChange();
 
-  void keyPressEvent  (QKeyEvent *e);
-  void keyReleaseEvent(QKeyEvent *e);
+  void keyPressEvent  (QKeyEvent *e) override;
+  void keyReleaseEvent(QKeyEvent *e) override;
 
   void callEventListener(const std::string &name, const std::string &prop, CJValueP event);
 
@@ -48,11 +48,11 @@ class CQJColorWidget : public QFrame {
  public:
   explicit CQJColorWidget(CQJColorEdit *edit);
 
-  void paintEvent(QPaintEvent *);
+  void paintEvent(QPaintEvent *) override;
 
-  void mousePressEvent(QMouseEvent *e);
-  void mouseMoveEvent(QMouseEvent *);
-  void mouseReleaseEvent(QMouseEvent *);
+  void mousePressEvent(QMouseEvent *e) override;
+  void mouseMoveEvent(QMouseEvent *) override;
+  void mouseReleaseEvent(QMouseEvent *) override;
 
   void updateColorFromPos(const QPoint &pos);
 

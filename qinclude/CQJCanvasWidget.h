@@ -80,25 +80,25 @@ class CQJCanvasWidget : public QFrame {
   const Qt::Alignment &fontAlign() const { return fontAlign_; }
   void setFontAlign(const Qt::Alignment &v) { fontAlign_ = v; }
 
-  void paintEvent(QPaintEvent *);
+  void paintEvent(QPaintEvent *) override;
 
-  void resizeEvent(QResizeEvent *);
+  void resizeEvent(QResizeEvent *) override;
 
-  void enterEvent(QEvent *);
-  void leaveEvent(QEvent *);
+  void enterEvent(QEvent *) override;
+  void leaveEvent(QEvent *) override;
 
-  void mousePressEvent(QMouseEvent *e);
-  void mouseMoveEvent(QMouseEvent *e);
-  void mouseReleaseEvent(QMouseEvent *e);
+  void mousePressEvent  (QMouseEvent *e) override;
+  void mouseMoveEvent   (QMouseEvent *e) override;
+  void mouseReleaseEvent(QMouseEvent *e) override;
 
-  void mouseDoubleClickEvent(QMouseEvent *e);
+  void mouseDoubleClickEvent(QMouseEvent *e) override;
 
-  void contextMenuEvent(QContextMenuEvent *e);
+  void contextMenuEvent(QContextMenuEvent *e) override;
 
-  void keyPressEvent  (QKeyEvent *e);
-  void keyReleaseEvent(QKeyEvent *e);
+  void keyPressEvent  (QKeyEvent *e) override;
+  void keyReleaseEvent(QKeyEvent *e) override;
 
-  QSize sizeHint() const;
+  QSize sizeHint() const override;
 
  private:
   void setPen();

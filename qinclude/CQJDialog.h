@@ -15,7 +15,7 @@ class CQJDialog : public QFrame {
  public:
   explicit CQJDialog(CJavaScript *js);
 
-  QSize sizeHint() const;
+  QSize sizeHint() const override;
 
  private slots:
   void historySlot(QListWidgetItem *item);

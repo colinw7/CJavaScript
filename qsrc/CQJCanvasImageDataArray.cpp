@@ -84,6 +84,7 @@ setIndexValue(long i, CJValueP value)
   else if (i0 == 1) rgb1 = qRgba(qRed(rgb), c          , qBlue(rgb), qAlpha(rgb));
   else if (i0 == 2) rgb1 = qRgba(qRed(rgb), qGreen(rgb), c         , qAlpha(rgb));
   else if (i0 == 3) rgb1 = qRgba(qRed(rgb), qGreen(rgb), qBlue(rgb), c          );
+  else assert(false);
 
   data_->setPixel(x, y, rgb1);
 

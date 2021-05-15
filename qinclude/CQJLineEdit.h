@@ -14,8 +14,8 @@ class CQJLineEdit : public QLineEdit {
   CQJLineEdit(CQJHtmlObj *obj, CQJFormInputIFace *iface);
 
  private:
-  void keyPressEvent(QKeyEvent *e);
-  void keyReleaseEvent(QKeyEvent *e);
+  void keyPressEvent(QKeyEvent *e) override;
+  void keyReleaseEvent(QKeyEvent *e) override;
 
   void callEventListener(const std::string &name, const std::string &prop, CJValueP event);
 
