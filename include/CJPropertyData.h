@@ -2,6 +2,7 @@
 #define CJPropertyData_H
 
 #include <CJTypes.h>
+#include <string>
 
 class CJavaScript;
 
