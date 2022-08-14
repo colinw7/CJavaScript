@@ -19,7 +19,7 @@ class CJExecExpression : public CJToken {
 
     bool empty() const { return ops_.empty(); }
 
-    uint size() const { return ops_.size(); }
+    uint size() const { return uint(ops_.size()); }
 
     void push_back(CJOperator *op) {
       ops_.push_back(op);
@@ -52,7 +52,7 @@ class CJExecExpression : public CJToken {
 
   const Tokens &tokens() const { return tokens_; }
 
-  CJTokenP token(int i) const { return tokens_[i]; }
+  CJTokenP token(int i) const { return tokens_[size_t(i)]; }
 
   CJTokenP lastToken() const {
     if (tokens_.empty())

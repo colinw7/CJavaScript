@@ -113,7 +113,7 @@ namespace CJUtil {
 
     long factor = int(real1/real2);
 
-    double result = real1 - (real2*factor);
+    double result = real1 - (real2*double(factor));
 
     return result;
   }
@@ -148,17 +148,17 @@ namespace CJUtil {
       return "0";
 
     while (r1 >= 1) {
-      long i1 = fmod(r1, base);
+      auto i1 = long(fmod(r1, base));
 
       str += ichars[i1];
 
-      r1 = (r1 - i1)/base;
+      r1 = (r1 - double(i1))/double(base);
     }
 
-    int len = str.size();
+    int len = int(str.size());
 
     for (int i = 0; i < len/2; ++i)
-      std::swap(str[i], str[len - i - 1]);
+      std::swap(str[size_t(i)], str[size_t(len - i - 1)]);
 
     if (isNeg)
       return "-" + str;
@@ -202,7 +202,7 @@ namespace CJUtil {
 
       rstr += ichars[i1];
 
-      r2 = r2*base - i1;
+      r2 = r2*double(base) - double(i1);
     }
 
     //---
@@ -224,7 +224,7 @@ namespace CJUtil {
   }
 
   inline bool isInteger(double r) {
-    return (long(r) == r);
+    return (double(long(r)) == r);
   }
 
   //---

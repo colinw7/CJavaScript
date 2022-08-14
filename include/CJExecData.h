@@ -20,7 +20,7 @@ class CJExecData {
   }
 
   void initExec(Tokens &tokens) {
-    len_    = tokens.size();
+    len_    = int(tokens.size());
     tokens_ = tokens;
   }
 
@@ -49,7 +49,7 @@ class CJExecData {
     if (pos_ + n >= len_)
       return CJTokenP();
 
-    return tokens_[pos_ + n];
+    return tokens_[size_t(pos_ + n)];
   }
 
   void next(int n=1) {
