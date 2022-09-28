@@ -135,7 +135,7 @@ clearRect(double x, double y, double w, double h)
 
   //ip_->setCompositionMode(QPainter::CompositionMode_SourceOver);
 
-  ip_->fillRect(QRectF(x, y, w, h), QColor(0,0,0,0));
+  ip_->fillRect(QRectF(x, y, w, h), QColor(0, 0, 0, 0));
 
   //ip_->eraseRect(QRectF(x, y, w, h));
 
@@ -161,7 +161,7 @@ fillShadowText(double x, double y, const std::string &text, double d, const QCol
 
   QFontMetrics fm(font_);
 
-  int fw = fm.width(text.c_str());
+  int fw = fm.horizontalAdvance(text.c_str());
   int fa = fm.ascent();
   int fd = fm.descent();
 
@@ -206,7 +206,7 @@ fillText(double x, double y, const std::string &text)
 
   QFontMetrics fm(font_);
 
-  int fw = fm.width(text.c_str());
+  int fw = fm.horizontalAdvance(text.c_str());
   int fa = fm.ascent();
   int fd = fm.descent();
 
@@ -245,9 +245,9 @@ strokeText(double x, double y, const std::string &text)
     y -= fm.ascent() - fm.height()/2;
 
   if      (fontAlign_ & Qt::AlignRight)
-    x -= fm.width(text.c_str());
+    x -= fm.horizontalAdvance(text.c_str());
   else if (fontAlign_ & Qt::AlignHCenter)
-    x -= fm.width(text.c_str())/2;
+    x -= fm.horizontalAdvance(text.c_str())/2;
 
   path_ = QPainterPath();
 

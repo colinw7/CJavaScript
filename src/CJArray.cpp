@@ -1860,14 +1860,14 @@ void
 CJArray::
 print(std::ostream &os) const
 {
-  auto addValue = [] (std::ostream &os, long &i, CJValueP value) {
+  auto addValue = [] (std::ostream &os1, long &i, CJValueP value) {
     if (i > 0)
-      os << ",";
+      os1 << ",";
 
-    os << " ";
+    os1 << " ";
 
     if (value)
-      value->print(os);
+      value->print(os1);
 
     ++i;
   };
