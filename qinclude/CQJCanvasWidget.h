@@ -9,6 +9,7 @@
 #include <QFont>
 #include <QColor>
 #include <QPen>
+#include <QPainterPath>
 
 class CQJCanvas;
 

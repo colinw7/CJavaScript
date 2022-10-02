@@ -166,7 +166,7 @@ paintEvent(QPaintEvent *)
 {
   QPainter p(this);
 
-  p.fillRect(rect(), palette().background());
+  p.fillRect(rect(), palette().window());
 
   palRect_ = QRect(8, 8, 200, 200);
 
