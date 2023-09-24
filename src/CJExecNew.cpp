@@ -115,7 +115,7 @@ exec(CJavaScript *js)
 
     //CJUserObjectP userObj(new CJUserObject(js, userType, typeFn));
 
-    fnValues.push_back(0);
+    fnValues.push_back(nullptr);
 
     for (auto &v : values)
       fnValues.push_back(v);

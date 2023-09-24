@@ -426,13 +426,13 @@ class CJavaScript {
     return std::make_shared<CJGlobalFunction>(th, name);
   }
 
-  CJMathFunctionP createMathFunction(const std::string &name, CJRealFn1 fn=0) const {
+  CJMathFunctionP createMathFunction(const std::string &name, CJRealFn1 fn=nullptr) const {
     CJavaScript *th = const_cast<CJavaScript *>(this);
 
     return std::make_shared<CJMathFunction>(th, name, fn);
   }
 
-  CJReal2FunctionP createReal2Function(const std::string &name, CJRealFn2 fn=0) const {
+  CJReal2FunctionP createReal2Function(const std::string &name, CJRealFn2 fn=nullptr) const {
     CJavaScript *th = const_cast<CJavaScript *>(this);
 
     return std::make_shared<CJReal2Function>(th, name, fn);
@@ -662,7 +662,7 @@ class CJavaScript {
   CJJSONP         json_;
   Tokens          tokens_;
   TypeObject      typeObject_;
-  CJExecData*     execData_ { 0 };
+  CJExecData*     execData_ { nullptr };
   ExecDataStack   execDataStack_;
   CJExecBlockP    block_;
   BlockStack      blockStack_;

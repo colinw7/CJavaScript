@@ -111,7 +111,7 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
   else if (name == "create") {
     // Object.create(proto[, propertiesObject])
     if (values.size() < 2) {
-      js->throwTypeError(0, "Invalid arguments for " + name);
+      js->throwTypeError(nullptr, "Invalid arguments for " + name);
       return CJValueP();
     }
 

@@ -52,7 +52,7 @@ class CJDate : public CJObj {
                                const std::string &format, long &t);
 
   static void timeToValues(long t, int *year, int *month, int *day,
-                           int *hour, int *min, int *sec, int *wday=0, int *yday=0);
+                           int *hour, int *min, int *sec, int *wday=nullptr, int *yday=nullptr);
 
   static long timeFromValues(int year, int month, int day, int hour, int min, int sec);
 

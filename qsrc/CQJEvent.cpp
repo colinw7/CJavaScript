@@ -46,7 +46,7 @@ CJValueP
 CQJEventType::
 construct(CJavaScript *js, const Values &)
 {
-  return CJValueP(new CQJEvent(js, CJValueP(), 0));
+  return CJValueP(new CQJEvent(js, CJValueP(), nullptr));
 }
 
 //------

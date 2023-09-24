@@ -6,7 +6,7 @@
 // function calling API with signature: double result = fn(double r);
 class CJMathFunction : public CJFunctionBase {
  public:
-  CJMathFunction(CJavaScript *js, const std::string &name, CJRealFn1 fn=0);
+  CJMathFunction(CJavaScript *js, const std::string &name, CJRealFn1 fn=nullptr);
 
   CJMathFunction(const CJMathFunction &fn);
 

@@ -547,7 +547,7 @@ getCurrentTime()
 
   struct timeval tv;
 
-  (void) gettimeofday(&tv, 0);
+  (void) gettimeofday(&tv, nullptr);
 
   long t = tv.tv_sec*1000 + tv.tv_usec;
 

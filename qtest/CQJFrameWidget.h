@@ -25,7 +25,7 @@ class CQJFrameWidget : public QFrame {
 
   CQJCanvasWidget *canvas() const { return canvas_; }
 
-  QSize sizeHint() const;
+  QSize sizeHint() const override;
 
  private slots:
   void execCmd(const QString &cmd);

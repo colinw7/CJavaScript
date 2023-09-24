@@ -7,7 +7,7 @@
 
 CQJCanvasWidget::
 CQJCanvasWidget(CQJCanvas *canvas) :
- QFrame(0), canvas_(canvas)
+ QFrame(nullptr), canvas_(canvas)
 {
   //setFocusPolicy(Qt::StrongFocus);
 

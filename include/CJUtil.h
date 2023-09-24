@@ -98,7 +98,7 @@ namespace CJUtil {
 
   //---
 
-  inline double realModulus(double real1, double real2, int *error_code=0) {
+  inline double realModulus(double real1, double real2, int *error_code=nullptr) {
     if (error_code) *error_code = 0;
 
     if (isNaN(real1) || isNaN(real2)) {

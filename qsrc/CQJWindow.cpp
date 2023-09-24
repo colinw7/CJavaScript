@@ -107,7 +107,7 @@ removeTimer(long id)
 
     delete timers_[i];
 
-    timers_[i] = 0;
+    timers_[i] = nullptr;
   }
 }
 

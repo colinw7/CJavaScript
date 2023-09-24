@@ -51,7 +51,7 @@ getValue() const
 {
   if (! getter_) {
     if (js_->isStrict())
-      js_->throwTypeError(0, "No Getter for property");
+      js_->throwTypeError(nullptr, "No Getter for property");
     return CJValueP();
   }
 
@@ -68,7 +68,7 @@ setValue(CJValueP value)
 {
   if (! setter_) {
     if (js_->isStrict())
-      js_->throwTypeError(0, "No Setter for property");
+      js_->throwTypeError(nullptr, "No Setter for property");
     return;
   }
 

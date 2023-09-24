@@ -60,7 +60,7 @@ class CJFunctionBase : public CJObj {
 
   CJFunctionBase(const CJFunctionBase &f);
 
-  CJValue *dup(CJavaScript *) const override { assert(false); return 0; }
+  CJValue *dup(CJavaScript *) const override { assert(false); return nullptr; }
 
   bool isFunction() const override { return true; }
 

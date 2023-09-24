@@ -255,7 +255,7 @@ endScope()
 
   scopeStack_.pop_back();
 
-  scope->setParent(0);
+  scope->setParent(nullptr);
 
 //printScopeStack("endScope");
   return scope;
@@ -525,9 +525,9 @@ endBlock()
     if (block_)
       block_->setErrors(block->errors());
     else {
-      //errorMsg(0, block->firstError()->toString());
+      //errorMsg(nullptr, block->firstError()->toString());
       for (const auto &e : block->errors())
-        errorMsg(0, e->toString());
+        errorMsg(nullptr, e->toString());
     }
   }
 
@@ -1044,7 +1044,7 @@ lookupValuePropertyData(CJValueP value, const Identifiers &identifiers,
              fn1->type() == CJFunctionBase::Type::ObjectType ||
              fn1->type() == CJFunctionBase::Type::Object) {
       if (ind != len - 1) {
-        throwSyntaxError(0, "Invalid object type identifiers");
+        throwSyntaxError(nullptr, "Invalid object type identifiers");
         return false;
       }
 
@@ -1113,7 +1113,7 @@ lookupValuePropertyData(CJValueP value, const Identifiers &identifiers,
   else {
     // value is an object
     if (ind != len - 1) {
-      throwSyntaxError(0, "Invalid object identifiers");
+      throwSyntaxError(nullptr, "Invalid object identifiers");
       return false;
     }
 
@@ -1538,7 +1538,7 @@ deleteProperty(CJDictionaryP scope, const Identifiers &identifiers, const Values
           }
 
           if (i < len - 1)
-            throwSyntaxError(0, "Invalid value named index");
+            throwSyntaxError(nullptr, "Invalid value named index");
 
           if (obj) {
             obj->deletePropertyIndices(this, identifiers[i]->name(), values);
@@ -1559,7 +1559,7 @@ deleteProperty(CJDictionaryP scope, const Identifiers &identifiers, const Values
           }
 
           if (i < len - 1)
-            throwSyntaxError(0, "Invalid value named index");
+            throwSyntaxError(nullptr, "Invalid value named index");
 
           if (dict) {
             dict->deletePropertyIndices(this, identifiers[i]->name(), values);
@@ -1880,7 +1880,7 @@ parseString(const std::string &str)
     }
     else if (allowUnary && parse.isChar('/')) {
       if (! readRegExp(parse)) {
-        throwSyntaxError(0, "Invalid regexp: '" + parse.getAt() + "'");
+        throwSyntaxError(nullptr, "Invalid regexp: '" + parse.getAt() + "'");
         break;
       }
     }
@@ -1894,7 +1894,7 @@ parseString(const std::string &str)
       readSingleString(parse);
     }
     else {
-      throwSyntaxError(0, "Invalid text: '" + parse.getAt() + "'");
+      throwSyntaxError(nullptr, "Invalid text: '" + parse.getAt() + "'");
       break;
     }
 
@@ -4430,7 +4430,7 @@ interpExpression()
 
           iexpr1->setIdentifiers(identifiers);
 
-          identifiers = 0;
+          identifiers = nullptr;
         }
         else {
           iexpr1->setLineNum(iexpr->lineNum());
@@ -7030,7 +7030,7 @@ throwException(CJExceptionType type)
 
   error->setExceptionType(type);
 
-  throwError(0, CJErrorBaseP(error));
+  throwError(nullptr, CJErrorBaseP(error));
 }
 
 void

@@ -58,16 +58,16 @@ class CanvasObjIFace : public CQJHtmlObjIFace {
    canvas_(canvas) {
   }
 
-  std::string getName () const { return "canvas"; }
-  std::string getClass() const { return "canvas"; }
-  std::string getType () const { return "canvas"; }
-  std::string getId   () const { return "canvas"; }
+  std::string getName () const override { return "canvas"; }
+  std::string getClass() const override { return "canvas"; }
+  std::string getType () const override { return "canvas"; }
+  std::string getId   () const override { return "canvas"; }
 
-  CQJHtmlObjIFace *parent() const { return nullptr; }
+  CQJHtmlObjIFace *parent() const override { return nullptr; }
 
-  CQJHtmlObj *obj() const { return canvas_; }
+  CQJHtmlObj *obj() const override { return canvas_; }
 
-  Children children() const { return Children(); }
+  Children children() const override { return Children(); }
 
  private:
   CQJCanvas *canvas_ { nullptr };

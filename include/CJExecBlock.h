@@ -60,7 +60,7 @@ class CJExecBlock : public CJToken {
   void interp(CJavaScript *js);
 
   void initExec() {
-    retVal_       = 0;
+    retVal_       = nullptr;
     breakFlag_    = false;
     continueFlag_ = false;
     returnFlag_   = false;

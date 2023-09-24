@@ -30,7 +30,7 @@ class CJExecExpression : public CJToken {
     }
 
     CJOperator *lastOp() const {
-      return (! ops_.empty() ? ops_.back() : 0);
+      return (! ops_.empty() ? ops_.back() : nullptr);
     }
 
    private:

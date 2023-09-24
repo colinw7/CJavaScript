@@ -60,7 +60,7 @@ changeSlot()
 {
   CJValueP edit = obj_->shared_from_this();
 
-  CJValueP event(new CQJEvent(CQJavaScriptInst->js(), edit, 0));
+  CJValueP event(new CQJEvent(CQJavaScriptInst->js(), edit, nullptr));
 
   callEventListener("change", "onchange", event);
 }
