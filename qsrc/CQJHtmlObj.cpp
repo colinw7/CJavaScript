@@ -165,7 +165,7 @@ callEventListener(const std::string &name, const std::string &prop,
   else {
     CQJDocumentP jsDocument = CQJavaScriptInst->jsDocument();
 
-    if (jsDocument->callEventListener(name, prop, args, nameValues))
+    if (jsDocument && jsDocument->callEventListener(name, prop, args, nameValues))
       called = true;
   }
 
