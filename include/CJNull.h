@@ -34,9 +34,9 @@ class CJNull : public CJValue {
 
   //---
 
-  COptReal toReal() const override { return COptReal(0); }
+  OptReal toReal() const override { return OptReal(0); }
 
-  COptLong toInteger() const override { return COptLong(0); }
+  OptLong toInteger() const override { return OptLong(0); }
 
   bool toBoolean() const override { return false; }
 

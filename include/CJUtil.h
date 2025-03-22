@@ -15,9 +15,9 @@ namespace CJUtil {
   //---
 
   inline double getNaN() {
-    static COptReal nanValue;
+    static OptReal nanValue;
 
-    if (! nanValue.isValid()) {
+    if (! nanValue) {
       double r;
 
       COSNaN::set_nan(&r);
@@ -25,7 +25,7 @@ namespace CJUtil {
       nanValue = r;
     }
 
-    return nanValue.getValue();
+    return nanValue.value();
   }
 
   inline bool isNaN(double r) {

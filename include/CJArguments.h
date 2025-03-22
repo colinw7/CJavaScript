@@ -39,8 +39,8 @@ class CJArguments : public CJObj {
 
   bool toBoolean() const override { return ! values_.empty(); }
 
-  COptReal toReal() const override { return COptReal(); }
-  COptLong toInteger() const override { return COptLong(); }
+  OptReal toReal() const override { return OptReal(); }
+  OptLong toInteger() const override { return OptLong(); }
 
   //---
 
@@ -52,7 +52,7 @@ class CJArguments : public CJObj {
 
   void addValue(CJValueP value);
 
-  COptLong length() const override { return COptLong(values_.size()); }
+  OptLong length() const override { return OptLong(values_.size()); }
 
   CJValueP callee() const { return callee_; }
   void setCallee(CJValueP value) { callee_ = value; }

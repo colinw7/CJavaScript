@@ -49,7 +49,7 @@ class CJJSONFunction : public CJFunctionBase {
       str_ = s;
     }
 
-    bool isValid() const { return i_.isValid() || s_.isValid(); }
+    bool isValid() const { return i_ || s_; }
 
     std::string str() const { return str_; }
 
@@ -63,8 +63,8 @@ class CJJSONFunction : public CJFunctionBase {
     }
 
    private:
-    COptInt     i_;
-    COptString  s_;
+    OptInt      i_;
+    OptString   s_;
     std::string str_;
   };
 

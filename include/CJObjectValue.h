@@ -24,9 +24,9 @@ class CJObjectValue : public CJLValue {
 
   //---
 
-  COptReal toReal() const override { return value()->toReal(); }
+  OptReal toReal() const override { return value()->toReal(); }
 
-  COptLong toInteger() const override { return value()->toInteger(); }
+  OptLong toInteger() const override { return value()->toInteger(); }
 
   bool toBoolean() const override { return value()->toBoolean(); }
 

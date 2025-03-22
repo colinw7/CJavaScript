@@ -94,7 +94,7 @@ exec(CJavaScript *js, const Values &values)
       if      (values[2]->type() == CJToken::Type::Number) {
         CJNumberP number = CJValue::cast<CJNumber>(values[2]);
 
-        long i = number->toInteger().getValue(0);
+        long i = number->toInteger().value_or(0);
 
         if (i > 0)
           indent.setInteger(std::min(i, 10L));
@@ -102,7 +102,7 @@ exec(CJavaScript *js, const Values &values)
       else if (values[2]->type() == CJToken::Type::String) {
         CJStringP str = CJValue::cast<CJString>(values[2]);
 
-        long len = str->length().getValue(0);
+        long len = str->length().value_or(0);
 
         if (len > 0) {
           std::string str1;

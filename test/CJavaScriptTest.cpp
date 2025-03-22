@@ -77,12 +77,12 @@ main(int argc, char **argv)
     int         depth = 0;
 
     while (true) {
-      std::string prompt = ">";
+      std::string prompt1 = ">";
 
       for (int i = 0; i < depth; ++i)
-        prompt += "+";
+        prompt1 += "+";
 
-      readline.setPrompt(prompt + " ");
+      readline.setPrompt(prompt1 + " ");
 
       if (line != "")
         line += "\n";

@@ -53,9 +53,9 @@ class CJArray : public CJObj {
 
   //---
 
-  COptReal toReal() const override;
+  OptReal toReal() const override;
 
-  COptLong toInteger() const override;
+  OptLong toInteger() const override;
 
   bool toBoolean() const override { return true; }
 
@@ -87,7 +87,7 @@ class CJArray : public CJObj {
 
   bool hasValue(CJValueP value) const;
 
-  COptLong length() const override;
+  OptLong length() const override;
   void setLength(long n);
 
   void reverse();

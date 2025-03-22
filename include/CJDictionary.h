@@ -50,9 +50,9 @@ class CJDictionary : public CJValue, public CJNameSpace {
 
   bool toBoolean() const override { return true; }
 
-  COptReal toReal() const override { return COptReal(); }
+  OptReal toReal() const override { return OptReal(); }
 
-  COptLong toInteger() const override { return COptLong(); }
+  OptLong toInteger() const override { return OptLong(); }
 
   //---
 

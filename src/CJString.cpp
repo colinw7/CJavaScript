@@ -109,7 +109,7 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
     std::string str;
 
     for (uint i = 1; i < values.size(); ++i) {
-      long code = values[i]->toInteger().getValue(0);
+      long code = values[i]->toInteger().value_or(0);
 
       CUtf8::append(str, code);
     }
@@ -120,7 +120,7 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
     std::string str;
 
     for (uint i = 1; i < values.size(); ++i) {
-      long code = values[i]->toInteger().getValue(0);
+      long code = values[i]->toInteger().value_or(0);
 
       CUtf8::append(str, code);
     }
@@ -161,7 +161,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     CJStringP cstr = CJValue::cast<CJString>(thisValue);
 
     str = cstr->text();
-    len = cstr->length().getValue(0);
+    len = cstr->length().value_or(0);
   }
   else {
     str = thisValue->toString();
@@ -178,7 +178,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     long ind = 0;
 
     if (values.size() > 1)
-      ind = (values[1] ? values[1]->toInteger().getValue(0) : 0);
+      ind = (values[1] ? values[1]->toInteger().value_or(0) : 0);
 
     std::string res;
 
@@ -192,7 +192,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     long ind = 0;
 
     if (values.size() > 1)
-      ind = (values[1] ? values[1]->toInteger().getValue(0) : 0);
+      ind = (values[1] ? values[1]->toInteger().value_or(0) : 0);
 
     long c = -1;
 
@@ -238,10 +238,10 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       key = (values[1] ? values[1]->toString() : std::string());
 
     // get start
-    COptLong start;
+    OptLong start;
 
     if (values.size() > 2) {
-      start = values[2]->toInteger().getValue(0);
+      start = values[2]->toInteger().value_or(0);
 
       if (start < 0)
         start = 0;
@@ -251,8 +251,8 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     long ind = -1;
 
     if (CUtf8::isAscii(str)) {
-      if (start.isValid()) {
-        auto p = str.find(key, start.getValue(0));
+      if (start) {
+        auto p = str.find(key, start.value_or(0));
 
         if (p == std::string::npos)
           ind = long(-1);
@@ -278,7 +278,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
         (void) CUtf8::readNextChar(str, pos, len1);
 
-        if (! start.isValid() || n >= start.getValue(0)) {
+        if (! start || n >= start.value_or(0)) {
           if (strncmp(&key[0], &str[pos1], key.size()) == 0) {
             ind = n;
             break;
@@ -299,13 +299,13 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       key = (values[1] ? values[1]->toString() : std::string());
 
     // get start
-    COptLong start;
+    OptLong start;
 
     if (values.size() > 2) {
-      double rstart = values[2]->toReal().getValue(CJUtil::getNaN());
+      double rstart = values[2]->toReal().value_or(CJUtil::getNaN());
 
       if (! CJUtil::isNaN(rstart))
-        start = values[2]->toInteger().getValue(CJUtil::maxInteger());
+        start = values[2]->toInteger().value_or(CJUtil::maxInteger());
       else
         start = CJUtil::maxInteger();
 
@@ -317,8 +317,8 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     long ind = -1;
 
     if (CUtf8::isAscii(str)) {
-      if (start.isValid()) {
-        std::string str1 = str.substr(0, start.getValue(0) + key.size());
+      if (start) {
+        std::string str1 = str.substr(0, start.value_or(0) + key.size());
 
         auto p = str1.rfind(key);
 
@@ -346,7 +346,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
         (void) CUtf8::readNextChar(str, pos, len1);
 
-        if (! start.isValid() || n <= start.getValue(0)) {
+        if (! start || n <= start.value_or(0)) {
           if (strncmp(&key[0], &str[pos1], key.size()) == 0)
             ind = n;
         }
@@ -525,7 +525,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     long ind1 = 0;
 
     if (values.size() > 1) {
-      ind1 = (values[1] ? values[1]->toInteger().getValue(0) : 0);
+      ind1 = (values[1] ? values[1]->toInteger().value_or(0) : 0);
 
       if (ind1 < 0)
         ind1 = len + ind1;
@@ -539,7 +539,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     if (values.size() > 2) {
       // get end index
-      long ind2 = (values[2] ? values[2]->toInteger().getValue(len) : len);
+      long ind2 = (values[2] ? values[2]->toInteger().value_or(len) : len);
 
       if (ind2 < 0)
         ind2 = len + ind2;
@@ -563,8 +563,8 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
   else if (name == "split") {
     std::vector<std::string> strs;
 
-    COptString sstr;
-    CJRegExpP  regexp;
+    OptString sstr;
+    CJRegExpP regexp;
 
     if (values.size() > 1) {
       if (values[1] && values[1]->type() == CJToken::Type::RegExp)
@@ -573,19 +573,19 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
         sstr = (values[1] ? values[1]->toString() : std::string());
     }
 
-    COptLong limit;
+    OptLong limit;
 
     if (values.size() > 2) {
       if (! values[2] || js->isUndefinedOrNullValue(values[2]))
         limit = CJUtil::maxInteger();
       else
-        limit = values[2]->toInteger().getValue(0);
+        limit = values[2]->toInteger().value_or(0);
 
       if (limit < 0)
-        limit.setInvalid();
+        limit = OptInt();
     }
 
-    if      (! sstr.isValid() && ! regexp) {
+    if      (! sstr && ! regexp) {
       strs.push_back(str);
     }
     else if (regexp) {
@@ -597,28 +597,28 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
         std::string lhs = str1.substr(0, data.range.first);
         std::string rhs = str1.substr(data.range.second + 1);
 
-        if (! limit.isValid() || long(strs.size()) < limit.getValue(0))
+        if (! limit || long(strs.size()) < limit.value_or(0))
           strs.push_back(lhs);
 
         str1 = rhs;
       }
 
-      if (! limit.isValid() || long(strs.size()) < limit.getValue(0))
+      if (! limit || long(strs.size()) < limit.value_or(0))
         strs.push_back(str1);
     }
-    else if (sstr.isValid() && ! sstr.getValue().empty()) {
-      auto p = str.find(sstr.getValue());
+    else if (sstr && ! sstr.value().empty()) {
+      auto p = str.find(sstr.value());
 
       while (p != std::string::npos) {
-        if (! limit.isValid() || long(strs.size()) < limit.getValue(0))
+        if (! limit || long(strs.size()) < limit.value_or(0))
           strs.push_back(str.substr(0, p));
 
-        str = str.substr(p + sstr.getValue().size());
+        str = str.substr(p + sstr.value().size());
 
-        p = str.find(sstr.getValue());
+        p = str.find(sstr.value());
       }
 
-      if (! limit.isValid() || long(strs.size()) < limit.getValue(0))
+      if (! limit || long(strs.size()) < limit.value_or(0))
         strs.push_back(str);
     }
     else {
@@ -632,12 +632,12 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
         CUtf8::append(str1, c);
 
-        if (! limit.isValid() || long(strs.size()) < limit.getValue(0))
+        if (! limit || long(strs.size()) < limit.value_or(0))
           strs.push_back(str1);
       }
 
       if (strs.empty()) {
-        if (! limit.isValid() || long(strs.size()) < limit.getValue(0))
+        if (! limit || long(strs.size()) < limit.value_or(0))
           strs.push_back("");
       }
     }
@@ -662,7 +662,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     long start = 0;
 
     if (values.size() > 1) {
-      start = (values[1] ? values[1]->toInteger().getValue(0) : 0);
+      start = (values[1] ? values[1]->toInteger().value_or(0) : 0);
 
       if (start < 0)
         start += len;
@@ -674,7 +674,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     if (values.size() > 2) {
       // get length
-      long len1 = (values[2] ? values[2]->toInteger().getValue(len) : len);
+      long len1 = (values[2] ? values[2]->toInteger().value_or(len) : len);
 
       long end = start + len1;
 
@@ -699,7 +699,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     long ind1 = 0;
 
     if (values.size() > 1) {
-      ind1 = (values[1] ? values[1]->toInteger().getValue(0) : 0);
+      ind1 = (values[1] ? values[1]->toInteger().value_or(0) : 0);
 
       ind1 = CJUtil::clamp(ind1, 0L, len);
     }
@@ -710,7 +710,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     if (values.size() > 2) {
       // get end
-      long ind2 = (values[2] ? values[2]->toInteger().getValue(len) : len);
+      long ind2 = (values[2] ? values[2]->toInteger().value_or(len) : len);
 
       ind2 = CJUtil::clamp(ind2, 0L, len);
 
@@ -847,7 +847,7 @@ CJString::
 getProperty(CJavaScript *js, const std::string &key) const
 {
   if (key == "length")
-    return js->createNumberValue(length().getValue(0));
+    return js->createNumberValue(length().value_or(0));
 
   return CJObj::getProperty(js, key);
 }
@@ -864,20 +864,20 @@ setProperty(CJavaScript *js, const std::string &key, CJValueP value)
   CJObj::setProperty(js, key, value);
 }
 
-COptReal
+OptReal
 CJString::
 toReal() const
 {
-  COptReal real = parseFloat(text_);
+  OptReal real = parseFloat(text_);
 
   return real;
 }
 
-COptLong
+OptLong
 CJString::
 toInteger() const
 {
-  COptLong integer = parseInt(text_);
+  OptLong integer = parseInt(text_);
 
   return integer;
 }
@@ -886,12 +886,12 @@ bool
 CJString::
 toBoolean() const
 {
-  COptBool b = parseBool(text_);
+  OptBool b = parseBool(text_);
 
-  return b.getValue(false);
+  return b.value_or(false);
 }
 
-COptReal
+OptReal
 CJString::
 parseFloat(const std::string &text, bool extraChars)
 {
@@ -912,20 +912,20 @@ parseFloat(const std::string &text, bool extraChars)
 
   // Fail on empty string
   if (pos >= len)
-    return COptReal();
+    return OptReal();
 
   //---
 
   const char *p1 = &text[pos];
 
   if (strncmp(p1, "NaN", 3) == 0)
-    return COptReal(CJUtil::getNaN());
+    return OptReal(CJUtil::getNaN());
 
   if (strncmp(p1, "Infinity", 8) == 0)
-    return COptReal(CJUtil::getPosInf());
+    return OptReal(CJUtil::getPosInf());
 
   if (strncmp(p1, "-Infinity", 9) == 0)
-    return COptReal(CJUtil::getNegInf());
+    return OptReal(CJUtil::getNegInf());
 
   const char *p2;
 
@@ -934,25 +934,25 @@ parseFloat(const std::string &text, bool extraChars)
   double real = strtod(p1, (char **) &p2);
 
   if (errno == ERANGE)
-    return COptReal();
+    return OptReal();
 
   if (p1 == p2)
-    return COptReal();
+    return OptReal();
 
   while (*p2 != 0 && ::isspace(*p2))
     ++p2;
 
   if (*p2 != '\0') {
     if (! extraChars)
-      return COptReal();
+      return OptReal();
   }
 
-  return COptReal(real);
+  return OptReal(real);
 }
 
-COptLong
+OptLong
 CJString::
-parseInt(const std::string &text, const COptInt &base, bool extraChars)
+parseInt(const std::string &text, const OptInt &base, bool extraChars)
 {
   // skip leading space
   int pos = 0;
@@ -971,19 +971,19 @@ parseInt(const std::string &text, const COptInt &base, bool extraChars)
 
   // Fail on empty string
   if (pos >= len)
-    return COptLong();
+    return OptLong();
 
   //---
 
   long integer = 0;
 
-  if (! base.isValid()) {
+  if (! base) {
     if (text[pos] == '0' && (text[pos + 1] == 'x' || text[pos + 1] == 'X')) {
       pos += 2;
 
       std::string text1 = text.substr(pos);
 
-      return parseInt(text1, COptInt(16), extraChars);
+      return parseInt(text1, OptInt(16), extraChars);
     }
     else {
       const char *p1 = &text[pos];
@@ -994,24 +994,24 @@ parseInt(const std::string &text, const COptInt &base, bool extraChars)
       integer = strtol(p1, (char **) &p2, 10);
 
       if (errno == ERANGE)
-        return COptLong();
+        return OptLong();
 
       if (p1 == p2)
-        return COptLong();
+        return OptLong();
 
       while (*p2 != 0 && ::isspace(*p2))
         ++p2;
 
       if (*p2 != '\0') {
         if (! extraChars)
-          return COptLong();
+          return OptLong();
       }
     }
   }
   else {
     int sign = 1;
 
-    int base1 = base.getValue();
+    int base1 = base.value();
 
     if (pos < len) {
       int pos1 = pos;
@@ -1039,15 +1039,15 @@ parseInt(const std::string &text, const COptInt &base, bool extraChars)
     }
 
     if (nd == 0)
-      return COptLong();
+      return OptLong();
 
     integer *= sign;
   }
 
-  return COptLong(integer);
+  return OptLong(integer);
 }
 
-COptBool
+OptBool
 CJString::
 parseBool(const std::string &text, bool extraChars)
 {
@@ -1068,7 +1068,7 @@ parseBool(const std::string &text, bool extraChars)
 
   // Fail on empty string
   if (pos >= len)
-    return COptBool();
+    return OptBool();
 
   //---
 
@@ -1080,20 +1080,20 @@ parseBool(const std::string &text, bool extraChars)
   long integer = strtol(p1, (char **) &p2, 10);
 
   if (errno == ERANGE)
-    return COptBool();
+    return OptBool();
 
   if (p1 == p2)
-    return COptBool();
+    return OptBool();
 
   while (*p2 != 0 && ::isspace(*p2))
     ++p2;
 
   if (*p2 != '\0') {
     if (! extraChars)
-      return COptBool();
+      return OptBool();
   }
 
-  return COptBool(bool(integer));
+  return OptBool(bool(integer));
 }
 
 CJValueP
@@ -1134,11 +1134,11 @@ hasIndexValue(long ind) const
   return (ind >= 0 && ind < long(text_.length()));
 }
 
-COptLong
+OptLong
 CJString::
 length() const
 {
-  return COptLong(CUtf8::length(text_));
+  return OptLong(CUtf8::length(text_));
 }
 
 std::string

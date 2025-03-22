@@ -159,7 +159,7 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
   if (name == "setTimeout") {
     if (values.size() >= 2) {
       CJValueP fnValue = values[1];
-      double   t       = values[2]->toReal().getValue(0);
+      double   t       = values[2]->toReal().value_or(0);
 
       if (fnValue->type() == CJToken::Type::Function) {
         CJFunctionBaseP timerFn = CJValue::cast<CJFunctionBase>(fnValue);

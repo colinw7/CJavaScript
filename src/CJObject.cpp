@@ -184,10 +184,10 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
         return CJValueP();
 
       if      (obj->hasIndex()) {
-        COptLong ind = prop->toInteger();
+        OptLong ind = prop->toInteger();
 
-        if (ind.isValid())
-          setIndexPropertyValues(js, obj, ind.getValue(0), propValues);
+        if (ind)
+          setIndexPropertyValues(js, obj, ind.value_or(0), propValues);
         else {
           std::string ind1 = prop->toString();
 
@@ -331,7 +331,7 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
 
       //---
 
-      long len = array1->length().getValue(0);
+      long len = array1->length().value_or(0);
 
       for (int ind = 0; ind < len; ++ind) {
         CJValueP ivalue1 = js->createStringValue(std::to_string(ind));
@@ -502,7 +502,7 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
       if (ovalue->isArray())
         valueArray = CJValue::cast<CJArray>(ovalue);
 
-      long len = ovalue->length().getValue(0);
+      long len = ovalue->length().value_or(0);
 
       for (int ind = 0; ind < len; ++ind) {
         if (valueArray && ! valueArray->isEnumerableIndex(ind))
@@ -738,12 +738,12 @@ setIndexPropertyValues(CJavaScript *js, CJValueP obj, int ind, const PropertyVal
   else if (propValues.value)
     obj->setIndexValue(ind, propValues.value);
 
-  if (propValues.writable    .isValid())
-    obj->setWritableIndex    (ind, propValues.writable    .getValue());
-  if (propValues.enumerable  .isValid())
-    obj->setEnumerableIndex  (ind, propValues.enumerable  .getValue());
-  if (propValues.configurable.isValid())
-    obj->setConfigurableIndex(ind, propValues.configurable.getValue());
+  if (propValues.writable    )
+    obj->setWritableIndex    (ind, propValues.writable    .value());
+  if (propValues.enumerable  )
+    obj->setEnumerableIndex  (ind, propValues.enumerable  .value());
+  if (propValues.configurable)
+    obj->setConfigurableIndex(ind, propValues.configurable.value());
 }
 
 void
@@ -771,20 +771,20 @@ setNamePropertyValues(CJavaScript *js, CJValueP obj, const std::string &ind,
     objDict = CJValue::cast<CJDictionary>(obj);
 
   if      (objObj) {
-    if (propValues.writable    .isValid())
-      objObj->setWritableProperty    (ind, propValues.writable    .getValue());
-    if (propValues.enumerable  .isValid())
-      objObj->setEnumerableProperty  (ind, propValues.enumerable  .getValue());
-    if (propValues.configurable.isValid())
-      objObj->setConfigurableProperty(ind, propValues.configurable.getValue());
+    if (propValues.writable    )
+      objObj->setWritableProperty    (ind, propValues.writable    .value());
+    if (propValues.enumerable  )
+      objObj->setEnumerableProperty  (ind, propValues.enumerable  .value());
+    if (propValues.configurable)
+      objObj->setConfigurableProperty(ind, propValues.configurable.value());
   }
   else if (objDict) {
-    if (propValues.writable    .isValid())
-      objDict->setWritableProperty    (ind, propValues.writable    .getValue());
-    if (propValues.enumerable  .isValid())
-      objDict->setEnumerableProperty  (ind, propValues.enumerable  .getValue());
-    if (propValues.configurable.isValid())
-      objDict->setConfigurableProperty(ind, propValues.configurable.getValue());
+    if (propValues.writable    )
+      objDict->setWritableProperty    (ind, propValues.writable    .value());
+    if (propValues.enumerable  )
+      objDict->setEnumerableProperty  (ind, propValues.enumerable  .value());
+    if (propValues.configurable)
+      objDict->setConfigurableProperty(ind, propValues.configurable.value());
   }
 
   if      (propValues.getter || propValues.setter) {
@@ -836,14 +836,14 @@ dup(CJavaScript *) const
   return new CJObject(*this);
 }
 
-COptLong
+OptLong
 CJObject::
 length() const
 {
   CJValueP lenValue = propertyValue("length");
 
   if (! lenValue)
-    return COptLong();
+    return OptLong();
 
   return lenValue->toInteger();
 }

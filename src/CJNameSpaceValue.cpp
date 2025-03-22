@@ -22,22 +22,22 @@ toString() const
   return (v ? v->toString() : "");
 }
 
-COptReal
+OptReal
 CJNameSpaceValue::
 toReal() const
 {
   CJValueP v = value();
 
-  return (v ? v->toReal() : COptReal());
+  return (v ? v->toReal() : OptReal());
 }
 
-COptLong
+OptLong
 CJNameSpaceValue::
 toInteger() const
 {
   CJValueP v = value();
 
-  return (v ? v->toInteger() : COptLong());
+  return (v ? v->toInteger() : OptLong());
 }
 
 bool

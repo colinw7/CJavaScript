@@ -194,7 +194,7 @@ CJRegExp::
 setProperty(CJavaScript *js, const std::string &key, CJValueP value)
 {
   if      (key == "lastIndex")
-    setLastIndex(value->toInteger().getValue(0));
+    setLastIndex(value->toInteger().value_or(0));
   else if (key == "ignoreCase")
     setIgnoreCase(value->toBoolean());
   else if (key == "global")

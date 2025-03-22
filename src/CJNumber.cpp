@@ -119,7 +119,7 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
     bool b = false;
 
     if (values.size() > 1) {
-      double r = values[1]->toReal().getValue(0.0);
+      double r = values[1]->toReal().value_or(0.0);
 
       b = (! CJUtil::isNaN(r) && ! CJUtil::isPosInf(r) && ! CJUtil::isNegInf(r));
     }
@@ -130,7 +130,7 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
     bool b = false;
 
     if (values.size() > 1) {
-      double r = values[1]->toReal().getValue(0.0);
+      double r = values[1]->toReal().value_or(0.0);
 
       b = CJUtil::isInteger(r);
     }
@@ -141,7 +141,7 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
     bool b = false;
 
     if (values.size() > 1) {
-      double r = values[1]->toReal().getValue(0.0);
+      double r = values[1]->toReal().value_or(0.0);
 
       b = CJUtil::isNaN(r);
     }
@@ -152,7 +152,7 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
     bool b = false;
 
     if (values.size() > 1) {
-      double r = values[1]->toReal().getValue(0.0);
+      double r = values[1]->toReal().value_or(0.0);
 
       b = (r >= CJUtil::minSafeInteger() && r <= CJUtil::maxSafeInteger());
     }
@@ -163,9 +163,9 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
     if (values.size() <= 1)
       return js->createNumberValue(CJUtil::getNaN());
 
-    COptReal real = CJString::parseFloat(values[1]->toString(), /*extraChars*/true);
+    OptReal real = CJString::parseFloat(values[1]->toString(), /*extraChars*/true);
 
-    return js->createNumberValue(real.getValue(CJUtil::getNaN()));
+    return js->createNumberValue(real.value_or(CJUtil::getNaN()));
   }
   else if (name == "parseInt") {
     if (values.size() <= 1)
@@ -173,20 +173,20 @@ execType(CJavaScript *js, const std::string &name, const Values &values)
 
     std::string str = (values[1] ? values[1]->toString() : std::string());
 
-    COptInt base;
+    OptInt base;
 
     if (values.size() > 1 && values[1])
-      base = values[1]->toInteger().getValue(0);
+      base = values[1]->toInteger().value_or(0);
 
-    if (base.isValid() && (base.getValue() < 2 || base.getValue() > 36)) {
+    if (base && (base.value() < 2 || base.value() > 36)) {
       js->throwRangeError(values[0], "Invalid base value");
       return js->createNumberValue(CJUtil::getNaN());
     }
 
-    COptLong integer = CJString::parseInt(values[1]->toString(), base, /*extraChars*/true);
+    OptLong integer = CJString::parseInt(values[1]->toString(), base, /*extraChars*/true);
 
-    if (integer.isValid())
-      return js->createNumberValue(integer.getValue());
+    if (integer)
+      return js->createNumberValue(integer.value());
     else
       return js->createNumberValue(CJUtil::getNaN());
   }
@@ -213,7 +213,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
   // object functions
   if      (name == "toExponential") {
-    double r = num->toReal().getValue(0.0);
+    double r = num->toReal().value_or(0.0);
 
     if      (CJUtil::isNaN(r))
       return js->createStringValue("NaN");
@@ -225,7 +225,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     long n = 0;
 
     if (values.size() > 1)
-      n = values[1]->toInteger().getValue(0);
+      n = values[1]->toInteger().value_or(0);
     else {
       double r1 = std::abs(r);
 
@@ -310,7 +310,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return js->createStringValue(str);
   }
   else if (name == "toFixed") {
-    double x = num->toReal().getValue(0.0);
+    double x = num->toReal().value_or(0.0);
 
     if      (CJUtil::isNaN(x))
       return js->createStringValue("NaN");
@@ -322,7 +322,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     long f = 0;
 
     if (values.size() > 1)
-      f = values[1]->toInteger().getValue(0);
+      f = values[1]->toInteger().value_or(0);
 
     if (f < 0 || f > 20) {
       js->throwRangeError(values[0], "Invalid digits value");
@@ -377,7 +377,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     return js->createStringValue(num->toString());
   }
   else if (name == "toPrecision") {
-    double x = num->toReal().getValue(0.0);
+    double x = num->toReal().value_or(0.0);
 
     if      (CJUtil::isNaN(x))
       return js->createStringValue("NaN");
@@ -386,13 +386,13 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     else if (CJUtil::isPosInf(x))
       return js->createStringValue("Infinity");
 
-    COptLong precision;
+    OptLong precision;
 
     if (values.size() > 1)
       precision = values[1]->toInteger();
 
-    if (precision.isValid()) {
-      long p = precision.getValue();
+    if (precision) {
+      long p = precision.value();
 
       std::string s;
 
@@ -514,17 +514,17 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     }
   }
   else if (name == "toString") {
-    double r = num->toReal().getValue(0.0);
+    double r = num->toReal().value_or(0.0);
 
-    COptLong base;
+    OptLong base;
 
     if (values.size() > 1)
       base = values[1]->toInteger();
 
     std::string str;
 
-    if (base.isValid()) {
-      int ibase = base.getValue(0);
+    if (base) {
+      int ibase = base.value_or(0);
 
       if (ibase < 2 || ibase > 36) {
         js->throwRangeError(values[0], "Invalid base value");
@@ -569,7 +569,7 @@ toString() const
     return realString();
 }
 
-COptLong
+OptLong
 CJNumber::
 toInteger() const
 {
@@ -590,7 +590,7 @@ toInteger() const
   else
     l = -long(-real_);
 
-  return COptLong(l);
+  return OptLong(l);
 }
 
 std::string

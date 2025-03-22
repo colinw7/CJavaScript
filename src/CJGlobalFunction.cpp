@@ -93,7 +93,7 @@ exec(CJavaScript *js, const Values &values)
       return CJValueP();
     }
 
-    double r = (values[0] ? values[0]->toReal().getValue(0.0) : 0.0);
+    double r = (values[0] ? values[0]->toReal().value_or(0.0) : 0.0);
 
     return js->createBoolValue(! CJUtil::isInf(r) && ! CJUtil::isNaN(r));
   }
@@ -103,7 +103,7 @@ exec(CJavaScript *js, const Values &values)
       return CJValueP();
     }
 
-    double r = (values[0] ? values[0]->toReal().getValue(0.0) : 0.0);
+    double r = (values[0] ? values[0]->toReal().value_or(0.0) : 0.0);
 
     return js->createBoolValue(CJUtil::isNaN(r));
   }
@@ -113,18 +113,18 @@ exec(CJavaScript *js, const Values &values)
 
     std::string str = (values[0] ? values[0]->toString() : std::string());
 
-    COptInt base;
+    OptInt base;
 
     if (values.size() > 1 && values[1])
-      base = values[1]->toInteger().getValue(0);
+      base = values[1]->toInteger().value_or(0);
 
-    if (base.isValid() && (base.getValue() < 2 || base.getValue() > 36))
+    if (base && (base.value() < 2 || base.value() > 36))
       return js->createNumberValue(CJUtil::getNaN());
 
-    COptLong integer = CJString::parseInt(str, base, /*extraChars*/true);
+    OptLong integer = CJString::parseInt(str, base, /*extraChars*/true);
 
-    if (integer.isValid())
-      return js->createNumberValue(integer.getValue());
+    if (integer)
+      return js->createNumberValue(integer.value());
     else
       return js->createNumberValue(CJUtil::getNaN());
   }
@@ -134,9 +134,9 @@ exec(CJavaScript *js, const Values &values)
 
     std::string str = (values[0] ? values[0]->toString() : std::string());
 
-    COptReal real = CJString::parseFloat(str, /*extraChars*/true);
+    OptReal real = CJString::parseFloat(str, /*extraChars*/true);
 
-    return js->createNumberValue(real.getValue(CJUtil::getNaN()));
+    return js->createNumberValue(real.value_or(CJUtil::getNaN()));
   }
   else if (name_ == "unescape" || name_ == "decodeURI" || name_ == "decodeURIComponent") {
     if (values.size() < 1) {
@@ -156,47 +156,47 @@ exec(CJavaScript *js, const Values &values)
       if (c == '%') {
         long l = 0;
 
-        COptULong c1 = (pos < len ? COptULong(CUtf8::readNextChar(str, pos, len)) : COptULong());
+        OptULong c1 = (pos < len ? OptULong(CUtf8::readNextChar(str, pos, len)) : OptULong());
 
         if (c1 == 'u') {
-          COptULong c2 = (pos < len ? COptULong(CUtf8::readNextChar(str, pos, len)) : COptULong());
-          COptULong c3 = (pos < len ? COptULong(CUtf8::readNextChar(str, pos, len)) : COptULong());
-          COptULong c4 = (pos < len ? COptULong(CUtf8::readNextChar(str, pos, len)) : COptULong());
-          COptULong c5 = (pos < len ? COptULong(CUtf8::readNextChar(str, pos, len)) : COptULong());
+          OptULong c2 = (pos < len ? OptULong(CUtf8::readNextChar(str, pos, len)) : OptULong());
+          OptULong c3 = (pos < len ? OptULong(CUtf8::readNextChar(str, pos, len)) : OptULong());
+          OptULong c4 = (pos < len ? OptULong(CUtf8::readNextChar(str, pos, len)) : OptULong());
+          OptULong c5 = (pos < len ? OptULong(CUtf8::readNextChar(str, pos, len)) : OptULong());
 
-          if (c2.isValid() && c3.isValid() && c4.isValid() && c5.isValid() &&
-              isxdigit(c2.getValue()) && isxdigit(c3.getValue()) &&
-              isxdigit(c4.getValue()) && isxdigit(c5.getValue())) {
-            l = (CJUtil::hexCharValue(c2.getValue()) << 12) |
-                (CJUtil::hexCharValue(c3.getValue()) << 8 ) |
-                (CJUtil::hexCharValue(c4.getValue()) << 4 ) |
-                 CJUtil::hexCharValue(c5.getValue());
+          if (c2 && c3 && c4 && c5 &&
+              isxdigit(c2.value()) && isxdigit(c3.value()) &&
+              isxdigit(c4.value()) && isxdigit(c5.value())) {
+            l = (CJUtil::hexCharValue(c2.value()) << 12) |
+                (CJUtil::hexCharValue(c3.value()) << 8 ) |
+                (CJUtil::hexCharValue(c4.value()) << 4 ) |
+                 CJUtil::hexCharValue(c5.value());
           }
           else {
             CUtf8::append(str1, c );
 
-            if (c1.isValid()) CUtf8::append(str1, c1.getValue());
-            if (c2.isValid()) CUtf8::append(str1, c2.getValue());
-            if (c3.isValid()) CUtf8::append(str1, c3.getValue());
-            if (c4.isValid()) CUtf8::append(str1, c4.getValue());
-            if (c5.isValid()) CUtf8::append(str1, c5.getValue());
+            if (c1) CUtf8::append(str1, c1.value());
+            if (c2) CUtf8::append(str1, c2.value());
+            if (c3) CUtf8::append(str1, c3.value());
+            if (c4) CUtf8::append(str1, c4.value());
+            if (c5) CUtf8::append(str1, c5.value());
 
             continue;
           }
         }
         else {
-          COptULong c2 = (pos < len ? COptULong(CUtf8::readNextChar(str, pos, len)) : COptULong());
+          OptULong c2 = (pos < len ? OptULong(CUtf8::readNextChar(str, pos, len)) : OptULong());
 
-          if (c1.isValid() && c2.isValid() &&
-              isxdigit(c1.getValue()) && isxdigit(c2.getValue())) {
-            l = (CJUtil::hexCharValue(c1.getValue()) << 4) |
-                 CJUtil::hexCharValue(c2.getValue());
+          if (c1 && c2 &&
+              isxdigit(c1.value()) && isxdigit(c2.value())) {
+            l = (CJUtil::hexCharValue(c1.value()) << 4) |
+                 CJUtil::hexCharValue(c2.value());
           }
           else {
             CUtf8::append(str1, c );
 
-            if (c1.isValid()) CUtf8::append(str1, c1.getValue());
-            if (c2.isValid()) CUtf8::append(str1, c2.getValue());
+            if (c1) CUtf8::append(str1, c1.value());
+            if (c2) CUtf8::append(str1, c2.value());
 
             continue;
           }

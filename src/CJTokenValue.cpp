@@ -53,18 +53,18 @@ toString() const
     return "";
 }
 
-COptLong
+OptLong
 CJTokenValue::
 toInteger() const
 {
-  return (value_ ? value_->toInteger() : COptLong());
+  return (value_ ? value_->toInteger() : OptLong());
 }
 
-COptReal
+OptReal
 CJTokenValue::
 toReal() const
 {
-  return (value_ ? value_->toReal() : COptReal());
+  return (value_ ? value_->toReal() : OptReal());
 }
 
 bool

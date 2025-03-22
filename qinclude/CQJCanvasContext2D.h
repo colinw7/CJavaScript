@@ -35,7 +35,7 @@ class CQJCanvasContext2D : public CJObj {
     return ss.str();
   }
 
-  COptReal toReal() const override { return COptReal(0); }
+  OptReal toReal() const override { return OptReal(0); }
 
   bool toBoolean() const override { return 0; }
 

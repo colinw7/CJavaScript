@@ -74,7 +74,7 @@ setIndexValue(long i, CJValueP value)
   int y = i1 / w;
   int x = i1 % w;
 
-  long c = value->toInteger().getValue(0L);
+  long c = value->toInteger().value_or(0L);
 
   QRgb rgb = data_->getPixel(x, y);
 

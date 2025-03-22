@@ -33,10 +33,10 @@ class CJUserObject : public CJObj {
   //---
 
   // TODO: call object valueOf method and convert return value to real
-  COptReal toReal() const override { return CJObj::toReal(); }
+  OptReal toReal() const override { return CJObj::toReal(); }
 
   // TODO: call object valueOf method and convert return value to integer
-  COptLong toInteger() const override { return CJObj::toInteger(); }
+  OptLong toInteger() const override { return CJObj::toInteger(); }
 
   // TODO: call object valueOf method and convert return value to bool
   bool toBoolean() const override { return CJObj::toBoolean(); }

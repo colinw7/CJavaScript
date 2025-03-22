@@ -31,9 +31,9 @@ class CJUndefined : public CJValue {
 
   //---
 
-  COptLong toInteger() const override { return COptLong(); }
+  OptLong toInteger() const override { return OptLong(); }
 
-  COptReal toReal() const override { return COptReal(); }
+  OptReal toReal() const override { return OptReal(); }
 
   bool toBoolean() const override { return false; }
 

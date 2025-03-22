@@ -36,7 +36,7 @@ execNameFn(CJavaScript *, const std::string &name, const Values &values)
 {
   if      (name == "addColorStop") {
     if (values.size() == 3) {
-      double      r         = values[1]->toReal().getValue(0);
+      double      r         = values[1]->toReal().value_or(0);
       std::string colorName = values[2]->toString();
 
       QColor c = CQJUtil::nameToColor(colorName);

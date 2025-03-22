@@ -264,10 +264,10 @@ class CJavaScript {
 
   //---
 
-  COptInt rcmp     (CJValueP  value1 , CJValueP  value2 ) const;
-  COptInt cmpArray (CJArrayP  array1 , CJArrayP  array2 ) const;
-  COptInt cmpObject(CJObjectP object1, CJObjectP object2) const;
-  COptInt cmp      (CJValueP  value1 , CJValueP  value2 ) const;
+  OptInt rcmp     (CJValueP  value1 , CJValueP  value2 ) const;
+  OptInt cmpArray (CJArrayP  array1 , CJArrayP  array2 ) const;
+  OptInt cmpObject(CJObjectP object1, CJObjectP object2) const;
+  OptInt cmp      (CJValueP  value1 , CJValueP  value2 ) const;
 
   //---
 

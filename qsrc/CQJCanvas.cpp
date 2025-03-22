@@ -85,10 +85,10 @@ CQJCanvas::
 setProperty(CJavaScript *js, const std::string &name, CJValueP value)
 {
   if      (name == "width") {
-    iface_->setWidth(value->toInteger().getValue(1));
+    iface_->setWidth(value->toInteger().value_or(1));
   }
   else if (name == "height") {
-    iface_->setHeight(value->toInteger().getValue(1));
+    iface_->setHeight(value->toInteger().value_or(1));
   }
   else
     CQJHtmlObj::setProperty(js, name, value);

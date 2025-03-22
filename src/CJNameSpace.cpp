@@ -154,7 +154,7 @@ getRealProperty(CJavaScript *js, const std::string &key, double def) const
   CJValueP v = getProperty(js, key);
   if (! v) return def;
 
-  return v->toReal().getValue(0.0);
+  return v->toReal().value_or(0.0);
 }
 
 CJNameSpace::Names

@@ -14,25 +14,25 @@ CJValue(const CJValue &v) :
 {
 }
 
-COptLong
+OptLong
 CJValue::
 toInteger() const
 {
-  COptReal optReal = toReal();
+  OptReal optReal = toReal();
 
-  if (! optReal.isValid())
-    return COptLong();
+  if (! optReal)
+    return OptLong();
 
-  double r = optReal.getValue();
+  double r = optReal.value();
 
   if (CJUtil::isNaN(r))
-    return COptLong(0);
+    return OptLong(0);
 
   if (CJUtil::isPosInf(r))
-    return COptLong(CJUtil::maxInteger());
+    return OptLong(CJUtil::maxInteger());
 
   if (CJUtil::isNegInf(r))
-    return COptLong(CJUtil::minInteger());
+    return OptLong(CJUtil::minInteger());
 
-  return COptLong(long(r));
+  return OptLong(long(r));
 }

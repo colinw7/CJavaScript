@@ -22,7 +22,7 @@ exec(CJavaScript *js, const Values &values)
 
   // create timer to run proc every n miliseconds
   std::string proc     = values[0]->toString();
-  double      interval = values[1]->toReal().getValue(0.0);
+  double      interval = values[1]->toReal().value_or(0.0);
 
   long timer = js->setInterval(proc, interval);
 
@@ -50,7 +50,7 @@ exec(CJavaScript *js, const Values &values)
   if (values.size() != 1)
     return CJValueP();
 
-  long timer = values[0]->toInteger().getValue(0);
+  long timer = values[0]->toInteger().value_or(0);
 
   js->clearInterval(timer);
 

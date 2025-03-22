@@ -23,10 +23,10 @@ exec(CJavaScript *js, const Values &values)
   if (values.size() <= 1)
     return js->createNumberValue(0L);
 
-  COptReal r = values[1]->toReal();
+  OptReal r = values[1]->toReal();
 
-  if (r.isValid())
-    number = js->createNumberValue(r.getValue());
+  if (r)
+    number = js->createNumberValue(r.value());
   else
     number = js->createNumberValue(CJUtil::getNaN());
 
@@ -43,7 +43,7 @@ execNew(CJavaScript *js, const Values &values)
   if (values.size() <= 1)
     number = js->createNumberObject(0L);
   else {
-    double r = values[1]->toReal().getValue(0.0);
+    double r = values[1]->toReal().value_or(0.0);
 
     number = js->createNumberObject(r);
   }

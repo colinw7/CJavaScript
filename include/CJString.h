@@ -2,7 +2,6 @@
 #define CJString_H
 
 #include <CJObj.h>
-#include <COptVal.h>
 
 // String Type
 class CJStringType : public CJObjType {
@@ -27,10 +26,10 @@ class CJStringType : public CJObjType {
 // String Value
 class CJString : public CJObj {
  public:
-  static COptReal parseFloat(const std::string &text, bool extraChars=false);
-  static COptLong parseInt  (const std::string &text, const COptInt &base=COptInt(),
-                             bool extraChars=false);
-  static COptBool parseBool (const std::string &text, bool extraChars=false);
+  static OptReal parseFloat(const std::string &text, bool extraChars=false);
+  static OptLong parseInt  (const std::string &text, const OptInt &base=OptInt(),
+                            bool extraChars=false);
+  static OptBool parseBool (const std::string &text, bool extraChars=false);
 
  public:
   CJString(CJavaScript *js, const std::string &text="", char c='\"');
@@ -49,8 +48,8 @@ class CJString : public CJObj {
 
   //---
 
-  COptReal toReal   () const override;
-  COptLong toInteger() const override;
+  OptReal toReal   () const override;
+  OptLong toInteger() const override;
 
   bool toBoolean() const override;
 
@@ -62,7 +61,7 @@ class CJString : public CJObj {
   void setIndexValue(long ind, CJValueP value) override;
   void deleteIndexValue(long ind) override;
 
-  COptLong length() const override;
+  OptLong length() const override;
 
   std::string substr(long ind) const;
   std::string substr(long ind, long n) const;

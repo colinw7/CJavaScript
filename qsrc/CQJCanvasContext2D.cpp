@@ -105,10 +105,10 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
     initFill();
 
     if (values.size() == 5) {
-      double x = (values[1] ? values[1]->toReal().getValue(0) : 0);
-      double y = (values[2] ? values[2]->toReal().getValue(0) : 0);
-      double w = (values[3] ? values[3]->toReal().getValue(0) : 0);
-      double h = (values[4] ? values[4]->toReal().getValue(0) : 0);
+      double x = (values[1] ? values[1]->toReal().value_or(0) : 0);
+      double y = (values[2] ? values[2]->toReal().value_or(0) : 0);
+      double w = (values[3] ? values[3]->toReal().value_or(0) : 0);
+      double h = (values[4] ? values[4]->toReal().value_or(0) : 0);
 
       canvas->fillRect(x, y, w, h);
 
@@ -121,10 +121,10 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
     initStroke();
 
     if (values.size() == 5) {
-      double x = (values[1] ? values[1]->toReal().getValue(0) : 0);
-      double y = (values[2] ? values[2]->toReal().getValue(0) : 0);
-      double w = (values[3] ? values[3]->toReal().getValue(0) : 0);
-      double h = (values[4] ? values[4]->toReal().getValue(0) : 0);
+      double x = (values[1] ? values[1]->toReal().value_or(0) : 0);
+      double y = (values[2] ? values[2]->toReal().value_or(0) : 0);
+      double w = (values[3] ? values[3]->toReal().value_or(0) : 0);
+      double h = (values[4] ? values[4]->toReal().value_or(0) : 0);
 
       canvas->beginPath();
 
@@ -144,10 +144,10 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
   }
   else if (name == "clearRect") {
     if (values.size() == 5) {
-      double x = (values[1] ? values[1]->toReal().getValue(0) : 0.0);
-      double y = (values[2] ? values[2]->toReal().getValue(0) : 0.0);
-      double w = (values[3] ? values[3]->toReal().getValue(0) : 0.0);
-      double h = (values[4] ? values[4]->toReal().getValue(0) : 0.0);
+      double x = (values[1] ? values[1]->toReal().value_or(0) : 0.0);
+      double y = (values[2] ? values[2]->toReal().value_or(0) : 0.0);
+      double w = (values[3] ? values[3]->toReal().value_or(0) : 0.0);
+      double h = (values[4] ? values[4]->toReal().value_or(0) : 0.0);
 
       canvas->clearRect(x, y, w, h);
 
@@ -170,8 +170,8 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
 
     if (values.size() == 4) {
       std::string text = (values[1] ? values[1]->toString() : "");
-      double      x    = (values[2] ? values[2]->toReal().getValue(0) : 0.0);
-      double      y    = (values[3] ? values[3]->toReal().getValue(0) : 0.0);
+      double      x    = (values[2] ? values[2]->toReal().value_or(0) : 0.0);
+      double      y    = (values[3] ? values[3]->toReal().value_or(0) : 0.0);
 
       double shadowBlur = getRealProperty(js, "shadowBlur", 0);
 
@@ -198,8 +198,8 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
 
     if (values.size() == 4) {
       std::string text = (values[1] ? values[1]->toString() : "");
-      double      x    = (values[2] ? values[2]->toReal().getValue(0) : 0.0);
-      double      y    = (values[3] ? values[3]->toReal().getValue(0) : 0.0);
+      double      x    = (values[2] ? values[2]->toReal().value_or(0) : 0.0);
+      double      y    = (values[3] ? values[3]->toReal().value_or(0) : 0.0);
 
       canvas->strokeText(x, y, text);
 
@@ -216,23 +216,23 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
       double dx = 0.0, dy = 0.0, dWidth = 0.0, dHeight = 0.0;
 
       if      (values.size() == 4 || values.size() == 6) {
-        dx = (values[2] ? values[2]->toReal().getValue(0) : 0.0);
-        dy = (values[3] ? values[3]->toReal().getValue(0) : 0.0);
+        dx = (values[2] ? values[2]->toReal().value_or(0) : 0.0);
+        dy = (values[3] ? values[3]->toReal().value_or(0) : 0.0);
 
         if (values.size() == 6) {
-          dWidth  = (values[4] ? values[4]->toReal().getValue(0) : 0.0);
-          dHeight = (values[5] ? values[5]->toReal().getValue(0) : 0.0);
+          dWidth  = (values[4] ? values[4]->toReal().value_or(0) : 0.0);
+          dHeight = (values[5] ? values[5]->toReal().value_or(0) : 0.0);
         }
       }
       else if (values.size() == 10) {
-        sx      = (values[2] ? values[2]->toReal().getValue(0) : 0.0);
-        sy      = (values[3] ? values[3]->toReal().getValue(0) : 0.0);
-        sWidth  = (values[4] ? values[4]->toReal().getValue(0) : 0.0);
-        sHeight = (values[5] ? values[5]->toReal().getValue(0) : 0.0);
-        dx      = (values[6] ? values[6]->toReal().getValue(0) : 0.0);
-        dy      = (values[7] ? values[7]->toReal().getValue(0) : 0.0);
-        dWidth  = (values[8] ? values[8]->toReal().getValue(0) : 0.0);
-        dHeight = (values[9] ? values[9]->toReal().getValue(0) : 0.0);
+        sx      = (values[2] ? values[2]->toReal().value_or(0) : 0.0);
+        sy      = (values[3] ? values[3]->toReal().value_or(0) : 0.0);
+        sWidth  = (values[4] ? values[4]->toReal().value_or(0) : 0.0);
+        sHeight = (values[5] ? values[5]->toReal().value_or(0) : 0.0);
+        dx      = (values[6] ? values[6]->toReal().value_or(0) : 0.0);
+        dy      = (values[7] ? values[7]->toReal().value_or(0) : 0.0);
+        dWidth  = (values[8] ? values[8]->toReal().value_or(0) : 0.0);
+        dHeight = (values[9] ? values[9]->toReal().value_or(0) : 0.0);
       }
 
       QImage qimage;
@@ -281,8 +281,8 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
   }
   else if (name == "moveTo") {
     if (values.size() == 3) {
-      double x = (values[1] ? values[1]->toReal().getValue(0) : 0);
-      double y = (values[2] ? values[2]->toReal().getValue(0) : 0);
+      double x = (values[1] ? values[1]->toReal().value_or(0) : 0);
+      double y = (values[2] ? values[2]->toReal().value_or(0) : 0);
 
       canvas->moveTo(x, y);
 
@@ -291,8 +291,8 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
   }
   else if (name == "lineTo") {
     if (values.size() == 3) {
-      double x = (values[1] ? values[1]->toReal().getValue(0) : 0);
-      double y = (values[2] ? values[2]->toReal().getValue(0) : 0);
+      double x = (values[1] ? values[1]->toReal().value_or(0) : 0);
+      double y = (values[2] ? values[2]->toReal().value_or(0) : 0);
 
       canvas->lineTo(x, y);
 
@@ -301,11 +301,11 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
   }
   else if (name == "arc") {
     if (values.size() >= 6) {
-      double x  = (values[1] ? values[1]->toReal().getValue(0) : 0);
-      double y  = (values[2] ? values[2]->toReal().getValue(0) : 0);
-      double r  = (values[3] ? values[3]->toReal().getValue(0) : 0);
-      double a1 = (values[4] ? values[4]->toReal().getValue(0) : 0);
-      double a2 = (values[5] ? values[5]->toReal().getValue(0) : 0);
+      double x  = (values[1] ? values[1]->toReal().value_or(0) : 0);
+      double y  = (values[2] ? values[2]->toReal().value_or(0) : 0);
+      double r  = (values[3] ? values[3]->toReal().value_or(0) : 0);
+      double a1 = (values[4] ? values[4]->toReal().value_or(0) : 0);
+      double a2 = (values[5] ? values[5]->toReal().value_or(0) : 0);
 
       bool counter = false;
 
@@ -352,10 +352,10 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
   }
   else if (name == "rect") {
     if (values.size() == 5) {
-      double x = (values[1] ? values[1]->toReal().getValue(0) : 0);
-      double y = (values[2] ? values[2]->toReal().getValue(0) : 0);
-      double w = (values[3] ? values[3]->toReal().getValue(0) : 0);
-      double h = (values[4] ? values[4]->toReal().getValue(0) : 0);
+      double x = (values[1] ? values[1]->toReal().value_or(0) : 0);
+      double y = (values[2] ? values[2]->toReal().value_or(0) : 0);
+      double w = (values[3] ? values[3]->toReal().value_or(0) : 0);
+      double h = (values[4] ? values[4]->toReal().value_or(0) : 0);
 
       canvas->rect(x, y, w, h);
 
@@ -373,12 +373,12 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
   }
   else if (name == "setTransform") {
     if (values.size() == 7) {
-      double a = (values[1] ? values[1]->toReal().getValue(0) : 0);
-      double b = (values[2] ? values[2]->toReal().getValue(0) : 0);
-      double c = (values[3] ? values[3]->toReal().getValue(0) : 0);
-      double d = (values[4] ? values[4]->toReal().getValue(0) : 0);
-      double e = (values[5] ? values[5]->toReal().getValue(0) : 0);
-      double f = (values[6] ? values[6]->toReal().getValue(0) : 0);
+      double a = (values[1] ? values[1]->toReal().value_or(0) : 0);
+      double b = (values[2] ? values[2]->toReal().value_or(0) : 0);
+      double c = (values[3] ? values[3]->toReal().value_or(0) : 0);
+      double d = (values[4] ? values[4]->toReal().value_or(0) : 0);
+      double e = (values[5] ? values[5]->toReal().value_or(0) : 0);
+      double f = (values[6] ? values[6]->toReal().value_or(0) : 0);
 
       canvas->setTransform(a, b, c, d, e, f);
 
@@ -387,8 +387,8 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
   }
   else if (name == "translate") {
     if (values.size() == 3) {
-      double dx = (values[1] ? values[1]->toReal().getValue(0) : 0);
-      double dy = (values[1] ? values[2]->toReal().getValue(0) : 0);
+      double dx = (values[1] ? values[1]->toReal().value_or(0) : 0);
+      double dy = (values[1] ? values[2]->toReal().value_or(0) : 0);
 
       canvas->translate(dx, dy);
 
@@ -397,8 +397,8 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
   }
   else if (name == "scale") {
     if (values.size() == 3) {
-      double xs = (values[1] ? values[1]->toReal().getValue(0) : 0);
-      double ys = (values[2] ? values[2]->toReal().getValue(0) : 0);
+      double xs = (values[1] ? values[1]->toReal().value_or(0) : 0);
+      double ys = (values[2] ? values[2]->toReal().value_or(0) : 0);
 
       canvas->scale(xs, ys);
 
@@ -407,7 +407,7 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
   }
   else if (name == "rotate") {
     if (values.size() == 2) {
-      double a = (values[1] ? values[1]->toReal().getValue(0): 0);
+      double a = (values[1] ? values[1]->toReal().value_or(0): 0);
 
       canvas->rotate(a);
 
@@ -416,22 +416,22 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
   }
   else if (name == "createLinearGradient") {
     if (values.size() == 5) {
-      double x1 = (values[1] ? values[1]->toReal().getValue(0) : 0);
-      double y1 = (values[2] ? values[2]->toReal().getValue(0) : 0);
-      double x2 = (values[3] ? values[3]->toReal().getValue(0) : 0);
-      double y2 = (values[4] ? values[4]->toReal().getValue(0) : 0);
+      double x1 = (values[1] ? values[1]->toReal().value_or(0) : 0);
+      double y1 = (values[2] ? values[2]->toReal().value_or(0) : 0);
+      double x2 = (values[3] ? values[3]->toReal().value_or(0) : 0);
+      double y2 = (values[4] ? values[4]->toReal().value_or(0) : 0);
 
       return CJValueP(new CQJCanvasLinearGradient(js, x1, y1, x2, y2));
     }
   }
   else if (name == "createRadialGradient") {
     if (values.size() == 7) {
-      double x1 = (values[1] ? values[1]->toReal().getValue(0) : 0);
-      double y1 = (values[2] ? values[2]->toReal().getValue(0) : 0);
-      double r1 = (values[3] ? values[3]->toReal().getValue(0) : 0);
-      double x2 = (values[4] ? values[4]->toReal().getValue(0) : 0);
-      double y2 = (values[5] ? values[5]->toReal().getValue(0) : 0);
-      double r2 = (values[6] ? values[6]->toReal().getValue(0) : 0);
+      double x1 = (values[1] ? values[1]->toReal().value_or(0) : 0);
+      double y1 = (values[2] ? values[2]->toReal().value_or(0) : 0);
+      double r1 = (values[3] ? values[3]->toReal().value_or(0) : 0);
+      double x2 = (values[4] ? values[4]->toReal().value_or(0) : 0);
+      double y2 = (values[5] ? values[5]->toReal().value_or(0) : 0);
+      double r2 = (values[6] ? values[6]->toReal().value_or(0) : 0);
 
       return CJValueP(new CQJCanvasRadialGradient(js, x1, y1, r1, x2, y2, r2));
     }
@@ -463,18 +463,18 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
   }
   else if (name == "createImageData") {
     if (values.size() == 3) {
-      double w = (values[1] ? values[1]->toReal().getValue(0) : 0);
-      double h = (values[1] ? values[2]->toReal().getValue(0) : 0);
+      double w = (values[1] ? values[1]->toReal().value_or(0) : 0);
+      double h = (values[1] ? values[2]->toReal().value_or(0) : 0);
 
       return CJValueP(new CQJCanvasImageData(js, int(w), int(h)));
     }
   }
   else if (name == "getImageData") {
     if (values.size() == 5) {
-      double x = (values[1] ? values[1]->toReal().getValue(0) : 0);
-      double y = (values[2] ? values[2]->toReal().getValue(0) : 0);
-      double w = (values[3] ? values[3]->toReal().getValue(0) : 0);
-      double h = (values[4] ? values[4]->toReal().getValue(0) : 0);
+      double x = (values[1] ? values[1]->toReal().value_or(0) : 0);
+      double y = (values[2] ? values[2]->toReal().value_or(0) : 0);
+      double w = (values[3] ? values[3]->toReal().value_or(0) : 0);
+      double h = (values[4] ? values[4]->toReal().value_or(0) : 0);
 
       QImage image = canvas->getImageData(x, y, w, h);
 
@@ -484,8 +484,8 @@ execNameFn(CJavaScript *js, const std::string &name, const Values &values)
   else if (name == "putImageData") {
     if (values.size() == 4) {
       CJValueP imageVal = values[1];
-      double   x        = (values[2] ? values[2]->toReal().getValue(0) : 0);
-      double   y        = (values[3] ? values[3]->toReal().getValue(0) : 0);
+      double   x        = (values[2] ? values[2]->toReal().value_or(0) : 0);
+      double   y        = (values[3] ? values[3]->toReal().value_or(0) : 0);
 
       if (imageVal->type() == CJValue::Type::Object) {
         CJObjP imageObj = CJValue::cast<CJObj>(imageVal);

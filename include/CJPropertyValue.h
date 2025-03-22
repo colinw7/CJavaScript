@@ -2,7 +2,6 @@
 #define CJPropertyValue_H
 
 #include <CJTypes.h>
-#include <COptVal.h>
 
 class CJPropertyValue {
  public:
@@ -26,22 +25,24 @@ class CJPropertyValue {
   CJValueP value() const { return value_; }
   void setValue(CJValueP v) { value_ = v; }
 
-  bool isWriteable() const { return writable_.getValue(true); }
+  bool isWriteable() const { return writable_.value_or(true); }
   void setWriteable(bool b) { writable_ = b; }
 
-  bool isEnumerable() const { return enumerable_.getValue(true); }
+  bool isEnumerable() const { return enumerable_.value_or(true); }
   void setEnumerable(bool b) { enumerable_ = b; }
 
-  bool isConfigurable() const { return configurable_.getValue(true); }
+  bool isConfigurable() const { return configurable_.value_or(true); }
   void setConfigurable(bool b) { configurable_ = b; }
 
   CJValueP calcValue(CJavaScript *js) const;
 
  private:
+  using OptBool = std::optional<bool>;
+
   CJValueP value_;        // any value
-  COptBool writable_;     // is writable
-  COptBool enumerable_;   // is enumerable
-  COptBool configurable_; // is configurable
+  OptBool  writable_;     // is writable
+  OptBool  enumerable_;   // is enumerable
+  OptBool  configurable_; // is configurable
 };
 
 #endif

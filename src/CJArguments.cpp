@@ -103,7 +103,7 @@ CJArguments::
 getProperty(CJavaScript *js, const std::string &key) const
 {
   if      (key == "length")
-    return js->createNumberValue(length().getValue(0));
+    return js->createNumberValue(length().value_or(0));
   else if (key == "callee")
     return callee();
   else if (key == "caller")

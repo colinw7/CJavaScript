@@ -1,7 +1,17 @@
 #ifndef CJTypes_H
 #define CJTypes_H
 
+#include <string>
 #include <memory>
+
+#include <optional>
+
+using OptBool   = std::optional<bool>;
+using OptInt    = std::optional<int>;
+using OptLong   = std::optional<long>;
+using OptULong  = std::optional<unsigned long>;
+using OptReal   = std::optional<double>;
+using OptString = std::optional<std::string>;
 
 class CJavaScript;
 

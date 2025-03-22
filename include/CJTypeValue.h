@@ -25,9 +25,9 @@ class CJTypeValue : public CJLValue {
 
   //---
 
-  COptReal toReal() const override { return (hasValue() ? value()->toReal() : COptReal()); }
+  OptReal toReal() const override { return (hasValue() ? value()->toReal() : OptReal()); }
 
-  COptLong toInteger() const override { return (hasValue() ? value()->toInteger() : COptLong()); }
+  OptLong toInteger() const override { return (hasValue() ? value()->toInteger() : OptLong()); }
 
   bool toBoolean() const override { return hasValue() ? value()->toBoolean() : false; }
 

@@ -577,17 +577,17 @@ hasIndexValue(CJValueP value, CJValueP ivalue, bool inherit) const
       CJNumberP inumber = CJValue::cast<CJNumber>(ivalue);
 
       if (inumber->isInteger()) {
-        long ind = ivalue->toInteger().getValue(0);
+        long ind = ivalue->toInteger().value_or(0);
 
         if (ind >= 0)
           return value->hasIndexValue(ind);
       }
     }
     else if (ivalue->isString()) {
-      COptLong ind = ivalue->toInteger();
+      OptLong ind = ivalue->toInteger();
 
-      if (ind.isValid() && ind.getValue() >= 0)
-        return value->hasIndexValue(ind.getValue());
+      if (ind && ind.value() >= 0)
+        return value->hasIndexValue(ind.value());
     }
 
     // use value string as dictionary key
@@ -615,7 +615,7 @@ indexValue(CJValueP value, CJValueP ivalue, CJValueP &rvalue) const
       CJNumberP inumber = CJValue::cast<CJNumber>(ivalue);
 
       if (inumber->isInteger()) {
-        long ind = ivalue->toInteger().getValue(0);
+        long ind = ivalue->toInteger().value_or(0);
 
         if (ind >= 0) {
           rvalue = value->indexValue(ind);
@@ -624,10 +624,10 @@ indexValue(CJValueP value, CJValueP ivalue, CJValueP &rvalue) const
       }
     }
     else if (ivalue->isString()) {
-      COptLong ind = ivalue->toInteger();
+      OptLong ind = ivalue->toInteger();
 
-      if (ind.isValid() && ind.getValue() >= 0) {
-        rvalue = value->indexValue(ind.getValue());
+      if (ind && ind.value() >= 0) {
+        rvalue = value->indexValue(ind.value());
         return true;
       }
     }
@@ -661,7 +661,7 @@ setIndexValue(CJValueP value, CJValueP ivalue, CJValueP rvalue)
       CJNumberP inumber = CJValue::cast<CJNumber>(ivalue);
 
       if (inumber->isInteger()) {
-        long ind = inumber->toInteger().getValue(0);
+        long ind = inumber->toInteger().value_or(0);
 
         if (ind >= 0) {
           value->setIndexValue(ind, rvalue);
@@ -670,10 +670,10 @@ setIndexValue(CJValueP value, CJValueP ivalue, CJValueP rvalue)
       }
     }
     else if (ivalue->isString()) {
-      COptLong ind = ivalue->toInteger();
+      OptLong ind = ivalue->toInteger();
 
-      if (ind.isValid() && ind.getValue() >= 0) {
-        value->setIndexValue(ind.getValue(), rvalue);
+      if (ind && ind.value() >= 0) {
+        value->setIndexValue(ind.value(), rvalue);
         return true;
       }
     }
@@ -706,7 +706,7 @@ deleteIndexValue(CJValueP value, CJValueP ivalue)
     return false;
 
   if      (value->hasIndex()) {
-    long ind = ivalue->toInteger().getValue(0);
+    long ind = ivalue->toInteger().value_or(0);
 
     value->deleteIndexValue(ind);
   }
@@ -5312,7 +5312,7 @@ valueToPrimitive(CJValueP value) const
   assert(value->isObject());
 
   if      (value->type() == CJToken::Type::Number) {
-    return createNumberValue(CJValue::cast<CJNumber>(value)->toReal().getValue(0));
+    return createNumberValue(CJValue::cast<CJNumber>(value)->toReal().value_or(0));
   }
   else if (value->type() == CJToken::Type::String) {
     return createStringValue(CJValue::cast<CJString>(value)->toString());
@@ -5339,17 +5339,17 @@ valueTypeFunction(CJValueP value) const
   return value->valueType()->typeFunction();
 }
 
-COptInt
+OptInt
 CJavaScript::
 rcmp(CJValueP value1, CJValueP value2) const
 {
   if (! value1 || ! value2) {
     if      (! value1 && value2)
-      return COptInt(-1);
+      return OptInt(-1);
     else if (value1 && ! value2)
-      return COptInt(1);
+      return OptInt(1);
     else
-      return COptInt(0);
+      return OptInt(0);
   }
 
   if      (value1->isArray() && value2->isArray())
@@ -5360,27 +5360,27 @@ rcmp(CJValueP value1, CJValueP value2) const
     return cmp(value1, value2);
 }
 
-COptInt
+OptInt
 CJavaScript::
 cmpArray(CJArrayP array1, CJArrayP array2) const
 {
-  long n1 = array1->length().getValue(0);
-  long n2 = array2->length().getValue(0);
+  long n1 = array1->length().value_or(0);
+  long n2 = array2->length().value_or(0);
 
   if (n1 != n2)
-    return COptInt(n1 > n2 ? 1 : -1);
+    return OptInt(n1 > n2 ? 1 : -1);
 
   for (int i = 0; i < n1; ++i) {
-    COptInt rc = rcmp(array1->indexValue(i), array2->indexValue(i));
+    OptInt rc = rcmp(array1->indexValue(i), array2->indexValue(i));
 
-    if (! rc.isValid() || rc.getValue() != 0)
+    if (! rc || rc.value() != 0)
       return rc;
   }
 
-  return COptInt(0);
+  return OptInt(0);
 }
 
-COptInt
+OptInt
 CJavaScript::
 cmpObject(CJObjectP object1, CJObjectP object2) const
 {
@@ -5388,11 +5388,11 @@ cmpObject(CJObjectP object1, CJObjectP object2) const
   CJValue::KeyNames names2 = object2->propertyNames();
 
   if (names1.size() != names2.size())
-    return COptInt(names1.size() > names2.size() ? 1 : -1);
+    return OptInt(names1.size() > names2.size() ? 1 : -1);
 
   for (uint i = 0; i < names1.size(); ++i) {
     if (names1[i] != names2[i])
-      return COptInt(names1[i] > names2[i] ? 1 : -1);
+      return OptInt(names1[i] > names2[i] ? 1 : -1);
   }
 
   CJavaScript *th = const_cast<CJavaScript *>(this);
@@ -5405,16 +5405,16 @@ cmpObject(CJObjectP object1, CJObjectP object2) const
     CJValueP value1 = object1->getProperty(th, name);
     CJValueP value2 = object2->getProperty(th, name);
 
-    COptInt rc = rcmp(value1, value2);
+    OptInt rc = rcmp(value1, value2);
 
-    if (! rc.isValid() || rc.getValue() != 0)
+    if (! rc || rc.value() != 0)
       return rc;
   }
 
-  return COptInt(0);
+  return OptInt(0);
 }
 
-COptInt
+OptInt
 CJavaScript::
 cmp(CJValueP value1, CJValueP value2) const
 {
@@ -5422,105 +5422,105 @@ cmp(CJValueP value1, CJValueP value2) const
     std::string s1 = value1->toString();
     std::string s2 = value2->toString();
 
-    if (s1 < s2) return COptInt(-1);
-    if (s1 > s2) return COptInt( 1);
+    if (s1 < s2) return OptInt(-1);
+    if (s1 > s2) return OptInt( 1);
 
-    return COptInt(0);
+    return OptInt(0);
   }
   else if (value1->isNumber() && value2->isNumber()) {
-    double r1 = value1->toReal().getValue(0.0);
-    double r2 = value2->toReal().getValue(0.0);
+    double r1 = value1->toReal().value_or(0.0);
+    double r2 = value2->toReal().value_or(0.0);
 
     if (CJUtil::isNaN(r1) || CJUtil::isNaN(r2))
-      return COptInt();
+      return OptInt();
 
-    if (CJUtil::isPosInf(r1) && CJUtil::isPosInf(r2)) return COptInt(0);
-    if (CJUtil::isNegInf(r1) && CJUtil::isNegInf(r2)) return COptInt(0);
+    if (CJUtil::isPosInf(r1) && CJUtil::isPosInf(r2)) return OptInt(0);
+    if (CJUtil::isNegInf(r1) && CJUtil::isNegInf(r2)) return OptInt(0);
 
-    if (CJUtil::isPosInf(r1) || CJUtil::isNegInf(r2)) return COptInt( 1);
-    if (CJUtil::isNegInf(r1) || CJUtil::isPosInf(r2)) return COptInt(-1);
+    if (CJUtil::isPosInf(r1) || CJUtil::isNegInf(r2)) return OptInt( 1);
+    if (CJUtil::isNegInf(r1) || CJUtil::isPosInf(r2)) return OptInt(-1);
 
-    if (r1 < r2) return COptInt(-1);
-    if (r1 > r2) return COptInt( 1);
+    if (r1 < r2) return OptInt(-1);
+    if (r1 > r2) return OptInt( 1);
 
-    return COptInt(0);
+    return OptInt(0);
   }
   else if (value1->type() == CJValue::Type::Undefined ||
            value2->type() == CJValue::Type::Undefined) {
     if (value1->type() == value2->type())
-      return COptInt(0);
+      return OptInt(0);
 
     if (value1->type() == CJValue::Type::Null || value2->type() == CJValue::Type::Null)
-      return COptInt(0);
+      return OptInt(0);
 
-    return COptInt();
+    return OptInt();
   }
   else if (value1->type() == CJValue::Type::Null ||
            value2->type() == CJValue::Type::Null) {
     if (value1->type() == value2->type())
-      return COptInt(0);
+      return OptInt(0);
 
     if (value1->type() == CJValue::Type::Undefined || value2->type() == CJValue::Type::Undefined)
-      return COptInt(0);
+      return OptInt(0);
 
-    return COptInt();
+    return OptInt();
   }
   else if (value1->isBoolType() || value2->isBoolType()) {
     bool b1 = value1->toBoolean();
     bool b2 = value2->toBoolean();
 
-    if (b1 < b2) return COptInt(-1);
-    if (b1 > b2) return COptInt( 1);
+    if (b1 < b2) return OptInt(-1);
+    if (b1 > b2) return OptInt( 1);
 
-    return COptInt(0);
+    return OptInt(0);
   }
   else if (value1->isNumber() || value2->isNumber()) {
-    double r1 = value1->toReal().getValue(0.0);
-    double r2 = value2->toReal().getValue(0.0);
+    double r1 = value1->toReal().value_or(0.0);
+    double r2 = value2->toReal().value_or(0.0);
 
     if (CJUtil::isNaN(r1) || CJUtil::isNaN(r2))
-      return COptInt();
+      return OptInt();
 
-    if (r1 < r2) return COptInt(-1);
-    if (r1 > r2) return COptInt( 1);
+    if (r1 < r2) return OptInt(-1);
+    if (r1 > r2) return OptInt( 1);
 
-    return COptInt(0);
+    return OptInt(0);
   }
   else if (value1->type() == CJValue::Type::String || value2->type() == CJValue::Type::String) {
     std::string s1 = value1->toString();
     std::string s2 = value2->toString();
 
-    if (s1 < s2) return COptInt(-1);
-    if (s1 > s2) return COptInt( 1);
+    if (s1 < s2) return OptInt(-1);
+    if (s1 > s2) return OptInt( 1);
 
-    return COptInt(0);
+    return OptInt(0);
   }
   else if (value1->isObject() && value2->isObject()) {
     CJObjP obj1 = CJValue::cast<CJObj>(value1);
     CJObjP obj2 = CJValue::cast<CJObj>(value2);
 
-    return COptInt(obj1->cmp(obj2));
+    return OptInt(obj1->cmp(obj2));
   }
   else if (value1->isFunction() && value2->isFunction()) {
     CJFunctionBaseP fn1 = CJValue::cast<CJFunctionBase>(value1);
     CJFunctionBaseP fn2 = CJValue::cast<CJFunctionBase>(value2);
 
-    if (fn1.get() < fn1.get()) return COptInt(-1);
-    if (fn1.get() > fn1.get()) return COptInt( 1);
+    if (fn1.get() < fn1.get()) return OptInt(-1);
+    if (fn1.get() > fn1.get()) return OptInt( 1);
 
-    return COptInt(0);
+    return OptInt(0);
   }
   else {
-    double r1 = value1->toReal().getValue(0.0);
-    double r2 = value2->toReal().getValue(0.0);
+    double r1 = value1->toReal().value_or(0.0);
+    double r2 = value2->toReal().value_or(0.0);
 
     if (CJUtil::isNaN(r1) || CJUtil::isNaN(r2))
-      return COptInt();
+      return OptInt();
 
-    if (r1 < r2) return COptInt(-1);
-    if (r1 > r2) return COptInt( 1);
+    if (r1 < r2) return OptInt(-1);
+    if (r1 > r2) return OptInt( 1);
 
-    return COptInt(0);
+    return OptInt(0);
   }
 }
 
@@ -5582,8 +5582,8 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
         return createStringValue(s1 + s2);
       }
       else if (value1->isNumber() && value2->isNumber()) {
-        double r1 = value1->toReal().getValue(0.0);
-        double r2 = value2->toReal().getValue(0.0);
+        double r1 = value1->toReal().value_or(0.0);
+        double r2 = value2->toReal().value_or(0.0);
 
         if (CJUtil::isNaN(r1) || CJUtil::isNaN(r2))
           return createNumberValue(CJUtil::getNaN());
@@ -5598,8 +5598,8 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
         return createStringValue(s1 + s2);
       }
       else if (value1->isNumber() || value2->isNumber()) {
-        double r1 = value1->toReal().getValue(0.0);
-        double r2 = value2->toReal().getValue(0.0);
+        double r1 = value1->toReal().value_or(0.0);
+        double r2 = value2->toReal().value_or(0.0);
 
         return createNumberValue(r1 + r2);
       }
@@ -5613,8 +5613,8 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
       break;
     case CJOperator::Type::Minus:
       if (value1->isNumber() || value2->isNumber()) {
-        double r1 = value1->toReal().getValue(0.0);
-        double r2 = value2->toReal().getValue(0.0);
+        double r1 = value1->toReal().value_or(0.0);
+        double r2 = value2->toReal().value_or(0.0);
 
         if (CJUtil::isNaN(r1) || CJUtil::isNaN(r2))
           return createNumberValue(CJUtil::getNaN());
@@ -5636,8 +5636,8 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
       break;
     case CJOperator::Type::Times:
       if (value1->isNumber() || value2->isNumber()) {
-        double r1 = value1->toReal().getValue(0.0);
-        double r2 = value2->toReal().getValue(0.0);
+        double r1 = value1->toReal().value_or(0.0);
+        double r2 = value2->toReal().value_or(0.0);
 
         return createNumberValue(r1 * r2);
       }
@@ -5645,8 +5645,8 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
       break;
     case CJOperator::Type::Divide:
       if (value1->isNumber() || value2->isNumber() ) {
-        double r1 = value1->toReal().getValue(0.0);
-        double r2 = value2->toReal().getValue(0.0);
+        double r1 = value1->toReal().value_or(0.0);
+        double r2 = value2->toReal().value_or(0.0);
 
         if      (r2 != 0)
           return createNumberValue(r1 / r2);
@@ -5659,8 +5659,8 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
       break;
     case CJOperator::Type::Modulus:
       if (value1->isNumber() || value2->isNumber()) {
-        double r1 = value1->toReal().getValue(0.0);
-        double r2 = value2->toReal().getValue(0.0);
+        double r1 = value1->toReal().value_or(0.0);
+        double r2 = value2->toReal().value_or(0.0);
 
         return createNumberValue(CJUtil::realModulus(r1, r2));
       }
@@ -5673,9 +5673,9 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
     case CJOperator::Type::GreaterEqual:
     case CJOperator::Type::Equal:
     case CJOperator::Type::NotEqual: {
-      COptInt d = cmp(value1, value2);
+      OptInt d = cmp(value1, value2);
 
-      if (! d.isValid())
+      if (! d)
         return createBoolValue(false);
 
       if      (op == CJOperator::Type::Less)
@@ -5696,9 +5696,9 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
 
     case CJOperator::Type::StrictEqual:
     case CJOperator::Type::StrictNotEqual: {
-      COptInt d = cmp(value1, value2);
+      OptInt d = cmp(value1, value2);
 
-      if (! d.isValid()) {
+      if (! d) {
         if (op == CJOperator::Type::StrictEqual)
           return createBoolValue(false);
         else
@@ -5706,9 +5706,9 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
       }
 
       if (op == CJOperator::Type::StrictEqual)
-        return createBoolValue(value1->type() == value2->type() && d.getValue() == 0);
+        return createBoolValue(value1->type() == value2->type() && d.value() == 0);
       else
-        return createBoolValue(value1->type() != value2->type() || d.getValue() != 0);
+        return createBoolValue(value1->type() != value2->type() || d.value() != 0);
     }
 
     case CJOperator::Type::LogicalAnd: {
@@ -5759,8 +5759,8 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
 
     case CJOperator::Type::BitwiseAnd:
       if (value1->isNumber() && value2->isNumber()) {
-        long i1 = value1->toInteger().getValue(0);
-        long i2 = value2->toInteger().getValue(0);
+        long i1 = value1->toInteger().value_or(0);
+        long i2 = value2->toInteger().value_or(0);
 
         long res = (i1 & i2);
 
@@ -5770,8 +5770,8 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
       break;
     case CJOperator::Type::BitwiseOr:
       if (value1->isNumber() && value2->isNumber()) {
-        long i1 = value1->toInteger().getValue(0);
-        long i2 = value2->toInteger().getValue(0);
+        long i1 = value1->toInteger().value_or(0);
+        long i2 = value2->toInteger().value_or(0);
 
         long res = (i1 | i2);
 
@@ -5781,8 +5781,8 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
       break;
     case CJOperator::Type::BitwiseXor:
       if (value1->isNumber() && value2->isNumber()) {
-        long i1 = value1->toInteger().getValue(0);
-        long i2 = value2->toInteger().getValue(0);
+        long i1 = value1->toInteger().value_or(0);
+        long i2 = value2->toInteger().value_or(0);
 
         long res = (i1 ^ i2);
 
@@ -5793,8 +5793,8 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
 
     case CJOperator::Type::LeftShift: {
       if (value1->isNumber() && value2->isNumber()) {
-        long i1 = value1->toInteger().getValue(0);
-        long i2 = value2->toInteger().getValue(0);
+        long i1 = value1->toInteger().value_or(0);
+        long i2 = value2->toInteger().value_or(0);
 
         long res = (i1 << i2);
 
@@ -5805,8 +5805,8 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
     }
     case CJOperator::Type::RightShift: {
       if (value1->isNumber() && value2->isNumber()) {
-        long i1 = value1->toInteger().getValue(0);
-        long i2 = value2->toInteger().getValue(0);
+        long i1 = value1->toInteger().value_or(0);
+        long i2 = value2->toInteger().value_or(0);
 
         long res = (i1 >> i2);
 
@@ -5817,8 +5817,8 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
     }
     case CJOperator::Type::UnsignedRightShift: {
       if (value1->isNumber() && value2->isNumber()) {
-        ulong i1 = value1->toInteger().getValue(0);
-        long  i2 = value2->toInteger().getValue(0);
+        ulong i1 = value1->toInteger().value_or(0);
+        long  i2 = value2->toInteger().value_or(0);
 
         long res = (i1 >> i2);
 
@@ -5872,7 +5872,7 @@ execBinaryOp(CJOperator::Type op, CJValueP value1, CJValueP value2)
         return createBoolValue(array2->hasValue(value1));
       }
       else if (value2->hasIndex()) {
-        long ind = value1->toInteger().getValue(0);
+        long ind = value1->toInteger().value_or(0);
 
         return createBoolValue(value2->hasIndexValue(ind));
       }
@@ -5918,12 +5918,12 @@ execUnaryOp(CJOperator::Type op, CJValueP value)
 
   switch (op) {
     case CJOperator::Type::UnaryPlus: {
-      double r = value->toReal().getValue(0.0);
+      double r = value->toReal().value_or(0.0);
 
       return createNumberValue(r);
     }
     case CJOperator::Type::UnaryMinus: {
-      double r = value->toReal().getValue(0.0);
+      double r = value->toReal().value_or(0.0);
 
       return createNumberValue(-r);
     }
@@ -5958,7 +5958,7 @@ execUnaryOp(CJOperator::Type op, CJValueP value)
 
     case CJOperator::Type::BitwiseNot:
       if (value->isNumber()) {
-        long i = value->toInteger().getValue(0);
+        long i = value->toInteger().value_or(0);
 
         long res = ~ i;
 

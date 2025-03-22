@@ -2,7 +2,6 @@
 #define CJValue_H
 
 #include <CJToken.h>
-#include <COptVal.h>
 #include <vector>
 
 class CJValue : public CJToken, public std::enable_shared_from_this<CJValue> {
@@ -40,9 +39,9 @@ class CJValue : public CJToken, public std::enable_shared_from_this<CJValue> {
   // convert to string
   virtual std::string toString() const override = 0;
 
-  virtual COptReal toReal() const = 0;
+  virtual OptReal toReal() const = 0;
 
-  virtual COptLong toInteger() const;
+  virtual OptLong toInteger() const;
 
   virtual bool toBoolean() const = 0;
 
@@ -72,7 +71,7 @@ class CJValue : public CJToken, public std::enable_shared_from_this<CJValue> {
 
   virtual KeyNames propertyNames() const { return KeyNames(); }
 
-  virtual COptLong length() const { return COptLong(); }
+  virtual OptLong length() const { return OptLong(); }
 
   virtual int cmp(const CJValue *v) const {
     std::string s1 =    toString();

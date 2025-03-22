@@ -48,7 +48,7 @@ exec(CJavaScript *js)
       if (value->isArray())
         valueArray = CJValue::cast<CJArray>(value);
 
-      long len = value->length().getValue(0);
+      long len = value->length().value_or(0);
 
       for (int ind = 0; ind < len; ++ind) {
         if (valueArray && ! valueArray->isEnumerableIndex(ind))

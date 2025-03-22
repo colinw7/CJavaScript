@@ -10,9 +10,9 @@ class CJObjectType : public CJObjType {
  public:
   struct PropertyValues {
     CJValueP    value;
-    COptBool    writable;
-    COptBool    enumerable;
-    COptBool    configurable;
+    OptBool     writable;
+    OptBool     enumerable;
+    OptBool     configurable;
     CJFunctionP getter;
     CJFunctionP setter;
   };
@@ -62,7 +62,7 @@ class CJObject : public CJObj {
   const std::string &typeName() const { return typeName_; }
   void setTypeName(const std::string &v) { typeName_ = v; }
 
-  COptLong length() const override;
+  OptLong length() const override;
   void setLength(long n);
 
   CJValueP getProperty(CJavaScript *js, const std::string &key) const override;

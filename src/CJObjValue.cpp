@@ -65,14 +65,14 @@ toBoolean() const
   return getValue()->toBoolean();
 }
 
-COptReal
+OptReal
 CJObjValue::
 toReal() const
 {
   return getValue()->toReal();
 }
 
-COptLong
+OptLong
 CJObjValue::
 toInteger() const
 {

@@ -13,9 +13,9 @@ class CJNameSpaceValue : public CJLValue {
 
   //---
 
-  COptReal toReal() const override;
+  OptReal toReal() const override;
 
-  COptLong toInteger() const override;
+  OptLong toInteger() const override;
 
   bool toBoolean() const override;
 

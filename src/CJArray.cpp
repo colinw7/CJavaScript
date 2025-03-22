@@ -141,7 +141,7 @@ createArrayFromValue(CJavaScript *js, CJValueP value1)
   CJArrayP array = js->createArrayValue();
 
   if      (value1->hasIndex()) {
-    long len = value1->length().getValue(0);
+    long len = value1->length().value_or(0);
 
     for (long ind = 0; ind < len; ++ind) {
       CJValueP ivalue = value1->indexValue(ind);
@@ -155,10 +155,10 @@ createArrayFromValue(CJavaScript *js, CJValueP value1)
   else if (value1->hasProperty()) {
     CJDictionaryP dict1 = CJValue::cast<CJDictionary>(value1);
 
-    COptLong lenValue = value1->length();
+    OptLong lenValue = value1->length();
 
-    if (lenValue.isValid()) {
-      long len = lenValue.getValue(0);
+    if (lenValue) {
+      long len = lenValue.value_or(0);
 
       for (int ind = 0; ind < len; ++ind) {
         std::string istr = std::to_string(ind);
@@ -233,10 +233,10 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
           array1->setIndexValue(ind1, v.second.calcValue(js));
         }
 
-        len1 += array2->length().getValue(0);
+        len1 += array2->length().value_or(0);
       }
       else if (values[i]->hasIndex()) {
-        long len = values[i]->length().getValue(0);
+        long len = values[i]->length().value_or(0);
 
         for (long j = 0; j < len; ++j) {
           array1->setIndexValue(len1, values[i]->indexValue(j));
@@ -484,20 +484,20 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     //---
 
     long start = 0;
-    long len   = array->length().getValue(0);
+    long len   = array->length().value_or(0);
 
     //---
 
     // get start index
     if (values.size() >= 3) {
-      COptLong optStart = values[2]->toInteger();
+      OptLong optStart = values[2]->toInteger();
 
-      if (! optStart.isValid()) {
+      if (! optStart) {
         js->throwTypeError(values[0], "Invalid start index for " + name);
         return CJValueP();
       }
 
-      start = optStart.getValue(0);
+      start = optStart.value_or(0);
 
       if (start < 0)
         start = len + start;
@@ -512,9 +512,9 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     // search
     for (long i = start; i < len; ++i) {
-      COptInt cmp = js->cmp(array->indexValue(i), search);
+      OptInt cmp = js->cmp(array->indexValue(i), search);
 
-      if (cmp.isValid() && cmp.getValue() == 0)
+      if (cmp && cmp.value() == 0)
         return js->createNumberValue(long(i));
     }
 
@@ -536,7 +536,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
 
     std::string str;
 
-    long len = array->length().getValue(0);
+    long len = array->length().value_or(0);
 
     for (long i = 0; i < len; ++i) {
       if (i > 0)
@@ -565,11 +565,11 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       return CJValueP();
     }
 
-    long len   = array->length().getValue(0);
+    long len   = array->length().value_or(0);
     long start = len - 1;
 
     if (values.size() >= 3) {
-      start = values[2]->toInteger().getValue(0);
+      start = values[2]->toInteger().value_or(0);
 
       if (start < 0)
         start = len + start;
@@ -583,12 +583,12 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     for (long i = start; i >= 0; --i) {
       CJValueP v = array->indexValue(i);
 
-      COptInt cmp;
+      OptInt cmp;
 
       if (v)
         cmp = js->cmp(v, search);
 
-      if (cmp.isValid() && cmp.getValue() == 0)
+      if (cmp && cmp.value() == 0)
         return js->createNumberValue(long(i));
     }
 
@@ -668,7 +668,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     // return new values
     CJArrayP array1 = js->createArrayValue();
 
-    array1->setValues(newValues, array->length().getValue(0));
+    array1->setValues(newValues, array->length().value_or(0));
 
     return array1;
   }
@@ -676,7 +676,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     CJValueP res;
 
     if (array) {
-      long len = array->length().getValue(0);
+      long len = array->length().value_or(0);
 
       if (len < 1)
         return js->createUndefinedValue();
@@ -684,9 +684,9 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       res = array->removeValue();
     }
     else if (obj) {
-      COptLong len = obj->length();
+      OptLong len = obj->length();
 
-      long n = len.getValue(0);
+      long n = len.value_or(0);
 
       if (n > 0)
         res = obj->getProperty(js, std::to_string(n - 1));
@@ -711,12 +711,12 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       for (uint i = 1; i < values.size(); ++i)
         array->addValue(values[i]);
 
-      n = array->length().getValue(0);
+      n = array->length().value_or(0);
     }
     else if (obj) {
-      COptLong len = obj->length();
+      OptLong len = obj->length();
 
-      n = len.getValue(0);
+      n = len.value_or(0);
 
       for (uint i = 1; i < values.size(); ++i) {
         if (n >= CJUtil::maxInteger() + 1)
@@ -894,7 +894,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     CJValueP remVal;
 
     if      (array) {
-      long len = array->length().getValue(0);
+      long len = array->length().value_or(0);
 
       if (len >= 1)
         remVal = array->removeFrontValue();
@@ -902,9 +902,9 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
         remVal = js->createUndefinedValue();
     }
     else if (obj) {
-      COptLong len = obj->length();
+      OptLong len = obj->length();
 
-      long n = len.getValue(0);
+      long n = len.value_or(0);
 
       if (n >= 1) {
         for (long i = 0; i < n; ++i) {
@@ -933,7 +933,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     else {
       array = createArrayFromValue(js, values[0]);
 
-      long len = array->length().getValue(0);
+      long len = array->length().value_or(0);
 
       if (len >= 1)
         remVal = array->removeFrontValue();
@@ -952,16 +952,16 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       return CJValueP();
     }
 
-    long len = array->length().getValue(0);
+    long len = array->length().value_or(0);
 
     long start = 0;
     long end   = len;
 
     if (values.size() >= 2) {
-      COptLong optStart = values[1]->toInteger();
+      OptLong optStart = values[1]->toInteger();
 
-      if (optStart.isValid()) {
-        start = optStart.getValue();
+      if (optStart) {
+        start = optStart.value();
 
         if (start < 0)
           start = len + start;
@@ -971,10 +971,10 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     }
 
     if (values.size() >= 3) {
-      COptLong optEnd = values[2]->toInteger();
+      OptLong optEnd = values[2]->toInteger();
 
-      if (optEnd.isValid()) {
-        end = optEnd.getValue();
+      if (optEnd) {
+        end = optEnd.value();
 
         if (end < 0)
           end = len + end;
@@ -1084,13 +1084,13 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       return CJValueP();
     }
 
-    long len = array->length().getValue(0);
+    long len = array->length().value_or(0);
 
     // get start of splice (default to end of array)
     long start = 0;
 
     if (values.size() >= 2) {
-      start = values[1]->toInteger().getValue(0);
+      start = values[1]->toInteger().value_or(0);
 
       if (start < 0)
         start = len + start;
@@ -1104,7 +1104,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     long numDel = 0;
 
     if (values.size() >= 3) {
-      numDel = values[2]->toInteger().getValue(0);
+      numDel = values[2]->toInteger().value_or(0);
 
       numDel = CJUtil::clamp(numDel, 0L, len);
     }
@@ -1280,13 +1280,13 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       for (long i = numAdd; i >= 1; --i)
         array->addFrontValue(values[i]);
 
-      res = array->length().getValue(0L);
+      res = array->length().value_or(0L);
     }
     else if (obj) {
-      COptLong len = obj->length();
+      OptLong len = obj->length();
 
-      if (len.isValid()) {
-        long n = len.getValue();
+      if (len) {
+        long n = len.value();
 
         for (long i = n - 1; i >= 0; --i) {
           std::string ind = std::to_string(i);
@@ -1313,9 +1313,9 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
         }
       }
 
-      obj->setLength(len.getValue(0) + numAdd);
+      obj->setLength(len.value_or(0) + numAdd);
 
-      res = obj->length().getValue(0L);
+      res = obj->length().value_or(0L);
     }
     else {
       array = createArrayFromValue(js, values[0]);
@@ -1323,7 +1323,7 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
       for (size_t i = values.size() - 1; i >= 1; --i)
         array->addFrontValue(values[i]);
 
-      res = array->length().getValue(0L);
+      res = array->length().value_or(0L);
     }
 
     return js->createNumberValue(res);
@@ -1332,12 +1332,12 @@ exec(CJavaScript *js, const std::string &name, const Values &values)
     if (values.size() < 2)
       return js->createBoolValue(false);
 
-    COptLong ind = values[1]->toInteger();
+    OptLong ind = values[1]->toInteger();
 
     bool b = false;
 
-    if (array && ind.isValid())
-      b = array->isEnumerableIndex(ind.getValue());
+    if (array && ind)
+      b = array->isEnumerableIndex(ind.value());
 
     return js->createBoolValue(b);
   }
@@ -1459,38 +1459,38 @@ toString() const
   return str;
 }
 
-COptReal
+OptReal
 CJArray::
 toReal() const
 {
-  long n = length().getValue(0);
+  long n = length().value_or(0);
 
   if      (n == 0)
-    return COptReal(0);
+    return OptReal(0);
   else if (n == 1) {
     CJValueP value = indexValue(0);
 
-    return (value ? COptReal(value->toReal()) : COptReal());
+    return (value ? OptReal(value->toReal()) : OptReal());
   }
   else
-    return COptReal(CJUtil::getNaN());
+    return OptReal(CJUtil::getNaN());
 }
 
-COptLong
+OptLong
 CJArray::
 toInteger() const
 {
-  long n = length().getValue(0);
+  long n = length().value_or(0);
 
   if      (n == 0)
-    return COptLong(0);
+    return OptLong(0);
   else if (n == 1) {
     CJValueP value = indexValue(0);
 
-    return (value ? COptLong(value->toInteger()) : COptLong());
+    return (value ? OptLong(value->toInteger()) : OptLong());
   }
   else
-    return COptLong(0);
+    return OptLong(0);
 }
 
 void
@@ -1716,11 +1716,11 @@ setConfigurableIndex(long ind, bool b)
   values_[ind].setConfigurable(b);
 }
 
-COptLong
+OptLong
 CJArray::
 length() const
 {
-  return COptLong(len_);
+  return OptLong(len_);
 }
 
 void
@@ -1783,7 +1783,7 @@ sort(CJFunctionP fn)
         if (! res)
           return false;
 
-        return (res->toInteger().getValue(0) < 0);
+        return (res->toInteger().value_or(0) < 0);
       }
     }
 
@@ -1817,7 +1817,7 @@ CJArray::
 getProperty(CJavaScript *js, const std::string &key) const
 {
   if (key == "length")
-    return js->createNumberValue(length().getValue(0));
+    return js->createNumberValue(length().value_or(0));
 
   return CJObj::getProperty(js, key);
 }
@@ -1827,7 +1827,7 @@ CJArray::
 setProperty(CJavaScript *js, const std::string &key, CJValueP value)
 {
   if (key == "length") {
-    setLength(value->toInteger().getValue(0));
+    setLength(value->toInteger().value_or(0));
   }
   else
     CJObj::setProperty(js, key, value);

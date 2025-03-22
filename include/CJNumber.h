@@ -60,9 +60,9 @@ class CJNumber : public CJObj {
 
   bool toBoolean() const override { return (real_ != 0.0); }
 
-  COptReal toReal() const override { return COptReal(real_); }
+  OptReal toReal() const override { return OptReal(real_); }
 
-  COptLong toInteger() const override;
+  OptLong toInteger() const override;
 
   //---
 
@@ -73,8 +73,8 @@ class CJNumber : public CJObj {
   std::string realString() const;
 
   int cmp(const CJValue *v) const override {
-    double r1 =    toReal().getValue(0);
-    double r2 = v->toReal().getValue(0);
+    double r1 =    toReal().value_or(0);
+    double r2 = v->toReal().value_or(0);
 
     if (r1 < r2) return -1;
     if (r1 > r2) return  1;
